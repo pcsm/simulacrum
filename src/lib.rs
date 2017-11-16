@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::hash::Hash;
 
 pub struct TrackedMethod {
     calls_exact: Option<i64>,
@@ -32,11 +33,15 @@ impl TrackedMethod {
     }
 }
 
-pub struct ExpectationStore {
-    inner: HashMap<u64, TrackedMethod>
+pub struct ExpectationStore<K> where
+    K: Eq + Hash
+{
+    inner: HashMap<K, TrackedMethod>
 }
 
-impl ExpectationStore {
+impl<K> ExpectationStore<K> where
+    K: Eq + Hash
+{
     pub fn new() -> Self {
         ExpectationStore {
             inner: HashMap::new()
@@ -49,17 +54,17 @@ impl ExpectationStore {
         }
     }
 
-    pub fn called(&mut self, key: u64) {
+    pub fn called(&mut self, key: K) {
         if self.is_tracked(&key) {
             self.inner.get_mut(&key).unwrap().called();
         }
     }
 
-    pub fn is_tracked(&self, key: &u64) -> bool {
+    pub fn is_tracked(&self, key: &K) -> bool {
         self.inner.contains_key(key)
     }
 
-    pub fn track_method(&mut self, key: u64) -> &mut TrackedMethod {
+    pub fn track_method(&mut self, key: K) -> &mut TrackedMethod {
         self.inner.entry(key).or_insert_with(|| TrackedMethod::new("XXXXX".to_string()))
     }
 }
