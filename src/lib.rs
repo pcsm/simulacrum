@@ -64,8 +64,8 @@ impl<K> ExpectationStore<K> where
         self.inner.contains_key(key)
     }
 
-    pub fn track_method(&mut self, key: K) -> &mut TrackedMethod {
-        self.inner.entry(key).or_insert_with(|| TrackedMethod::new("XXXXX".to_string()))
+    pub fn track_method<S: Into<String>>(&mut self, key: K, name: S) -> &mut TrackedMethod {
+        self.inner.entry(key).or_insert_with(|| TrackedMethod::new(name.into()))
     }
 }
 
