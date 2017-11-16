@@ -69,10 +69,46 @@ impl<K> ExpectationStore<K> where
     }
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
+// pub struct DrawBehaviorMock {
+//     expectations: ExpectationStore<&'static str>
+// }
+
+// impl DrawBehaviorMock {
+//     pub fn new() -> Self {
+//         DrawBehaviorMock {
+//             expectations: ExpectationStore::new()
+//         }
+//     }
+
+//     pub fn expect(&mut self, name: &'static str) -> &mut TrackedMethod {
+//         self.expectations.track_method(name, name)
+//     }
+
+//     pub fn expect_setup_draw(&mut self) -> &mut TrackedMethod {
+//         self.expect("setup_draw")
+//     }
+
+//     pub fn expect_cleanup_draw(&mut self) -> &mut TrackedMethod {
+//         self.expect("cleanup_draw")
+//     }
+// }
+
+// impl Drop for DrawBehaviorMock {
+//     fn drop(&mut self) {
+//         self.expectations.verify();
+//     }
+// }
+
+// impl<D> DrawBehavior<D> for DrawBehaviorMock {
+//     fn draw(&mut self, _state: &ViewState<D>) {
+//         self.expectations.called("draw");
+//     }
+
+//     fn setup_draw(&mut self, _state: &ViewState<D>) {
+//         self.expectations.called("setup_draw");
+//     }
+
+//     fn cleanup_draw(&mut self, _state: &ViewState<D>) {
+//         self.expectations.called("cleanup_draw");
+//     }
+// }
