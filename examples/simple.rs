@@ -3,13 +3,12 @@ extern crate simulacrum;
 use simulacrum::*;
 
 trait CoolTrait {
-    // Unfortunately, right now simulacrum only helps to mock mutable methods
     fn foo(&self);
     fn bar(&mut self);
 }
 
 pub struct CoolTraitMock {
-    expectations: ExpectationStore<&'static str>
+    expectations: ExpectationStore
 }
 
 impl CoolTraitMock {
@@ -19,15 +18,15 @@ impl CoolTraitMock {
         }
     }
 
-    pub fn expect(&mut self, name: &'static str) -> TrackedMethod<&'static str> {
-        self.expectations.track_method(name, name)
+    pub fn expect(&mut self, name: &'static str) -> TrackedMethod {
+        self.expectations.track_method(name)
     }
 
-    pub fn expect_foo(&mut self) -> TrackedMethod<&'static str> {
+    pub fn expect_foo(&mut self) -> TrackedMethod {
         self.expect("foo")
     }
 
-    pub fn expect_bar(&mut self) -> TrackedMethod<&'static str> {
+    pub fn expect_bar(&mut self) -> TrackedMethod {
         self.expect("bar")
     }
 }

@@ -1,15 +1,13 @@
 use std::collections::HashMap;
-use std::hash::Hash;
-
 use std::sync::Mutex;
 
 pub struct TrackedMethodData {
     calls_exact: Option<i64>,
-    name: String
+    name: TrackedMethodKey
 }
 
 impl TrackedMethodData {
-    fn new(name: String) -> Self {
+    fn new(name: TrackedMethodKey) -> Self {
         Self {
             calls_exact: None,
             name 
@@ -32,26 +30,22 @@ impl TrackedMethodData {
 }
 
 macro_rules! get_tracked_method {
-    ($target:ident, $key:ident, $name:ident) => {
-        $target.inner.lock().unwrap().entry($key).or_insert_with(|| TrackedMethodData::new($name))
+    ($target:ident, $name:ident) => {
+        $target.inner.lock().unwrap().entry($name).or_insert_with(|| TrackedMethodData::new($name))
     }
 }
 
-pub struct TrackedMethod<'a, K> where
-    K: 'a + Eq + Hash + Clone
-{
-    inner: &'a mut ExpectationStoreInner<K>,
-    key: K,
-    name: String
+pub type TrackedMethodKey = &'static str;
+
+pub struct TrackedMethod<'a> {
+    inner: &'a mut ExpectationStoreInner,
+    name: TrackedMethodKey
 }
 
-impl<'a, K> TrackedMethod<'a, K> where
-    K: 'a + Eq + Hash + Clone
-{
-    fn new(inner: &'a mut ExpectationStoreInner<K>, key: K, name: String) -> Self {
-        TrackedMethod{
+impl<'a> TrackedMethod<'a> {
+    fn new(inner: &'a mut ExpectationStoreInner, name: TrackedMethodKey) -> Self {
+        TrackedMethod {
             inner,
-            key,
             name
         }
     }
@@ -68,23 +62,18 @@ impl<'a, K> TrackedMethod<'a, K> where
 
     /// You expect this method to be called `calls` number of times. 
     pub fn called_times(&mut self, calls: i64) {
-        let key = self.key.clone();
-        let name = self.name.clone();
-        get_tracked_method!(self, key, name).calls_exact = Some(calls);
+        let name = self.name;
+        get_tracked_method!(self, name).calls_exact = Some(calls);
     }
 }
 
-type ExpectationStoreInner<K> = Mutex<HashMap<K, TrackedMethodData>>;
+type ExpectationStoreInner = Mutex<HashMap<TrackedMethodKey, TrackedMethodData>>;
 
-pub struct ExpectationStore<K> where
-    K: Eq + Hash + Clone
-{
-    inner: ExpectationStoreInner<K>
+pub struct ExpectationStore {
+    inner: ExpectationStoreInner
 }
 
-impl<K> ExpectationStore<K> where
-    K: Eq + Hash + Clone
-{
+impl ExpectationStore {
     /// Create a new `ExpectationStore` instance. Call this when your mock object is created,
     /// and store the `ExpectaionStore` object in it.
     pub fn new() -> Self {
@@ -95,7 +84,7 @@ impl<K> ExpectationStore<K> where
 
     /// When a tracked method is called on the mock object, call this with the method's key
     /// in order to tell the `ExpectationStore` that the method was called.
-    pub fn was_called(&self, key: K) {
+    pub fn was_called(&self, key: TrackedMethodKey) {
         if self.is_tracked(&key) {
             self.inner.lock().unwrap().get_mut(&key).unwrap().was_called();
         }
@@ -104,12 +93,12 @@ impl<K> ExpectationStore<K> where
     /// Signify that you'd like the `ExpectationStore` to track a method with the given key and name.
     ///
     /// Returns a `TrackedMethod` struct which you can use to add expectations for this particular method.
-    pub fn track_method<'a, S: Into<String>>(&'a mut self, key: K, name: S) -> TrackedMethod<'a, K> {
-        TrackedMethod::new(&mut self.inner, key, name.into())
+    pub fn track_method<'a>(&'a mut self, name: TrackedMethodKey) -> TrackedMethod<'a> {
+        TrackedMethod::new(&mut self.inner, name)
     }
 
-    fn is_tracked(&self, key: &K) -> bool {
-        self.inner.lock().unwrap().contains_key(key)
+    fn is_tracked(&self, name: TrackedMethodKey) -> bool {
+        self.inner.lock().unwrap().contains_key(name)
     }
 
     fn verify(&self) {
@@ -119,9 +108,7 @@ impl<K> ExpectationStore<K> where
     }
 }
 
-impl<K> Drop for ExpectationStore<K> where
-    K: Eq + Hash + Clone
-{
+impl Drop for ExpectationStore {
     /// All expectations will be verified when the mock object is dropped.
     fn drop(&mut self) {
         self.verify();
