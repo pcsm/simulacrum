@@ -19,15 +19,15 @@ impl CoolTraitMock {
         }
     }
 
-    pub fn expect(&mut self, name: &'static str) -> TrackedMethodGuard<&'static str> {
+    pub fn expect(&mut self, name: &'static str) -> TrackedMethod<&'static str> {
         self.expectations.track_method(name, name)
     }
 
-    pub fn expect_foo(&mut self) -> TrackedMethodGuard<&'static str> {
+    pub fn expect_foo(&mut self) -> TrackedMethod<&'static str> {
         self.expect("foo")
     }
 
-    pub fn expect_bar(&mut self) -> TrackedMethodGuard<&'static str> {
+    pub fn expect_bar(&mut self) -> TrackedMethod<&'static str> {
         self.expect("bar")
     }
 }

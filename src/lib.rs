@@ -3,14 +3,14 @@ use std::hash::Hash;
 
 use std::sync::Mutex;
 
-pub struct TrackedMethod {
+pub struct TrackedMethodData {
     calls_exact: Option<i64>,
     name: String
 }
 
-impl TrackedMethod {
+impl TrackedMethodData {
     fn new(name: String) -> Self {
-        TrackedMethod {
+        Self {
             calls_exact: None,
             name 
         }
@@ -33,19 +33,18 @@ impl TrackedMethod {
 
 macro_rules! get_tracked_method {
     ($target:ident, $key:ident, $name:ident) => {
-        $target.0.lock().unwrap().entry($key).or_insert_with(|| TrackedMethod::new($name.into()))
+        $target.0.lock().unwrap().entry($key).or_insert_with(|| TrackedMethodData::new($name.into()))
     }
 }
 
-pub struct TrackedMethodGuard<'a, K>(&'a mut ExpectationStoreInner<K>, Option<K>, Option<String>) where
+pub struct TrackedMethod<'a, K>(&'a mut ExpectationStoreInner<K>, Option<K>, Option<String>) where
     K: 'a + Eq + Hash;
 
-impl<'a, K> TrackedMethodGuard<'a, K> where
+impl<'a, K> TrackedMethod<'a, K> where
     K: 'a + Eq + Hash
 {
-
     fn new(hash: &'a mut ExpectationStoreInner<K>, key: K, name: String) -> Self {
-        TrackedMethodGuard(hash, Some(key), Some(name))
+        TrackedMethod(hash, Some(key), Some(name))
     }
 
     pub fn called_never(&mut self) {
@@ -63,7 +62,7 @@ impl<'a, K> TrackedMethodGuard<'a, K> where
     }
 }
 
-type ExpectationStoreInner<K> = Mutex<HashMap<K, TrackedMethod>>;
+type ExpectationStoreInner<K> = Mutex<HashMap<K, TrackedMethodData>>;
 
 pub struct ExpectationStore<K> where
     K: Eq + Hash
@@ -91,8 +90,8 @@ impl<K> ExpectationStore<K> where
     }
 
     /// Signify that you'd like the `ExpectationStore` to track a method with the given key and name.
-    pub fn track_method<'a, S: Into<String>>(&'a mut self, key: K, name: S) -> TrackedMethodGuard<'a, K> {
-        TrackedMethodGuard::new(&mut self.inner, key, name.into())
+    pub fn track_method<'a, S: Into<String>>(&'a mut self, key: K, name: S) -> TrackedMethod<'a, K> {
+        TrackedMethod::new(&mut self.inner, key, name.into())
     }
 
     fn is_tracked(&self, key: &K) -> bool {
