@@ -33,18 +33,27 @@ impl TrackedMethodData {
 
 macro_rules! get_tracked_method {
     ($target:ident, $key:ident, $name:ident) => {
-        $target.0.lock().unwrap().entry($key).or_insert_with(|| TrackedMethodData::new($name.into()))
+        $target.inner.lock().unwrap().entry($key).or_insert_with(|| TrackedMethodData::new($name))
     }
 }
 
-pub struct TrackedMethod<'a, K>(&'a mut ExpectationStoreInner<K>, Option<K>, Option<String>) where
-    K: 'a + Eq + Hash;
+pub struct TrackedMethod<'a, K> where
+    K: 'a + Eq + Hash + Clone
+{
+    inner: &'a mut ExpectationStoreInner<K>,
+    key: K,
+    name: String
+}
 
 impl<'a, K> TrackedMethod<'a, K> where
-    K: 'a + Eq + Hash
+    K: 'a + Eq + Hash + Clone
 {
-    fn new(hash: &'a mut ExpectationStoreInner<K>, key: K, name: String) -> Self {
-        TrackedMethod(hash, Some(key), Some(name))
+    fn new(inner: &'a mut ExpectationStoreInner<K>, key: K, name: String) -> Self {
+        TrackedMethod{
+            inner,
+            key,
+            name
+        }
     }
 
     /// You expect this method to be called zero times.
@@ -59,8 +68,8 @@ impl<'a, K> TrackedMethod<'a, K> where
 
     /// You expect this method to be called `calls` number of times. 
     pub fn called_times(&mut self, calls: i64) {
-        let key = self.1.take().unwrap();
-        let name = self.2.take().unwrap();
+        let key = self.key.clone();
+        let name = self.name.clone();
         get_tracked_method!(self, key, name).calls_exact = Some(calls);
     }
 }
@@ -68,13 +77,13 @@ impl<'a, K> TrackedMethod<'a, K> where
 type ExpectationStoreInner<K> = Mutex<HashMap<K, TrackedMethodData>>;
 
 pub struct ExpectationStore<K> where
-    K: Eq + Hash
+    K: Eq + Hash + Clone
 {
     inner: ExpectationStoreInner<K>
 }
 
 impl<K> ExpectationStore<K> where
-    K: Eq + Hash
+    K: Eq + Hash + Clone
 {
     /// Create a new `ExpectationStore` instance. Call this when your mock object is created,
     /// and store the `ExpectaionStore` object in it.
@@ -111,7 +120,7 @@ impl<K> ExpectationStore<K> where
 }
 
 impl<K> Drop for ExpectationStore<K> where
-    K: Eq + Hash
+    K: Eq + Hash + Clone
 {
     /// All expectations will be verified when the mock object is dropped.
     fn drop(&mut self) {
