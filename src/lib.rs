@@ -14,18 +14,6 @@ impl TrackedMethod {
         }
     }
 
-    pub fn called_never(&mut self) {
-        self.called_times(0);
-    }
-
-    pub fn called_once(&mut self) {
-        self.called_times(1);
-    }
-
-    pub fn called_times(&mut self, calls: i64) {
-        self.calls_exact = Some(calls);
-    }
-
     fn was_called(&mut self) {
         if let Some(calls) = self.calls_exact {
             self.calls_exact = Some(calls - 1);
@@ -38,6 +26,35 @@ impl TrackedMethod {
             Some(x) if x > 0 => panic!("{} was called {} times fewer than expected", self.name, x),
             _ => { }
         };
+    }
+}
+
+pub struct TrackedMethodGuard<'a, K>(&'a mut HashMap<K, TrackedMethod>, Option<K>, Option<String>) where
+    K: 'a + Eq + Hash;
+
+impl<'a, K> TrackedMethodGuard<'a, K> where
+    K: 'a + Eq + Hash
+{
+    fn new(hash: &'a mut HashMap<K, TrackedMethod>, key: K, name: String) -> Self {
+        TrackedMethodGuard(hash, Some(key), Some(name))
+    }
+
+    pub fn called_never(&mut self) {
+        self.called_times(0);
+    }
+
+    pub fn called_once(&mut self) {
+        self.called_times(1);
+    }
+
+    pub fn called_times(&mut self, calls: i64) {
+        let key = self.1.take().unwrap();
+        let name = self.2.take().unwrap();
+        self.get_tracked_method_mut(key, name).calls_exact = Some(calls);
+    }
+
+    fn get_tracked_method_mut<S: Into<String>>(&mut self, key: K, name: S) -> &mut TrackedMethod {
+        self.0.entry(key).or_insert_with(|| TrackedMethod::new(name.into()))
     }
 }
 
@@ -67,8 +84,8 @@ impl<K> ExpectationStore<K> where
     }
 
     /// Signify that you'd like the `ExpectationStore` to track a method with the given key and name.
-    pub fn track_method<S: Into<String>>(&mut self, key: K, name: S) -> &mut TrackedMethod {
-        self.inner.entry(key).or_insert_with(|| TrackedMethod::new(name.into()))
+    pub fn track_method<'a, S: Into<String>>(&'a mut self, key: K, name: S) -> TrackedMethodGuard<'a, K> {
+        TrackedMethodGuard::new(&mut self.inner, key, name.into())
     }
 
     fn is_tracked(&self, key: &K) -> bool {

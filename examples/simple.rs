@@ -19,15 +19,15 @@ impl CoolTraitMock {
         }
     }
 
-    pub fn expect(&mut self, name: &'static str) -> &mut TrackedMethod {
+    pub fn expect(&mut self, name: &'static str) -> TrackedMethodGuard<&'static str> {
         self.expectations.track_method(name, name)
     }
 
-    pub fn expect_foo(&mut self) -> &mut TrackedMethod {
+    pub fn expect_foo(&mut self) -> TrackedMethodGuard<&'static str> {
         self.expect("foo")
     }
 
-    pub fn expect_bar(&mut self) -> &mut TrackedMethod {
+    pub fn expect_bar(&mut self) -> TrackedMethodGuard<&'static str> {
         self.expect("bar")
     }
 }
@@ -50,6 +50,7 @@ fn main() {
 
     // Execute test code
     m.bar();
+    m.foo();
 
     // When the ExpectationStore is dropped, the expectations will be evaluated
 }
