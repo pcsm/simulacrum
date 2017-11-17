@@ -31,6 +31,12 @@ impl TrackedMethod {
     }
 }
 
+macro_rules! get_tracked_method {
+    ($target:ident, $key:ident, $name:ident) => {
+        $target.0.lock().unwrap().entry($key).or_insert_with(|| TrackedMethod::new($name.into()))
+    }
+}
+
 pub struct TrackedMethodGuard<'a, K>(&'a mut ExpectationStoreInner<K>, Option<K>, Option<String>) where
     K: 'a + Eq + Hash;
 
@@ -53,13 +59,8 @@ impl<'a, K> TrackedMethodGuard<'a, K> where
     pub fn called_times(&mut self, calls: i64) {
         let key = self.1.take().unwrap();
         let name = self.2.take().unwrap();
-        // self.get_tracked_method_mut(key, name).calls_exact = Some(calls);
-        self.0.lock().unwrap().entry(key).or_insert_with(|| TrackedMethod::new(name.into())).calls_exact = Some(calls);
+        get_tracked_method!(self, key, name).calls_exact = Some(calls);
     }
-
-    // fn get_tracked_method_mut<S: Into<String>>(&mut self, key: K, name: S) -> &mut TrackedMethod {
-    //     self.0.lock().unwrap().entry(key).or_insert_with(|| TrackedMethod::new(name.into()))
-    // }
 }
 
 type ExpectationStoreInner<K> = Mutex<HashMap<K, TrackedMethod>>;
