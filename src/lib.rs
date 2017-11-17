@@ -47,14 +47,17 @@ impl<'a, K> TrackedMethod<'a, K> where
         TrackedMethod(hash, Some(key), Some(name))
     }
 
+    /// You expect this method to be called zero times.
     pub fn called_never(&mut self) {
         self.called_times(0);
     }
 
+    /// You expect this method to be called only once.
     pub fn called_once(&mut self) {
         self.called_times(1);
     }
 
+    /// You expect this method to be called `calls` number of times. 
     pub fn called_times(&mut self, calls: i64) {
         let key = self.1.take().unwrap();
         let name = self.2.take().unwrap();
@@ -90,6 +93,8 @@ impl<K> ExpectationStore<K> where
     }
 
     /// Signify that you'd like the `ExpectationStore` to track a method with the given key and name.
+    ///
+    /// Returns a `TrackedMethod` struct which you can use to add expectations for this particular method.
     pub fn track_method<'a, S: Into<String>>(&'a mut self, key: K, name: S) -> TrackedMethod<'a, K> {
         TrackedMethod::new(&mut self.inner, key, name.into())
     }
