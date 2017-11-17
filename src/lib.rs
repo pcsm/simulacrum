@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
+use std::sync::Mutex;
+
 pub struct TrackedMethod {
     calls_exact: Option<i64>,
     name: String
@@ -29,13 +31,14 @@ impl TrackedMethod {
     }
 }
 
-pub struct TrackedMethodGuard<'a, K>(&'a mut HashMap<K, TrackedMethod>, Option<K>, Option<String>) where
+pub struct TrackedMethodGuard<'a, K>(&'a mut ExpectationStoreInner<K>, Option<K>, Option<String>) where
     K: 'a + Eq + Hash;
 
 impl<'a, K> TrackedMethodGuard<'a, K> where
     K: 'a + Eq + Hash
 {
-    fn new(hash: &'a mut HashMap<K, TrackedMethod>, key: K, name: String) -> Self {
+
+    fn new(hash: &'a mut ExpectationStoreInner<K>, key: K, name: String) -> Self {
         TrackedMethodGuard(hash, Some(key), Some(name))
     }
 
@@ -50,18 +53,21 @@ impl<'a, K> TrackedMethodGuard<'a, K> where
     pub fn called_times(&mut self, calls: i64) {
         let key = self.1.take().unwrap();
         let name = self.2.take().unwrap();
-        self.get_tracked_method_mut(key, name).calls_exact = Some(calls);
+        // self.get_tracked_method_mut(key, name).calls_exact = Some(calls);
+        self.0.lock().unwrap().entry(key).or_insert_with(|| TrackedMethod::new(name.into())).calls_exact = Some(calls);
     }
 
-    fn get_tracked_method_mut<S: Into<String>>(&mut self, key: K, name: S) -> &mut TrackedMethod {
-        self.0.entry(key).or_insert_with(|| TrackedMethod::new(name.into()))
-    }
+    // fn get_tracked_method_mut<S: Into<String>>(&mut self, key: K, name: S) -> &mut TrackedMethod {
+    //     self.0.lock().unwrap().entry(key).or_insert_with(|| TrackedMethod::new(name.into()))
+    // }
 }
+
+type ExpectationStoreInner<K> = Mutex<HashMap<K, TrackedMethod>>;
 
 pub struct ExpectationStore<K> where
     K: Eq + Hash
 {
-    inner: HashMap<K, TrackedMethod>
+    inner: ExpectationStoreInner<K>
 }
 
 impl<K> ExpectationStore<K> where
@@ -71,15 +77,15 @@ impl<K> ExpectationStore<K> where
     /// and store the `ExpectaionStore` object in it.
     pub fn new() -> Self {
         ExpectationStore {
-            inner: HashMap::new()
+            inner: Mutex::new(HashMap::new())
         }
     }
 
     /// When a tracked method is called on the mock object, call this with the method's key
     /// in order to tell the `ExpectationStore` that the method was called.
-    pub fn was_called(&mut self, key: K) {
+    pub fn was_called(&self, key: K) {
         if self.is_tracked(&key) {
-            self.inner.get_mut(&key).unwrap().was_called();
+            self.inner.lock().unwrap().get_mut(&key).unwrap().was_called();
         }
     }
 
@@ -89,11 +95,11 @@ impl<K> ExpectationStore<K> where
     }
 
     fn is_tracked(&self, key: &K) -> bool {
-        self.inner.contains_key(key)
+        self.inner.lock().unwrap().contains_key(key)
     }
 
     fn verify(&self) {
-        for (_, exp) in self.inner.iter() {
+        for (_, exp) in self.inner.lock().unwrap().iter() {
             exp.verify();
         }
     }

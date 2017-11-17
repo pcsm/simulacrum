@@ -4,7 +4,7 @@ use simulacrum::*;
 
 trait CoolTrait {
     // Unfortunately, right now simulacrum only helps to mock mutable methods
-    fn foo(&mut self);
+    fn foo(&self);
     fn bar(&mut self);
 }
 
@@ -33,7 +33,7 @@ impl CoolTraitMock {
 }
 
 impl CoolTrait for CoolTraitMock {
-    fn foo(&mut self) {
+    fn foo(&self) {
         self.expectations.was_called("foo");
     }
 
