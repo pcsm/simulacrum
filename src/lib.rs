@@ -7,29 +7,37 @@ pub struct TrackedMethod {
 }
 
 impl TrackedMethod {
-    pub fn new(name: String) -> Self {
+    fn new(name: String) -> Self {
         TrackedMethod {
             calls_exact: None,
             name 
         }
     }
 
-    pub fn called_times(&mut self, calls: i64) {
-        self.calls_exact = Some(calls)
+    pub fn called_never(&mut self) {
+        self.called_times(0);
     }
 
-    pub fn called(&mut self) {
+    pub fn called_once(&mut self) {
+        self.called_times(1);
+    }
+
+    pub fn called_times(&mut self, calls: i64) {
+        self.calls_exact = Some(calls);
+    }
+
+    fn was_called(&mut self) {
         if let Some(calls) = self.calls_exact {
-            self.calls_exact = Some(calls - 1)
+            self.calls_exact = Some(calls - 1);
         }
     }
 
-    pub fn verify(&self) {
+    fn verify(&self) {
         match self.calls_exact {
             Some(x) if x < 0 => panic!("{} was called {} times more than expected", self.name, x.abs()),
             Some(x) if x > 0 => panic!("{} was called {} times fewer than expected", self.name, x),
             _ => { }
-        }
+        };
     }
 }
 
@@ -42,73 +50,43 @@ pub struct ExpectationStore<K> where
 impl<K> ExpectationStore<K> where
     K: Eq + Hash
 {
+    /// Create a new `ExpectationStore` instance. Call this when your mock object is created,
+    /// and store the `ExpectaionStore` object in it.
     pub fn new() -> Self {
         ExpectationStore {
             inner: HashMap::new()
         }
     }
 
-    pub fn verify(&self) {
+    /// When a tracked method is called on the mock object, call this with the method's key
+    /// in order to tell the `ExpectationStore` that the method was called.
+    pub fn was_called(&mut self, key: K) {
+        if self.is_tracked(&key) {
+            self.inner.get_mut(&key).unwrap().was_called();
+        }
+    }
+
+    /// Signify that you'd like the `ExpectationStore` to track a method with the given key and name.
+    pub fn track_method<S: Into<String>>(&mut self, key: K, name: S) -> &mut TrackedMethod {
+        self.inner.entry(key).or_insert_with(|| TrackedMethod::new(name.into()))
+    }
+
+    fn is_tracked(&self, key: &K) -> bool {
+        self.inner.contains_key(key)
+    }
+
+    fn verify(&self) {
         for (_, exp) in self.inner.iter() {
             exp.verify();
         }
     }
-
-    pub fn called(&mut self, key: K) {
-        if self.is_tracked(&key) {
-            self.inner.get_mut(&key).unwrap().called();
-        }
-    }
-
-    pub fn is_tracked(&self, key: &K) -> bool {
-        self.inner.contains_key(key)
-    }
-
-    pub fn track_method<S: Into<String>>(&mut self, key: K, name: S) -> &mut TrackedMethod {
-        self.inner.entry(key).or_insert_with(|| TrackedMethod::new(name.into()))
-    }
 }
 
-// pub struct DrawBehaviorMock {
-//     expectations: ExpectationStore<&'static str>
-// }
-
-// impl DrawBehaviorMock {
-//     pub fn new() -> Self {
-//         DrawBehaviorMock {
-//             expectations: ExpectationStore::new()
-//         }
-//     }
-
-//     pub fn expect(&mut self, name: &'static str) -> &mut TrackedMethod {
-//         self.expectations.track_method(name, name)
-//     }
-
-//     pub fn expect_setup_draw(&mut self) -> &mut TrackedMethod {
-//         self.expect("setup_draw")
-//     }
-
-//     pub fn expect_cleanup_draw(&mut self) -> &mut TrackedMethod {
-//         self.expect("cleanup_draw")
-//     }
-// }
-
-// impl Drop for DrawBehaviorMock {
-//     fn drop(&mut self) {
-//         self.expectations.verify();
-//     }
-// }
-
-// impl<D> DrawBehavior<D> for DrawBehaviorMock {
-//     fn draw(&mut self, _state: &ViewState<D>) {
-//         self.expectations.called("draw");
-//     }
-
-//     fn setup_draw(&mut self, _state: &ViewState<D>) {
-//         self.expectations.called("setup_draw");
-//     }
-
-//     fn cleanup_draw(&mut self, _state: &ViewState<D>) {
-//         self.expectations.called("cleanup_draw");
-//     }
-// }
+impl<K> Drop for ExpectationStore<K> where
+    K: Eq + Hash
+{
+    /// All expectations will be verified when the mock object is dropped.
+    fn drop(&mut self) {
+        self.verify();
+    }
+}
