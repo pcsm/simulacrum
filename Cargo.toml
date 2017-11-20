@@ -1,6 +1,4 @@
-[package]
-name = "simulacrum"
-version = "0.1.0"
-authors = ["Jason Grlicky <jason@paracosm.us>"]
-
-[dependencies]
+[workspace]
+members = [
+	"simulacrum", "simulacrum_macros"
+]
