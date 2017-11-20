@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
+use std::marker::PhantomData;
+
+pub mod expectation;
 
 pub struct TrackedMethodData {
     calls_exact: Option<i64>,
@@ -35,14 +38,20 @@ macro_rules! get_tracked_method {
     }
 }
 
+struct MethodReturn<T> {
+    reaction: Box<FnMut() -> T>
+}
+
 pub type TrackedMethodKey = &'static str;
 
-pub struct TrackedMethod<'a> {
+// I is a tuple of args for this method excluding self.
+// O is the return value or () if there is no return value.
+pub struct TrackedMethod<'a, I, O> {
     inner: &'a mut ExpectationStoreInner,
     name: TrackedMethodKey
 }
 
-impl<'a> TrackedMethod<'a> {
+impl<'a, I, O> TrackedMethod<'a, I, O> {
     fn new(inner: &'a mut ExpectationStoreInner, name: TrackedMethodKey) -> Self {
         TrackedMethod {
             inner,
@@ -64,6 +73,18 @@ impl<'a> TrackedMethod<'a> {
     pub fn called_times(&mut self, calls: i64) {
         let name = self.name;
         get_tracked_method!(self, name).calls_exact = Some(calls);
+    }
+
+    pub fn with(&mut self, args: I) {
+        // TODO
+        let name = self.name;
+        get_tracked_method!(self, name).calls_exact = Some(calls);
+    }
+
+    pub fn returning<F>(&mut self, closure: F) where
+        F: FnMut() -> O
+    {
+        // TODO
     }
 }
 

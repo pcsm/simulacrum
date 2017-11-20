@@ -40,7 +40,7 @@ impl CoolTrait for CoolTraitMock {
     fn foo(&self) {
         self.expectations
             .was_called("foo")
-            .downcast::<TrackedMethod<(), ()>>()
+            .downcast::<TrackedMethodData<(), ()>>()
             .unwrap()
             .with(())
             .returning()
@@ -49,7 +49,7 @@ impl CoolTrait for CoolTraitMock {
     fn bar(&mut self) {
         self.expectations
             .was_called("bar")
-            .downcast::<TrackedMethod<(), ()>>()
+            .downcast::<TrackedMethodData<(), ()>>()
             .unwrap()
             .with(())
             .returning()
@@ -58,7 +58,7 @@ impl CoolTrait for CoolTraitMock {
     fn goop(&mut self, flag: bool) -> u32 {
         self.expectations
             .was_called("goop")
-            .downcast::<TrackedMethod<(bool), u32>>()
+            .downcast::<TrackedMethodData<(bool), u32>>()
             .unwrap()
             .with((flag))
             .returning()
