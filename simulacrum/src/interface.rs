@@ -13,6 +13,7 @@ struct MethodSig<I, O> {
 /// What you get from calling `.expect_METHOD_NAME()` on a Mock.
 ///
 /// From here, use this struct's methods to set the number of calls expected.
+#[must_use]
 pub struct Method<'a, I, O> {
     inner: &'a mut ExpectationStoreInner,
     sig: MethodSig<I, O>,
