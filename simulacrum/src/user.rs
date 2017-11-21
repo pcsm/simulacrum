@@ -77,14 +77,16 @@ impl<'a, I, O> TrackedMethod<'a, I, O> {
     pub fn with<F>(self, param_verifier: F) -> Self where
         F: 'static + FnMut(I) -> bool
     {
-        // TODO: Update expectation in the store
+        let c_exp = CallExpectation::Args(Box::new(param_verifier));
+        self.method.store.get_mut(self.id).add_to_call(c_exp);
         self
     }
 
     pub fn returning<F>(self, result_behavior: F) -> Self where
         F: 'static + FnMut(I) -> O
     {
-        // TODO: Update expectation in the store
+        let b = Box::new(result_behavior);
+        self.method.store.get_mut(self.id).set_call_return(b);
         self
     }
 }

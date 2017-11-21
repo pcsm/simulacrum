@@ -1,3 +1,4 @@
+use std::any::Any;
 use std::fmt::Display;
 
 use super::{ExpectationId, MethodName};
@@ -14,8 +15,9 @@ pub enum ExpectationError {
 pub enum Expectation {
     /// Expectations that must all be met
     Group(Vec<ExpectationId>),
-    /// A method must be called
-    Call(MethodName, Vec<CallExpectation>),
+    /// A method must be called. The `Option<Box<Any>>` is a closure to produce return
+    /// values, if necessary.
+    Call(MethodName, Vec<CallExpectation>, Option<Box<Any>>),
     /// Expectations evaluated in this specific order
     Sequence(ExpectationId, ExpectationId),
 }
@@ -26,7 +28,7 @@ impl Expectation {
     }
 
     pub fn new_call(name: MethodName) -> Self {
-        Expectation::Call(name, Vec::new())
+        Expectation::Call(name, Vec::new(), None)
     }
 
     pub fn validate(&mut self) -> ExpectationResult {
@@ -44,17 +46,27 @@ impl Expectation {
 
     pub(crate) fn add_to_call(&mut self, c_exp: CallExpectation) {
         match self {
-            &mut Expectation::Call(_, ref mut vec) => {
+            &mut Expectation::Call(_, ref mut vec, _) => {
                 vec.push(c_exp);
             },
             _ => panic!(".add_to_call() called on non-Call Expectation")
         }
     }
+
+    pub(crate) fn set_call_return(&mut self, return_behavior: Box<Any>) {
+        match self {
+            &mut Expectation::Call(_, _, ref mut ret_option) => {
+                *ret_option = Some(return_behavior)
+            },
+            _ => panic!(".set_call_return() called on non-Call Expectation")
+        }
+    }
 }
 
 pub enum CallExpectation {
-    /// A method must be called with arguments that meet certain requirements
-    Args,
+    /// A method must be called with arguments that meet certain requirements.
+    /// The `Any` in the `Box` is a closure that can be downcasted later and called.
+    Args(Box<Any>),
     /// A method must be called a certain number of times
     Times(i64),
 }
@@ -85,10 +97,6 @@ impl Expectation for All {
 use std::collections::vec_deque::VecDeque;
 
 pub type TrackedMethodKey = &'static str;
-
-trait CallArgsT {
-    fn validate(&mut self) -> ExpectationResult;
-}
 
 pub enum ExpectationError {
     CalledTooFewTimes(TrackedMethodKey, i64),

@@ -1,5 +1,6 @@
 use handlebox::HandleBox;
 
+use std::any::Any;
 use std::marker::PhantomData;
 use std::sync::Mutex;
 
@@ -54,8 +55,12 @@ impl<'a> ExpectationEditor<'a> {
         self.store.mutex.lock().unwrap().get_mut(&self.id).unwrap().add_to_group(id);
     }
 
-    fn add_to_call(&self, c_exp: CallExpectation) {
+    pub(crate) fn add_to_call(&self, c_exp: CallExpectation) {
         self.store.mutex.lock().unwrap().get_mut(&self.id).unwrap().add_to_call(c_exp);
+    }
+
+    pub(crate) fn set_call_return(&mut self, return_behavior: Box<Any>) {
+        self.store.mutex.lock().unwrap().get_mut(&self.id).unwrap().set_call_return(return_behavior);
     }
 
     fn validate(&self) -> ExpectationResult {
