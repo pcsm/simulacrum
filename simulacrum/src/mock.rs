@@ -18,6 +18,8 @@ pub trait ExpectationMatcherT { }
 
 // I is a tuple of args for this method excluding self.
 // O is the return value or () if there is no return value.
+/// This is what is returned when calling `ExpectationsStore.was_called("METHOD_NAME")`.
+/// Use its methods to flesh out the methods in your Mock.
 pub struct ExpectationMatcher<'a, I, O> {
     store: &'a ExpectationStore,
     expectations: Vec<ExpectationId>,
@@ -25,11 +27,13 @@ pub struct ExpectationMatcher<'a, I, O> {
 }
 
 impl<'a, I, O> ExpectationMatcher<'a, I, O> {
+    /// Validate params with param verifier closure the Mock user provided with `TrackedMethod.with()`.
     pub fn with(params: I) -> ExpectationResult {
         // TODO: Validate params with param verifier fn
         unimplemented!()
     }
 
+    /// Return the result of the closure the Mock user provided with `TrackedMethod.returning()`.
     pub fn returning() -> O {
         // TODO: Call returning behavior and return the result
         unimplemented!()
