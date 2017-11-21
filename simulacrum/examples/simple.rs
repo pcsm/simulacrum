@@ -33,7 +33,7 @@ impl CoolTraitMock {
     }
 
     pub fn expect_goop(&mut self) -> Method<(bool), u32> {
-        self.e.expect::<(bool), u32>("bar")
+        self.e.expect::<(bool), u32>("goop")
     }
 }
 

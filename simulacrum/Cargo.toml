@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Jason Grlicky <jason@paracosm.us>"]
 
 [dependencies]
+handlebox = { git = "ssh://bitbucket.org/paracosm/handlebox.git"}

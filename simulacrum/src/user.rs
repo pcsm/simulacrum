@@ -49,7 +49,7 @@ impl<'a, I, O> Method<'a, I, O> {
     /// You expect this method to be called `calls` number of times. 
     pub fn called_times(self, calls: i64) -> TrackedMethod<'a, I, O> {
 
-        // TODO: Actually tell inner to put an expectation in for us
+        // TODO: Actually tell the store to put an expectation in for us
         let id = 0;
 
         // TODO: Tell it to count the number of call times

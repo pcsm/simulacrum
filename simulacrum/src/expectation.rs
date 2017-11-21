@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use super::MethodName;
+use super::{ExpectationId, MethodName};
 
 pub type ExpectationResult = Result<(), ExpectationError>;
 
@@ -11,9 +11,71 @@ pub enum ExpectationError {
     MismatchedArgs(MethodName),
 }
 
+pub enum Expectation {
+    /// Expectations that must all be met
+    All(Vec<ExpectationId>),
+    /// A method must be called
+    Call(Vec<CallExpectation>),
+    /// Expectations evaluated in this specific order
+    Sequence(ExpectationId, ExpectationId),
+}
+
+impl Expectation {
+    pub fn new_all() -> Self {
+        Expectation::All(Vec::new())
+    }
+
+    pub fn validate(&mut self) -> ExpectationResult {
+        unimplemented!()
+    }
+
+    pub(crate) fn add_to_all(&mut self, id: ExpectationId) {
+        match self {
+            &mut Expectation::All(ref mut vec) => {
+                vec.push(id);
+            },
+            _ => panic!(".add_to_all() called on non-All Expectation")
+        }
+    }
+
+    pub(crate) fn add_to_call(&mut self, c_exp: CallExpectation) {
+        match self {
+            &mut Expectation::Call(ref mut vec) => {
+                vec.push(c_exp);
+            },
+            _ => panic!(".add_to_call() called on non-Call Expectation")
+        }
+    }
+}
+
+pub enum CallExpectation {
+    /// A method must be called with arguments that meet certain requirements
+    CallArgs,
+    /// A method must be called a certain number of times
+    CallTimes(i64),
+}
+
+/*
+
 pub trait Expectation {
     fn validate(&mut self) -> ExpectationResult;
 }
+
+/// Expectation where all of the referred-to expectations must be valid for it to be valid.
+pub struct All(Vec<ExpectationId>);
+
+impl All {
+    pub fn new() -> Self {
+        All(Vec::new())
+    }
+}
+
+impl Expectation for All {
+    fn validate(&mut self) -> ExpectationResult {
+        unimplemented!()
+    }
+}
+*/
 
 /*
 use std::collections::vec_deque::VecDeque;

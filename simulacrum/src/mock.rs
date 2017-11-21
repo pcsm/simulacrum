@@ -63,18 +63,20 @@ impl Expectations {
         I: 'static,
         O: 'static
     {
-        self.create_expectation_matcher(name)
-            .with(params)
-            .returning()
+        // self.create_expectation_matcher(name)
+        //     .with(params)
+        //     .returning()
+        unimplemented!()
     }
 
     fn create_expectation_matcher<I, O>(&self, name: MethodName) -> ExpectationMatcher<I, O> where
         I: 'static,
         O: 'static
     {
-        self.store.lock().unwrap().get_mut(&name)
-            .downcast::<ExpectationMatcher<I, O>>()
-            .unwrap()
+        // self.store..get_mut(&name)
+        //     .downcast::<ExpectationMatcher<I, O>>()
+        //     .unwrap()
+        unimplemented!()
     }
 
     /*
