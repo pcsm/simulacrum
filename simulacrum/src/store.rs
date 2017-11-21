@@ -41,11 +41,18 @@ impl ExpectationsStore {
             name,
             output: PhantomData
         };
-        ExpectationMatcher {
+        let mut matcher = ExpectationMatcher {
             ids: Vec::new(),
             sig,
             store: &self
-        }
+        };
+
+        // Gather up ids for expectations that match this one
+        // self.get_mut(self.top_group).find_matches()
+        // for (id, exp) in self.mutex.lock().unwrap().internal_map().iter() {
+
+        // }
+        matcher
     }
 
     // Add a new Expectation under the top-level `Group` and return its id.
