@@ -1,5 +1,5 @@
 pub mod expectation;
-pub mod interface;
+pub mod user;
 pub mod mock;
 mod store;
 
@@ -8,7 +8,7 @@ pub type MethodName = &'static str;
 pub type ExpectationId = usize;
 
 pub use self::mock::Expectations;
-pub use self::interface::{Method};
+pub use self::user::Method;
 
 /*
 impl TrackedMethodData {

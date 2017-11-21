@@ -5,9 +5,9 @@ use std::marker::PhantomData;
 use std::any::Any;
 
 use super::{ExpectationId, MethodName};
-use super::interface::{Method, MethodSig};
 use super::expectation::{Expectation, ExpectationError, ExpectationResult};
-
+use super::store::ExpectationsStore;
+use super::user::{Method, MethodSig};
 
 pub struct MethodData {
     calls_exact: Option<i64>,
@@ -44,17 +44,6 @@ impl Expectations {
         }
     }
 
-    /// When a tracked method is called on the mock object, call this with the method's name
-    /// in order to tell the `Expectations` that the method was called.
-    pub fn was_called<I, O>(&self, name: MethodName, params: I) -> O where
-        I: 'static,
-        O: 'static
-    {
-        self.create_expectation_matcher(name)
-            .with(params)
-            .returning()
-    }
-
     /// Returns a `Method` struct which you can use to add expectations for the method with the given name.
     pub fn expect<I, O>(&mut self, name: MethodName) -> Method<I, O> where
         I: 'static,
@@ -66,6 +55,17 @@ impl Expectations {
     pub fn then(&mut self) {
         // TODO
         unimplemented!()
+    }
+
+    /// When a tracked method is called on the mock object, call this with the method's name
+    /// in order to tell the `Expectations` that the method was called.
+    pub fn was_called<I, O>(&self, name: MethodName, params: I) -> O where
+        I: 'static,
+        O: 'static
+    {
+        self.create_expectation_matcher(name)
+            .with(params)
+            .returning()
     }
 
     fn create_expectation_matcher<I, O>(&self, name: MethodName) -> ExpectationMatcher<I, O> where

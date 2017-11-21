@@ -4,7 +4,7 @@ use std::any::Any;
 use std::marker::PhantomData;
 
 use super::{ExpectationId, MethodName};
-use super::mock::ExpectationsStore;
+use super::store::ExpectationsStore;
 
 // I is a tuple of args for this method excluding self.
 // O is the return value or () if there is no return value.
