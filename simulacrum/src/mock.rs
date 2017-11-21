@@ -7,7 +7,7 @@ use std::sync::Mutex;
 use std::any::Any;
 
 use super::{ExpectationId, MethodName};
-use super::interface::MethodSig;
+use super::interface::{Method, MethodSig};
 use super::expectation::{Expectation, ExpectationError, ExpectationResult};
 
 
@@ -67,13 +67,19 @@ impl ExpectationStore {
     }
 
 
-    /// Signify that you'd like the `ExpectationStore` to track a method with the given key and name.
-    ///
-    /// Returns a `TrackedMethod` struct which you can use to add expectations for this particular method.
-    pub fn track_method(&self, name: MethodName) -> Box<Any> {
+    /// Returns a `Method` struct which you can use to add expectations for the method with the given name.
+    pub fn expect<I, O>(&self, name: MethodName) -> Method<I, O> where
+        I: 'static,
+        O: 'static
+    {
+        *self.track_method(name).downcast::<Method<I, O>>().unwrap()
+    }
+
+    fn track_method(&self, name: MethodName) -> Box<Any> {
         // TrackedMethod::new(&mut self.inner, name)
         unimplemented!()
     }
+
 
     /*
     fn is_tracked(&self, name: MethodName) -> bool {

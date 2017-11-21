@@ -1,7 +1,5 @@
 extern crate simulacrum;
 
-use std::any::Any;
-
 use simulacrum::*;
 
 trait CoolTrait {
@@ -27,20 +25,16 @@ impl CoolTraitMock {
         // self
     }
 
-    pub fn expect(&mut self, name: &'static str) -> Box<Any> {
-        self.expectations.track_method(name)
-    }
-
     pub fn expect_foo(&mut self) -> Method<(), ()> {
-        *self.expect("foo").downcast::<Method<(), ()>>().unwrap()
+        self.expectations.expect::<(), ()>("foo")
     }
 
     pub fn expect_bar(&mut self) -> Method<(), ()> {
-        *self.expect("bar").downcast::<Method<(), ()>>().unwrap()
+        self.expectations.expect::<(), ()>("bar")
     }
 
     pub fn expect_goop(&mut self) -> Method<(bool), u32> {
-        *self.expect("goop").downcast::<Method<(bool), u32>>().unwrap()
+        self.expectations.expect::<(bool), u32>("bar")
     }
 }
 
