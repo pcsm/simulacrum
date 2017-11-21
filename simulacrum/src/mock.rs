@@ -1,4 +1,5 @@
-//! Mock object internals. Use these to construct your own Mocks manually if you'd like!
+//! Mock object internals. Used by the macros to create Mocks for you, or you can
+//! use this API to construct your own Mocks manually if you'd like!
 
 use std::collections::HashMap;
 use std::marker::PhantomData;
@@ -28,13 +29,13 @@ pub struct ExpectationMatcher<'a, I, O> {
 
 impl<'a, I, O> ExpectationMatcher<'a, I, O> {
     /// Validate params with param verifier closure the Mock user provided with `TrackedMethod.with()`.
-    pub fn with(params: I) -> ExpectationResult {
+    pub fn with(self, params: I) -> Self {
         // TODO: Validate params with param verifier fn
         unimplemented!()
     }
 
     /// Return the result of the closure the Mock user provided with `TrackedMethod.returning()`.
-    pub fn returning() -> O {
+    pub fn returning(self) -> O {
         // TODO: Call returning behavior and return the result
         unimplemented!()
     }
