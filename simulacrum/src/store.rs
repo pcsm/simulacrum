@@ -67,3 +67,12 @@ impl<'a> ExpectationEditor<'a> {
         self.store.mutex.lock().unwrap().get_mut(&self.id).unwrap().validate()
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+
+//     #[test]
+//     fn it_works() {
+//     }
+// }

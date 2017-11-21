@@ -22,12 +22,17 @@ struct ExpectationMatcher<'a, I, O> {
     sig: MethodSig<I, O>
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl<'a, I, O> ExpectationMatcher<'a, I, O> {
+    /// Validate params with param verifier closure the Mock user provided with `TrackedMethod.with()`.
+    pub fn with(self, params: I) -> Self {
+        // TODO: Validate params with param verifier fn
+        unimplemented!()
+    }
 
-    #[test]
-    fn it_works() {
+    /// Return the result of the closure the Mock user provided with `TrackedMethod.returning()`.
+    pub fn returning(self) -> O {
+        // TODO: Call returning behavior and return the result
+        unimplemented!()
     }
 }
 
@@ -63,10 +68,9 @@ impl Expectations {
         I: 'static,
         O: 'static
     {
-        // self.create_expectation_matcher(name)
-        //     .with(params)
-        //     .returning()
-        unimplemented!()
+        self.create_expectation_matcher(name)
+            .with(params)
+            .returning()
     }
 
     fn create_expectation_matcher<I, O>(&self, name: MethodName) -> ExpectationMatcher<I, O> where
@@ -99,3 +103,12 @@ impl Drop for Expectations {
         self.verify();
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+
+//     #[test]
+//     fn it_works() {
+//     }
+// }
