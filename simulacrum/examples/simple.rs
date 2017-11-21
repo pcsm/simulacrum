@@ -1,5 +1,7 @@
 extern crate simulacrum;
 
+use std::any::Any;
+
 use simulacrum::*;
 
 trait CoolTrait {
@@ -19,20 +21,26 @@ impl CoolTraitMock {
         }
     }
 
-    pub fn expect(&mut self, name: &'static str) -> Box<MethodT> {
+    pub fn then(&mut self) -> &mut Self {
+        unimplemented!()
+        // TODO: call then on expectations
+        // self
+    }
+
+    pub fn expect(&mut self, name: &'static str) -> Box<Any> {
         self.expectations.track_method(name)
     }
 
-    pub fn expect_foo(&mut self) -> Method<(), ()> {
-        self.expect("foo").downcast::<Method<(), ()>>().unwrap()
+    pub fn expect_foo(&mut self) -> &Method<(), ()> {
+        self.expect("foo").downcast::<Method<(), ()>>().unwrap().as_ref()
     }
 
-    pub fn expect_bar(&mut self) -> Method<(), ()> {
-        self.expect("bar").downcast::<Method<(), ()>>().unwrap()
+    pub fn expect_bar(&mut self) -> &Method<(), ()> {
+        self.expect("bar").downcast::<Method<(), ()>>().unwrap().as_ref()
     }
 
-    pub fn expect_goop(&mut self) -> Method<(bool), u32> {
-        self.expect("goop").downcast::<Method<(bool), u32>>().unwrap()
+    pub fn expect_goop(&mut self) -> &Method<(bool), u32> {
+        self.expect("goop").downcast::<Method<(bool), u32>>().unwrap().as_ref()
     }
 }
 

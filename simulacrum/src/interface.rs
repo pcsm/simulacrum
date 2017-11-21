@@ -1,5 +1,6 @@
 //! This is the API that you'll call in your tests when using your Mock objects.
 
+use std::any::Any;
 use std::marker::PhantomData;
 
 use super::{ExpectationId, MethodName};

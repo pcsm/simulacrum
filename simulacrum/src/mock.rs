@@ -4,6 +4,7 @@
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::sync::Mutex;
+use std::any::Any;
 
 use super::{ExpectationId, MethodName};
 use super::interface::MethodSig;
@@ -14,8 +15,6 @@ pub struct MethodData {
     calls_exact: Option<i64>,
     name: MethodName
 }
-
-pub trait ExpectationMatcherT { }
 
 // I is a tuple of args for this method excluding self.
 // O is the return value or () if there is no return value.
@@ -58,7 +57,7 @@ impl ExpectationStore {
 
     /// When a tracked method is called on the mock object, call this with the method's key
     /// in order to tell the `ExpectationStore` that the method was called.
-    pub fn was_called(&self, key: MethodName) -> Box<ExpectationMatcherT> {
+    pub fn was_called(&self, key: MethodName) -> Box<Any> {
         // TODO
         unimplemented!()
 
@@ -67,15 +66,16 @@ impl ExpectationStore {
         // }
     }
 
-    /*
 
     /// Signify that you'd like the `ExpectationStore` to track a method with the given key and name.
     ///
     /// Returns a `TrackedMethod` struct which you can use to add expectations for this particular method.
-    pub fn track_method<'a>(&'a mut self, name: MethodName) -> TrackedMethod<'a> {
-        TrackedMethod::new(&mut self.inner, name)
+    pub fn track_method(&self, name: MethodName) -> Box<Any> {
+        // TrackedMethod::new(&mut self.inner, name)
+        unimplemented!()
     }
 
+    /*
     fn is_tracked(&self, name: MethodName) -> bool {
         self.inner.lock().unwrap().contains_key(name)
     }
