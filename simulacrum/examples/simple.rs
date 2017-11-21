@@ -19,21 +19,20 @@ impl CoolTraitMock {
         }
     }
 
-    pub fn then(&mut self) -> &mut Self {
-        unimplemented!()
-        // TODO: call .then() on expectations
-        // self
+    pub fn then(&self) -> &Self {
+        self.expectations.then();
+        self
     }
 
-    pub fn expect_foo(&mut self) -> Method<(), ()> {
+    pub fn expect_foo(&self) -> Method<(), ()> {
         self.expectations.expect::<(), ()>("foo")
     }
 
-    pub fn expect_bar(&mut self) -> Method<(), ()> {
+    pub fn expect_bar(&self) -> Method<(), ()> {
         self.expectations.expect::<(), ()>("bar")
     }
 
-    pub fn expect_goop(&mut self) -> Method<(bool), u32> {
+    pub fn expect_goop(&self) -> Method<(bool), u32> {
         self.expectations.expect::<(bool), u32>("bar")
     }
 }

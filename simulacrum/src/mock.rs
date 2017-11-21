@@ -91,6 +91,11 @@ impl ExpectationStore {
     }
 
 
+    pub fn then(&self) {
+        // TODO
+        unimplemented!()
+    }
+
     /*
     fn is_tracked(&self, name: MethodName) -> bool {
         self.inner.lock().unwrap().contains_key(name)
