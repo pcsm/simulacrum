@@ -1,12 +1,13 @@
 pub mod expectation;
 pub mod interface;
 pub mod mock;
+mod store;
 
 pub type MethodName = &'static str;
 
 pub type ExpectationId = usize;
 
-pub use self::mock::ExpectationStore;
+pub use self::mock::Expectations;
 pub use self::interface::{Method};
 
 /*
@@ -46,12 +47,12 @@ struct MethodReturn<T> {
 // I is a tuple of args for this method excluding self.
 // O is the return value or () if there is no return value.
 pub struct TrackedMethod<'a, I, O> {
-    inner: &'a mut ExpectationStoreInner,
+    inner: &'a mut ExpectationsStore,
     name: TrackedMethodKey
 }
 
 impl<'a, I, O> TrackedMethod<'a, I, O> {
-    fn new(inner: &'a mut ExpectationStoreInner, name: TrackedMethodKey) -> Self {
+    fn new(inner: &'a mut ExpectationsStore, name: TrackedMethodKey) -> Self {
         TrackedMethod {
             inner,
             name

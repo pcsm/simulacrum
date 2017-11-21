@@ -4,7 +4,7 @@ use std::any::Any;
 use std::marker::PhantomData;
 
 use super::{ExpectationId, MethodName};
-use super::mock::ExpectationStoreInner;
+use super::mock::ExpectationsStore;
 
 // I is a tuple of args for this method excluding self.
 // O is the return value or () if there is no return value.
@@ -19,12 +19,12 @@ pub(crate) struct MethodSig<I, O> {
 /// From here, use this struct's methods to set the number of calls expected.
 #[must_use]
 pub struct Method<'a, I, O> {
-    inner: &'a mut ExpectationStoreInner,
+    inner: &'a mut ExpectationsStore,
     sig: MethodSig<I, O>,
 }
 
 impl<'a, I, O> Method<'a, I, O> {
-    pub(crate) fn new(inner: &'a mut ExpectationStoreInner, name: MethodName) -> Self {
+    pub(crate) fn new(inner: &'a mut ExpectationsStore, name: MethodName) -> Self {
         let sig = MethodSig {
             input: PhantomData,
             name,

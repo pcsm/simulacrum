@@ -9,45 +9,45 @@ trait CoolTrait {
 }
 
 pub struct CoolTraitMock {
-    expectations: ExpectationStore
+    e: Expectations
 }
 
 impl CoolTraitMock {
     pub fn new() -> Self {
         Self {
-            expectations: ExpectationStore::new()
+            e: Expectations::new()
         }
     }
 
     pub fn then(&mut self) -> &mut Self {
-        self.expectations.then();
+        self.e.then();
         self
     }
 
     pub fn expect_foo(&mut self) -> Method<(), ()> {
-        self.expectations.expect::<(), ()>("foo")
+        self.e.expect::<(), ()>("foo")
     }
 
     pub fn expect_bar(&mut self) -> Method<(), ()> {
-        self.expectations.expect::<(), ()>("bar")
+        self.e.expect::<(), ()>("bar")
     }
 
     pub fn expect_goop(&mut self) -> Method<(bool), u32> {
-        self.expectations.expect::<(bool), u32>("bar")
+        self.e.expect::<(bool), u32>("bar")
     }
 }
 
 impl CoolTrait for CoolTraitMock {
     fn foo(&self) {
-        self.expectations.was_called::<(), ()>("foo", ())
+        self.e.was_called::<(), ()>("foo", ())
     }
 
     fn bar(&mut self) {
-        self.expectations.was_called::<(), ()>("bar", ())
+        self.e.was_called::<(), ()>("bar", ())
     }
 
     fn goop(&mut self, flag: bool) -> u32 {
-        self.expectations.was_called::<(bool), u32>("goop", (flag))
+        self.e.was_called::<(bool), u32>("goop", (flag))
     }
 }
 
@@ -62,5 +62,5 @@ fn main() {
     m.foo();
     assert_eq!(m.goop(true), 5);
 
-    // When the ExpectationStore is dropped, the expectations will be evaluated
+    // When the Expectations is dropped, the expectations will be evaluated
 }
