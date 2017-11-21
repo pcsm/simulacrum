@@ -1,0 +1,73 @@
+use std::marker::PhantomData;
+
+use super::{ExpectationStoreInner, ExpectationId, MethodName};
+
+// I is a tuple of args for this method excluding self.
+// O is the return value or () if there is no return value.
+struct MethodSig<I, O> {
+    input: PhantomData<I>,
+    name: MethodName,
+    output: PhantomData<O>
+}
+
+/// What you get from calling `.expect_METHOD_NAME()` on a Mock.
+///
+/// From here, use this struct's methods to set the number of calls expected.
+pub struct UntrackedMethod<'a, I, O> {
+    inner: &'a mut ExpectationStoreInner,
+    sig: MethodSig<I, O>,
+    call_times: i64
+}
+
+impl<'a, I, O> UntrackedMethod<'a, I, O> {
+    /// You expect this method to be called zero times.
+    pub fn called_never(self) -> TrackedMethod<'a, I, O> {
+        self.called_times(0)
+    }
+
+    /// You expect this method to be called only once.
+    pub fn called_once(self) -> TrackedMethod<'a, I, O> {
+        self.called_times(1)
+    }
+
+    /// You expect this method to be called `calls` number of times. 
+    pub fn called_times(self, calls: i64) -> TrackedMethod<'a, I, O> {
+        // TODO: Actually tell inner to put an expectation in for us and
+        // to count the number of call times.
+        let id = 0;
+
+        TrackedMethod {
+            id,
+            method: Self {
+                call_times: calls,
+                .. self
+            },
+        }
+    }
+}
+
+/// Once you've specified the number of times you expect a method to be called,
+/// you can specify additional behaviors and expectations through this object's
+/// methods.
+pub struct TrackedMethod<'a, I, O> {
+    id: ExpectationId,
+    method: UntrackedMethod<'a, I, O>
+}
+
+impl<'a, I, O> TrackedMethod<'a, I, O> {
+    /// Specify a function that verifies the parameters.
+    /// If it returns `false`, the expectation will be invalidated.
+    pub fn with<F>(self, param_verifier: F) -> Self where
+        F: 'static + FnMut(I) -> bool
+    {
+        // TODO: Update expectation in the store
+        self
+    }
+
+    pub fn returning<F>(self, result_behavior: F) -> Self where
+        F: 'static + FnMut(I) -> O
+    {
+        // TODO: Update expectation in the store
+        self
+    }
+}

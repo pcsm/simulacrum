@@ -3,12 +3,20 @@ use std::sync::Mutex;
 use std::marker::PhantomData;
 
 pub mod expectation;
+pub mod interface;
+
+pub type MethodName = &'static str;
+
+pub type ExpectationId = usize;
 
 pub struct TrackedMethodData {
     calls_exact: Option<i64>,
-    name: TrackedMethodKey
+    name: MethodName
 }
 
+type ExpectationStoreInner = Mutex<HashMap<MethodName, TrackedMethodData>>;
+
+/*
 impl TrackedMethodData {
     fn new(name: TrackedMethodKey) -> Self {
         Self {
@@ -41,8 +49,6 @@ macro_rules! get_tracked_method {
 struct MethodReturn<T> {
     reaction: Box<FnMut() -> T>
 }
-
-pub type TrackedMethodKey = &'static str;
 
 // I is a tuple of args for this method excluding self.
 // O is the return value or () if there is no return value.
@@ -87,8 +93,6 @@ impl<'a, I, O> TrackedMethod<'a, I, O> {
         // TODO
     }
 }
-
-type ExpectationStoreInner = Mutex<HashMap<TrackedMethodKey, TrackedMethodData>>;
 
 pub struct ExpectationStore {
     inner: ExpectationStoreInner
@@ -135,3 +139,4 @@ impl Drop for ExpectationStore {
         self.verify();
     }
 }
+*/
