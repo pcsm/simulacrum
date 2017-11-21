@@ -21,7 +21,7 @@ impl CoolTraitMock {
 
     pub fn then(&mut self) -> &mut Self {
         unimplemented!()
-        // TODO: call then on expectations
+        // TODO: call .then() on expectations
         // self
     }
 
@@ -40,30 +40,15 @@ impl CoolTraitMock {
 
 impl CoolTrait for CoolTraitMock {
     fn foo(&self) {
-        self.expectations
-            .was_called("foo")
-            .downcast::<ExpectationMatcher<(), ()>>()
-            .unwrap()
-            .with(())
-            .returning()
+        self.expectations.was_called::<(), ()>("foo", ())
     }
 
     fn bar(&mut self) {
-        self.expectations
-            .was_called("bar")
-            .downcast::<ExpectationMatcher<(), ()>>()
-            .unwrap()
-            .with(())
-            .returning()
+        self.expectations.was_called::<(), ()>("bar", ())
     }
 
     fn goop(&mut self, flag: bool) -> u32 {
-        self.expectations
-            .was_called("goop")
-            .downcast::<ExpectationMatcher<(bool), u32>>()
-            .unwrap()
-            .with((flag))
-            .returning()
+        self.expectations.was_called::<(bool), u32>("goop", (flag))
     }
 }
 

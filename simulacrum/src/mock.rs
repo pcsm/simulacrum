@@ -57,7 +57,18 @@ impl ExpectationStore {
 
     /// When a tracked method is called on the mock object, call this with the method's key
     /// in order to tell the `ExpectationStore` that the method was called.
-    pub fn was_called(&self, key: MethodName) -> Box<Any> {
+    pub fn was_called<I, O>(&self, key: MethodName, params: I) -> O where
+        I: 'static,
+        O: 'static
+    {
+        self.was_called_inner("foo")
+            .downcast::<ExpectationMatcher<I, O>>()
+            .unwrap()
+            .with(params)
+            .returning()
+    }
+
+    fn was_called_inner(&self, key: MethodName) -> Box<Any> {
         // TODO
         unimplemented!()
 
@@ -65,7 +76,6 @@ impl ExpectationStore {
         //     self.inner.lock().unwrap().get_mut(&key).unwrap().was_called();
         // }
     }
-
 
     /// Returns a `Method` struct which you can use to add expectations for the method with the given name.
     pub fn expect<I, O>(&self, name: MethodName) -> Method<I, O> where
