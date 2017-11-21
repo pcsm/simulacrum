@@ -55,23 +55,23 @@ impl Expectation {
         unimplemented!()
     }
 
-    pub(crate) fn find_matches<I, O>(&self, matcher: &mut ExpectationMatcher<I, O>) where
-        I: 'static,
-        O: 'static
-    {
-        match self {
-            &Expectation::Group(ref vec) => {
+    // pub(crate) fn find_matches<I, O>(&self, matcher: &mut ExpectationMatcher<I, O>) where
+    //     I: 'static,
+    //     O: 'static
+    // {
+    //     match self {
+    //         &Expectation::Group(ref vec) => {
 
-            },
-            &Expectation::Sequence(first, last) => {
-                unimplemented!()
-            },
-            &Expectation::Call(name, ref vec, _) => {
-                unimplemented!()
-            },
-            _ => { }
-        }
-    }
+    //         },
+    //         &Expectation::Sequence(first, last) => {
+    //             unimplemented!()
+    //         },
+    //         &Expectation::Call(name, ref vec, _) => {
+    //             unimplemented!()
+    //         },
+    //         _ => { }
+    //     }
+    // }
 
     pub(crate) fn add_to_group(&mut self, id: ExpectationId) {
         match self {
