@@ -4,6 +4,7 @@ use std::any::Any;
 use std::marker::PhantomData;
 
 use super::{ExpectationId, MethodName};
+use super::expectation::{CallExpectation, Expectation};
 use super::store::ExpectationsStore;
 
 // I is a tuple of args for this method excluding self.
@@ -19,19 +20,19 @@ pub(crate) struct MethodSig<I, O> {
 /// From here, use this struct's methods to set the number of calls expected.
 #[must_use]
 pub struct Method<'a, I, O> {
-    inner: &'a mut ExpectationsStore,
+    store: &'a mut ExpectationsStore,
     sig: MethodSig<I, O>,
 }
 
 impl<'a, I, O> Method<'a, I, O> {
-    pub(crate) fn new(inner: &'a mut ExpectationsStore, name: MethodName) -> Self {
+    pub(crate) fn new(store: &'a mut ExpectationsStore, name: MethodName) -> Self {
         let sig = MethodSig {
             input: PhantomData,
             name,
             output: PhantomData
         };
         Self {
-            inner,
+            store,
             sig
         }
     }
@@ -48,11 +49,12 @@ impl<'a, I, O> Method<'a, I, O> {
 
     /// You expect this method to be called `calls` number of times. 
     pub fn called_times(self, calls: i64) -> TrackedMethod<'a, I, O> {
+        // Create an expectation that counts a certain number of calls.
+        let mut exp = Expectation::new_call(self.sig.name);
+        exp.add_to_call(CallExpectation::Times(calls));
 
-        // TODO: Actually tell the store to put an expectation in for us
-        let id = 0;
-
-        // TODO: Tell it to count the number of call times
+        // Add the expectation to the store.
+        let id = self.store.add(exp);
 
         TrackedMethod {
             id,

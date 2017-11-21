@@ -13,34 +13,38 @@ pub enum ExpectationError {
 
 pub enum Expectation {
     /// Expectations that must all be met
-    All(Vec<ExpectationId>),
+    Group(Vec<ExpectationId>),
     /// A method must be called
-    Call(Vec<CallExpectation>),
+    Call(MethodName, Vec<CallExpectation>),
     /// Expectations evaluated in this specific order
     Sequence(ExpectationId, ExpectationId),
 }
 
 impl Expectation {
-    pub fn new_all() -> Self {
-        Expectation::All(Vec::new())
+    pub fn new_group() -> Self {
+        Expectation::Group(Vec::new())
+    }
+
+    pub fn new_call(name: MethodName) -> Self {
+        Expectation::Call(name, Vec::new())
     }
 
     pub fn validate(&mut self) -> ExpectationResult {
         unimplemented!()
     }
 
-    pub(crate) fn add_to_all(&mut self, id: ExpectationId) {
+    pub(crate) fn add_to_group(&mut self, id: ExpectationId) {
         match self {
-            &mut Expectation::All(ref mut vec) => {
+            &mut Expectation::Group(ref mut vec) => {
                 vec.push(id);
             },
-            _ => panic!(".add_to_all() called on non-All Expectation")
+            _ => panic!(".add_to_group() called on non-Group Expectation")
         }
     }
 
     pub(crate) fn add_to_call(&mut self, c_exp: CallExpectation) {
         match self {
-            &mut Expectation::Call(ref mut vec) => {
+            &mut Expectation::Call(_, ref mut vec) => {
                 vec.push(c_exp);
             },
             _ => panic!(".add_to_call() called on non-Call Expectation")
@@ -50,9 +54,9 @@ impl Expectation {
 
 pub enum CallExpectation {
     /// A method must be called with arguments that meet certain requirements
-    CallArgs,
+    Args,
     /// A method must be called a certain number of times
-    CallTimes(i64),
+    Times(i64),
 }
 
 /*
