@@ -13,13 +13,12 @@ struct MethodSig<I, O> {
 /// What you get from calling `.expect_METHOD_NAME()` on a Mock.
 ///
 /// From here, use this struct's methods to set the number of calls expected.
-pub struct UntrackedMethod<'a, I, O> {
+pub struct Method<'a, I, O> {
     inner: &'a mut ExpectationStoreInner,
     sig: MethodSig<I, O>,
-    call_times: i64
 }
 
-impl<'a, I, O> UntrackedMethod<'a, I, O> {
+impl<'a, I, O> Method<'a, I, O> {
     /// You expect this method to be called zero times.
     pub fn called_never(self) -> TrackedMethod<'a, I, O> {
         self.called_times(0)
@@ -32,16 +31,15 @@ impl<'a, I, O> UntrackedMethod<'a, I, O> {
 
     /// You expect this method to be called `calls` number of times. 
     pub fn called_times(self, calls: i64) -> TrackedMethod<'a, I, O> {
-        // TODO: Actually tell inner to put an expectation in for us and
-        // to count the number of call times.
+
+        // TODO: Actually tell inner to put an expectation in for us
         let id = 0;
+
+        // TODO: Tell it to count the number of call times
 
         TrackedMethod {
             id,
-            method: Self {
-                call_times: calls,
-                .. self
-            },
+            method: self
         }
     }
 }
@@ -51,7 +49,7 @@ impl<'a, I, O> UntrackedMethod<'a, I, O> {
 /// methods.
 pub struct TrackedMethod<'a, I, O> {
     id: ExpectationId,
-    method: UntrackedMethod<'a, I, O>
+    method: Method<'a, I, O>
 }
 
 impl<'a, I, O> TrackedMethod<'a, I, O> {
