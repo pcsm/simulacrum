@@ -4,8 +4,9 @@ use std::any::Any;
 use std::marker::PhantomData;
 use std::sync::Mutex;
 
-use super::ExpectationId;
+use super::{ExpectationId, MethodName};
 use super::expectation::{CallExpectation, Expectation, ExpectationResult};
+use super::user::MethodSig;
 
 // A HandleBox of Expectations, with one of them being a top-level `Group` that every
 // other Expectation is a member of.
@@ -22,11 +23,27 @@ impl ExpectationsStore {
             mutex: Mutex::new(hb),
             top_group
         }
-    }
+}
 
     pub fn get_mut(&self, id: ExpectationId) -> ExpectationEditor {
         ExpectationEditor {
             id,
+            store: &self
+        }
+    }
+
+    pub fn matcher_for<I, O>(&self, name: MethodName) -> ExpectationMatcher<I, O> where
+        I: 'static,
+        O: 'static
+    {
+        let sig = MethodSig {
+            input: PhantomData,
+            name,
+            output: PhantomData
+        };
+        ExpectationMatcher {
+            ids: Vec::new(),
+            sig,
             store: &self
         }
     }
@@ -65,6 +82,31 @@ impl<'a> ExpectationEditor<'a> {
 
     fn verify(&self) -> ExpectationResult {
         self.store.mutex.lock().unwrap().get_mut(&self.id).unwrap().verify()
+    }
+}
+
+// Used internally to mutably access an `ExpectationStore` when trying to apply
+// a method to a set of matched expectations.
+//
+// I is a tuple of args for this method excluding self.
+// O is the return value or () if there is no return value.
+pub(crate) struct ExpectationMatcher<'a, I, O> {
+    ids: Vec<ExpectationId>,
+    sig: MethodSig<I, O>,
+    store: &'a ExpectationsStore
+}
+
+impl<'a, I, O> ExpectationMatcher<'a, I, O> {
+    /// Validate params with param verifier closure the Mock user provided with `TrackedMethod.with()`.
+    pub fn with(self, params: I) -> Self {
+        // TODO: Validate params with param verifier fn
+        unimplemented!()
+    }
+
+    /// Return the result of the closure the Mock user provided with `TrackedMethod.returning()`.
+    pub fn returning(self) -> O {
+        // TODO: Call returning behavior and return the result
+        unimplemented!()
     }
 }
 

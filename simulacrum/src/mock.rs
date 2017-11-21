@@ -14,28 +14,6 @@ pub struct MethodData {
     name: MethodName
 }
 
-// I is a tuple of args for this method excluding self.
-// O is the return value or () if there is no return value.
-struct ExpectationMatcher<'a, I, O> {
-    store: &'a Expectations,
-    expectations: Vec<ExpectationId>,
-    sig: MethodSig<I, O>
-}
-
-impl<'a, I, O> ExpectationMatcher<'a, I, O> {
-    /// Validate params with param verifier closure the Mock user provided with `TrackedMethod.with()`.
-    pub fn with(self, params: I) -> Self {
-        // TODO: Validate params with param verifier fn
-        unimplemented!()
-    }
-
-    /// Return the result of the closure the Mock user provided with `TrackedMethod.returning()`.
-    pub fn returning(self) -> O {
-        // TODO: Call returning behavior and return the result
-        unimplemented!()
-    }
-}
-
 pub struct Expectations {
     store: ExpectationsStore
 }
@@ -68,15 +46,13 @@ impl Expectations {
         I: 'static,
         O: 'static
     {
-        unimplemented!()
-        // self.store
-        //     .matcher_for(name)
-        //     .with(params)
-        //     .returning()
+        self.store
+            .matcher_for::<I, O>(name)
+            .with(params)
+            .returning()
     }
 
     fn verify(&self) {
-        // TODO: Actual messaging here
         if let Err(e) = self.store.verify() {
             panic!("Unmet Expectations: {}", e);
         }

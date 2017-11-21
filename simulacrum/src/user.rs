@@ -10,9 +10,9 @@ use super::store::ExpectationsStore;
 // I is a tuple of args for this method excluding self.
 // O is the return value or () if there is no return value.
 pub(crate) struct MethodSig<I, O> {
-    input: PhantomData<I>,
-    name: MethodName,
-    output: PhantomData<O>
+    pub(crate) input: PhantomData<I>,
+    pub(crate) name: MethodName,
+    pub(crate) output: PhantomData<O>
 }
 
 /// What you get from calling `.expect_METHOD_NAME()` on a Mock.
