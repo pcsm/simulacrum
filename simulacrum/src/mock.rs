@@ -61,14 +61,14 @@ impl ExpectationStore {
         I: 'static,
         O: 'static
     {
-        self.was_called_inner("foo")
+        self.was_called_internal("foo")
             .downcast::<ExpectationMatcher<I, O>>()
             .unwrap()
             .with(params)
             .returning()
     }
 
-    fn was_called_inner(&self, key: MethodName) -> Box<Any> {
+    fn was_called_internal(&self, key: MethodName) -> Box<Any> {
         // TODO
         unimplemented!()
 
@@ -78,20 +78,14 @@ impl ExpectationStore {
     }
 
     /// Returns a `Method` struct which you can use to add expectations for the method with the given name.
-    pub fn expect<I, O>(&self, name: MethodName) -> Method<I, O> where
+    pub fn expect<I, O>(&mut self, name: MethodName) -> Method<I, O> where
         I: 'static,
         O: 'static
     {
-        *self.track_method(name).downcast::<Method<I, O>>().unwrap()
+        Method::new(&mut self.inner, name)
     }
 
-    fn track_method(&self, name: MethodName) -> Box<Any> {
-        // TrackedMethod::new(&mut self.inner, name)
-        unimplemented!()
-    }
-
-
-    pub fn then(&self) {
+    pub fn then(&mut self) {
         // TODO
         unimplemented!()
     }

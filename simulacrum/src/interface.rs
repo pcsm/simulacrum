@@ -24,6 +24,18 @@ pub struct Method<'a, I, O> {
 }
 
 impl<'a, I, O> Method<'a, I, O> {
+    pub(crate) fn new(inner: &'a mut ExpectationStoreInner, name: MethodName) -> Self {
+        let sig = MethodSig {
+            input: PhantomData,
+            name,
+            output: PhantomData
+        };
+        Self {
+            inner,
+            sig
+        }
+    }
+
     /// You expect this method to be called zero times.
     pub fn called_never(self) -> TrackedMethod<'a, I, O> {
         self.called_times(0)
