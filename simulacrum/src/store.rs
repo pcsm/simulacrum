@@ -38,9 +38,9 @@ impl ExpectationsStore {
         id
     }
 
-    // Validate all expectations in this store.
-    pub fn validate(&self) -> ExpectationResult {
-        self.get_mut(self.top_group).validate()
+    // Verify all expectations in this store.
+    pub fn verify(&self) -> ExpectationResult {
+        self.get_mut(self.top_group).verify()
     }
 }
 
@@ -63,8 +63,8 @@ impl<'a> ExpectationEditor<'a> {
         self.store.mutex.lock().unwrap().get_mut(&self.id).unwrap().set_call_return(return_behavior);
     }
 
-    fn validate(&self) -> ExpectationResult {
-        self.store.mutex.lock().unwrap().get_mut(&self.id).unwrap().validate()
+    fn verify(&self) -> ExpectationResult {
+        self.store.mutex.lock().unwrap().get_mut(&self.id).unwrap().verify()
     }
 }
 

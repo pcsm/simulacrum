@@ -1,5 +1,5 @@
 use std::any::Any;
-use std::fmt::Display;
+use std::fmt;
 
 use super::{ExpectationId, MethodName};
 
@@ -8,8 +8,28 @@ pub type ExpectationResult = Result<(), ExpectationError>;
 pub enum ExpectationError {
     CalledTooFewTimes(MethodName, i64),
     CalledTooManyTimes(MethodName, i64),
-    CalledOutOfOrder,
-    MismatchedArgs(MethodName),
+    CallNotExpected(MethodName),
+    MismatchedParams(MethodName),
+}
+
+impl fmt::Display for ExpectationError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            &ExpectationError::CalledTooFewTimes(name, times) => {
+                write!(f, "{} was called {} times fewer than expected.", name, times)
+            },
+            &ExpectationError::CalledTooManyTimes(name, times) => {
+                write!(f, "{} was called {} times more than expected.", name, times)
+            },
+            &ExpectationError::CallNotExpected(name) => {
+                write!(f, "{} was called when not expected.", name)
+            },
+            &ExpectationError::MismatchedParams(name) => {
+                write!(f, "{} was called with unexpected parameters.", name)
+            },
+            _ => write!(f, "Unknown error")
+        }
+    }
 }
 
 pub enum Expectation {
@@ -31,7 +51,7 @@ impl Expectation {
         Expectation::Call(name, Vec::new(), None)
     }
 
-    pub fn validate(&mut self) -> ExpectationResult {
+    pub fn verify(&mut self) -> ExpectationResult {
         unimplemented!()
     }
 
@@ -66,82 +86,12 @@ impl Expectation {
 pub enum CallExpectation {
     /// A method must be called with arguments that meet certain requirements.
     /// The `Any` in the `Box` is a closure that can be downcasted later and called.
-    Args(Box<Any>),
+    Params(Box<Any>),
     /// A method must be called a certain number of times
     Times(i64),
 }
 
 /*
-
-pub trait Expectation {
-    fn validate(&mut self) -> ExpectationResult;
-}
-
-/// Expectation where all of the referred-to expectations must be valid for it to be valid.
-pub struct All(Vec<ExpectationId>);
-
-impl All {
-    pub fn new() -> Self {
-        All(Vec::new())
-    }
-}
-
-impl Expectation for All {
-    fn validate(&mut self) -> ExpectationResult {
-        unimplemented!()
-    }
-}
-*/
-
-/*
-use std::collections::vec_deque::VecDeque;
-
-pub type TrackedMethodKey = &'static str;
-
-pub enum ExpectationError {
-    CalledTooFewTimes(TrackedMethodKey, i64),
-    CalledTooManyTimes(TrackedMethodKey, i64),
-    CalledOutOfOrder,
-    MismatchedArgs(TrackedMethodKey),
-}
-
-// enum Expectation {
-//     /// A method must be called with arguments that meet certain requirements
-//     CallArgs(TrackedMethodKey, Box<CallArgsT>),
-//     /// A method must be called a certain number of times
-//     CallTimes(TrackedMethodKey, i64),
-//     /// Expectations evaluated in any order
-//     Group(Vec<Expectation>),
-//     /// Expectations evaluated in this specific order
-//     Sequence(VecDeque<Expectation>),
-// }
-
-struct CallTimes(TrackedMethodKey, i64);
-impl Expectation for CallTimes {
-    
-}
-
-struct Group(Vec<Box<Expectation>>);
-impl Expectation for Group {
-    fn validate(&mut self) -> ExpectationResult {
-        for exp in self.0.iter() {
-            exp.validate()?
-        }
-        Ok(())
-    }
-}
-
-struct Sequence(VecDeque<Box<Expectation>>);
-impl Expectation for Sequence {
-    fn validate(&mut self) -> ExpectationResult {
-        if self.0.is_empty() {
-            Ok(())
-        } else {
-            Err(ExpectationError::CalledOutOfOrder)
-        }
-    }
-}
-
 impl Expectation {
     pub fn validatemmm(&mut self) -> ExpectationResult {
         match self {

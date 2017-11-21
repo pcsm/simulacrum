@@ -68,32 +68,18 @@ impl Expectations {
         I: 'static,
         O: 'static
     {
-        self.create_expectation_matcher(name)
-            .with(params)
-            .returning()
-    }
-
-    fn create_expectation_matcher<I, O>(&self, name: MethodName) -> ExpectationMatcher<I, O> where
-        I: 'static,
-        O: 'static
-    {
-        // self.store..get_mut(&name)
-        //     .downcast::<ExpectationMatcher<I, O>>()
-        //     .unwrap()
         unimplemented!()
+        // self.store
+        //     .matcher_for(name)
+        //     .with(params)
+        //     .returning()
     }
-
-    /*
-    fn is_tracked(&self, name: MethodName) -> bool {
-        self.store.lock().unwrap().contains_key(name)
-    }
-    */
 
     fn verify(&self) {
-        unimplemented!()
-        // for (_, exp) in self.store.lock().unwrap().iter() {
-        //     exp.verify();
-        // }
+        // TODO: Actual messaging here
+        if let Err(e) = self.store.verify() {
+            panic!("Unmet Expectations: {}", e);
+        }
     }
 }
 

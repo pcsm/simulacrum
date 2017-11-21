@@ -77,7 +77,7 @@ impl<'a, I, O> TrackedMethod<'a, I, O> {
     pub fn with<F>(self, param_verifier: F) -> Self where
         F: 'static + FnMut(I) -> bool
     {
-        let c_exp = CallExpectation::Args(Box::new(param_verifier));
+        let c_exp = CallExpectation::Params(Box::new(param_verifier));
         self.method.store.get_mut(self.id).add_to_call(c_exp);
         self
     }
