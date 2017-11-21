@@ -20,7 +20,7 @@ pub struct MethodData {
 // O is the return value or () if there is no return value.
 /// This is what is returned when calling `ExpectationsStore.was_called("METHOD_NAME")`.
 /// Use its methods to flesh out the methods in your Mock.
-pub struct ExpectationMatcher<'a, I, O> {
+struct ExpectationMatcher<'a, I, O> {
     store: &'a ExpectationStore,
     expectations: Vec<ExpectationId>,
     sig: MethodSig<I, O>
@@ -68,15 +68,6 @@ impl ExpectationStore {
             .returning()
     }
 
-    fn was_called_internal(&self, key: MethodName) -> Box<Any> {
-        // TODO
-        unimplemented!()
-
-        // if self.is_tracked(&key) {
-        //     self.inner.lock().unwrap().get_mut(&key).unwrap().was_called();
-        // }
-    }
-
     /// Returns a `Method` struct which you can use to add expectations for the method with the given name.
     pub fn expect<I, O>(&mut self, name: MethodName) -> Method<I, O> where
         I: 'static,
@@ -88,6 +79,15 @@ impl ExpectationStore {
     pub fn then(&mut self) {
         // TODO
         unimplemented!()
+    }
+
+    fn was_called_internal(&self, key: MethodName) -> Box<Any> {
+        // TODO
+        unimplemented!()
+
+        // if self.is_tracked(&key) {
+        //     self.inner.lock().unwrap().get_mut(&key).unwrap().was_called();
+        // }
     }
 
     /*

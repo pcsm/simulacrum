@@ -6,7 +6,7 @@ pub type MethodName = &'static str;
 
 pub type ExpectationId = usize;
 
-pub use self::mock::{ExpectationMatcher, ExpectationStore};
+pub use self::mock::ExpectationStore;
 pub use self::interface::{Method};
 
 /*
