@@ -1,20 +1,10 @@
-use std::collections::HashMap;
-use std::sync::Mutex;
-use std::marker::PhantomData;
-
 pub mod expectation;
 pub mod interface;
+pub mod mock;
 
 pub type MethodName = &'static str;
 
 pub type ExpectationId = usize;
-
-pub struct TrackedMethodData {
-    calls_exact: Option<i64>,
-    name: MethodName
-}
-
-type ExpectationStoreInner = Mutex<HashMap<MethodName, TrackedMethodData>>;
 
 /*
 impl TrackedMethodData {
@@ -91,52 +81,6 @@ impl<'a, I, O> TrackedMethod<'a, I, O> {
         F: FnMut() -> O
     {
         // TODO
-    }
-}
-
-pub struct ExpectationStore {
-    inner: ExpectationStoreInner
-}
-
-impl ExpectationStore {
-    /// Create a new `ExpectationStore` instance. Call this when your mock object is created,
-    /// and store the `ExpectaionStore` object in it.
-    pub fn new() -> Self {
-        ExpectationStore {
-            inner: Mutex::new(HashMap::new())
-        }
-    }
-
-    /// When a tracked method is called on the mock object, call this with the method's key
-    /// in order to tell the `ExpectationStore` that the method was called.
-    pub fn was_called(&self, key: TrackedMethodKey) {
-        if self.is_tracked(&key) {
-            self.inner.lock().unwrap().get_mut(&key).unwrap().was_called();
-        }
-    }
-
-    /// Signify that you'd like the `ExpectationStore` to track a method with the given key and name.
-    ///
-    /// Returns a `TrackedMethod` struct which you can use to add expectations for this particular method.
-    pub fn track_method<'a>(&'a mut self, name: TrackedMethodKey) -> TrackedMethod<'a> {
-        TrackedMethod::new(&mut self.inner, name)
-    }
-
-    fn is_tracked(&self, name: TrackedMethodKey) -> bool {
-        self.inner.lock().unwrap().contains_key(name)
-    }
-
-    fn verify(&self) {
-        for (_, exp) in self.inner.lock().unwrap().iter() {
-            exp.verify();
-        }
-    }
-}
-
-impl Drop for ExpectationStore {
-    /// All expectations will be verified when the mock object is dropped.
-    fn drop(&mut self) {
-        self.verify();
     }
 }
 */

@@ -1,10 +1,13 @@
+//! This is the API that you'll call in your tests when using your Mock objects.
+
 use std::marker::PhantomData;
 
-use super::{ExpectationStoreInner, ExpectationId, MethodName};
+use super::{ExpectationId, MethodName};
+use super::mock::ExpectationStoreInner;
 
 // I is a tuple of args for this method excluding self.
 // O is the return value or () if there is no return value.
-struct MethodSig<I, O> {
+pub(crate) struct MethodSig<I, O> {
     input: PhantomData<I>,
     name: MethodName,
     output: PhantomData<O>

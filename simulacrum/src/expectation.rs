@@ -1,23 +1,34 @@
+use std::fmt::Display;
+
+use super::MethodName;
+
+pub type ExpectationResult = Result<(), ExpectationError>;
+
+pub enum ExpectationError {
+    CalledTooFewTimes(MethodName, i64),
+    CalledTooManyTimes(MethodName, i64),
+    CalledOutOfOrder,
+    MismatchedArgs(MethodName),
+}
+
+pub trait Expectation {
+    fn validate(&mut self) -> ExpectationResult;
+}
+
 /*
 use std::collections::vec_deque::VecDeque;
 
 pub type TrackedMethodKey = &'static str;
 
-pub type ExpectationResult = Result<(), ExpectationError>;
+trait CallArgsT {
+    fn validate(&mut self) -> ExpectationResult;
+}
 
 pub enum ExpectationError {
     CalledTooFewTimes(TrackedMethodKey, i64),
     CalledTooManyTimes(TrackedMethodKey, i64),
     CalledOutOfOrder,
     MismatchedArgs(TrackedMethodKey),
-}
-
-trait CallArgsT {
-    fn validate(&mut self) -> ExpectationResult;
-}
-
-trait Expectation {
-    fn validate(&mut self) -> ExpectationResult;
 }
 
 // enum Expectation {
