@@ -31,16 +31,16 @@ impl CoolTraitMock {
         self.expectations.track_method(name)
     }
 
-    pub fn expect_foo(&mut self) -> &Method<(), ()> {
-        self.expect("foo").downcast::<Method<(), ()>>().unwrap().as_ref()
+    pub fn expect_foo(&mut self) -> Method<(), ()> {
+        *self.expect("foo").downcast::<Method<(), ()>>().unwrap()
     }
 
-    pub fn expect_bar(&mut self) -> &Method<(), ()> {
-        self.expect("bar").downcast::<Method<(), ()>>().unwrap().as_ref()
+    pub fn expect_bar(&mut self) -> Method<(), ()> {
+        *self.expect("bar").downcast::<Method<(), ()>>().unwrap()
     }
 
-    pub fn expect_goop(&mut self) -> &Method<(bool), u32> {
-        self.expect("goop").downcast::<Method<(bool), u32>>().unwrap().as_ref()
+    pub fn expect_goop(&mut self) -> Method<(bool), u32> {
+        *self.expect("goop").downcast::<Method<(bool), u32>>().unwrap()
     }
 }
 
