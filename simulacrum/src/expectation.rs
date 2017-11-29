@@ -26,8 +26,7 @@ impl fmt::Display for ExpectationError {
             },
             &ExpectationError::MismatchedParams(name) => {
                 write!(f, "{} was called with unexpected parameters.", name)
-            },
-            _ => write!(f, "Unknown error")
+            }
         }
     }
 }
@@ -40,7 +39,7 @@ pub struct Expectation<I, O> {
     return_fn: Option<Box<FnMut(I) -> O>>
 }
 
-impl Expectation {
+impl<I, O> Expectation<I, O> {
     pub fn new(name: MethodName) -> Self {
         Expectation {
             name,
@@ -49,18 +48,35 @@ impl Expectation {
         }
     }
 
-    pub fn verify(&mut self) -> ExpectationResult {
-        unimplemented!()
-    }
-
-    pub(crate) fn constrain(&mut self, constraint: Constraint) {
-        self.constraints.push(constraint);
-    }
-
     pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
         F: 'static + FnMut(I) -> O
     {
         self.return_fn = Some(Box::new(return_behavior));
+    }
+}
+
+pub trait ExpectationT {
+    fn as_any(&mut self) -> &mut Any;
+
+    fn constrain(&mut self, constraint: Constraint);
+
+    fn verify(&mut self) -> ExpectationResult;
+}
+
+impl<I, O> ExpectationT for Expectation<I, O> where
+    I: 'static,
+    O: 'static
+{
+    fn as_any(&mut self) -> &mut Any {
+        self
+    }
+
+    fn constrain(&mut self, constraint: Constraint) {
+        self.constraints.push(constraint);
+    }
+
+    fn verify(&mut self) -> ExpectationResult {
+        unimplemented!()
     }
 }
 

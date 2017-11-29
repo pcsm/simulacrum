@@ -1,20 +1,18 @@
 use handlebox::HandleBox;
 
-use std::any::Any;
-use std::marker::PhantomData;
 use std::sync::Mutex;
 
 use super::{ExpectationId, MethodName};
-use super::expectation::{Constraint, Expectation, ExpectationEra, ExpectationResult};
-use super::user::MethodSig;
+use super::expectation::{Constraint, Expectation, ExpectationT, ExpectationEra, ExpectationResult};
+use super::user::{MethodSig, MethodTypes};
 
-// A thread-safe store for Expectations, including the order that they should be
+// A thread-safe store for `Box<ExpectationT>`s, including the order that they should be
 // evaluated in (Eras).
 pub(crate) struct ExpectationStore(Mutex<Inner>);
 
 struct Inner {
     eras: Vec<ExpectationEra>,
-    expectations: HandleBox<Expectation>
+    expectations: HandleBox<Box<ExpectationT>>
 }
 
 impl ExpectationStore {
@@ -26,10 +24,11 @@ impl ExpectationStore {
         }))
     }
 
-    pub fn get_mut(&self, id: ExpectationId) -> ExpectationEditor {
+    pub fn get_mut<I, O>(&self, id: ExpectationId) -> ExpectationEditor<I, O> {
         ExpectationEditor {
             id,
-            store: &self
+            store: &self,
+            types: MethodTypes::new()
         }
     }
 
@@ -38,9 +37,8 @@ impl ExpectationStore {
         O: 'static
     {
         let sig = MethodSig {
-            input: PhantomData,
             name,
-            output: PhantomData
+            types: MethodTypes::new()
         };
         let mut matcher = ExpectationMatcher {
             ids: Vec::new(),
@@ -57,12 +55,14 @@ impl ExpectationStore {
     }
 
     // Add a new Expectation under the current Era and return its id.
-    pub fn add(&self, expectation: Expectation) -> ExpectationId {
+    pub fn add<E>(&self, expectation: E) -> ExpectationId where
+        E: ExpectationT + 'static
+    {
         // Lock our inner mutex
         let mut inner = self.0.lock().unwrap();
         
         // Add a new expectation
-        let id = inner.expectations.add(expectation);
+        let id = inner.expectations.add(Box::new(expectation));
 
         // Add that new expectation to the current Era
         inner.eras.last_mut().unwrap().add(id);
@@ -87,18 +87,24 @@ impl ExpectationStore {
 }
 
 // Used internally to mutably access an `ExpectationStore`.
-pub struct ExpectationEditor<'a> {
+pub struct ExpectationEditor<'a, I, O> {
     id: ExpectationId,
-    store: &'a ExpectationStore
+    store: &'a ExpectationStore,
+    types: MethodTypes<I, O>
 }
 
-impl<'a> ExpectationEditor<'a> {
+impl<'a, I, O> ExpectationEditor<'a, I, O> where
+    I: 'static,
+    O: 'static
+{
     pub(crate) fn constrain(&self, constraint: Constraint) {
         self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().constrain(constraint);
     }
 
-    pub(crate) fn set_return(&mut self, return_behavior: Box<Any>) {
-        self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().set_return(return_behavior);
+    pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
+        F: 'static + FnMut(I) -> O
+    {
+        self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().set_return(return_behavior);
     }
 
     fn verify(&self) -> ExpectationResult {

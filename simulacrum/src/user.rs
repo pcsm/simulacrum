@@ -1,18 +1,30 @@
 //! This is the API that you'll call in your tests when using your Mock objects.
 
-use std::any::Any;
 use std::marker::PhantomData;
 
 use super::{ExpectationId, MethodName};
-use super::expectation::{Constraint, Expectation};
+use super::expectation::{Constraint, Expectation, ExpectationT};
 use super::store::ExpectationStore;
 
 // I is a tuple of args for this method excluding self.
 // O is the return value or () if there is no return value.
-pub(crate) struct MethodSig<I, O> {
+pub(crate) struct MethodTypes<I, O> {
     pub(crate) input: PhantomData<I>,
-    pub(crate) name: MethodName,
     pub(crate) output: PhantomData<O>
+}
+
+impl<I, O> MethodTypes<I, O> {
+    pub(crate) fn new() -> Self {
+        MethodTypes {
+            input: PhantomData,
+            output: PhantomData
+        }
+    }
+}
+
+pub(crate) struct MethodSig<I, O> {
+    pub(crate) name: MethodName,
+    pub(crate) types: MethodTypes<I, O>
 }
 
 /// What you get from calling `.expect_METHOD_NAME()` on a Mock.
@@ -24,12 +36,18 @@ pub struct Method<'a, I, O> {
     sig: MethodSig<I, O>,
 }
 
-impl<'a, I, O> Method<'a, I, O> {
+impl<'a, I, O> Method<'a, I, O> where
+    I: 'static,
+    O: 'static
+{
     pub(crate) fn new(store: &'a mut ExpectationStore, name: MethodName) -> Self {
-        let sig = MethodSig {
+        let types = MethodTypes {
             input: PhantomData,
-            name,
             output: PhantomData
+        };
+        let sig = MethodSig {
+            name,
+            types
         };
         Self {
             store,
@@ -50,7 +68,7 @@ impl<'a, I, O> Method<'a, I, O> {
     /// You expect this method to be called `calls` number of times. 
     pub fn called_times(self, calls: i64) -> TrackedMethod<'a, I, O> {
         // Create an expectation that counts a certain number of calls.
-        let mut exp = Expectation::new(self.sig.name);
+        let mut exp: Expectation<I, O> = Expectation::new(self.sig.name);
         exp.constrain(Constraint::Times(calls));
 
         // Add the expectation to the store.
@@ -71,22 +89,24 @@ pub struct TrackedMethod<'a, I, O> {
     method: Method<'a, I, O>
 }
 
-impl<'a, I, O> TrackedMethod<'a, I, O> {
+impl<'a, I, O> TrackedMethod<'a, I, O> where
+    I: 'static,
+    O: 'static
+{
     /// Specify a function that verifies the parameters.
     /// If it returns `false`, the expectation will be invalidated.
     pub fn with<F>(self, param_verifier: F) -> Self where
         F: 'static + FnMut(I) -> bool
     {
         let constraint = Constraint::Params(Box::new(param_verifier));
-        self.method.store.get_mut(self.id).constrain(constraint);
+        self.method.store.get_mut::<I, O>(self.id).constrain(constraint);
         self
     }
 
     pub fn returning<F>(self, result_behavior: F) -> Self where
         F: 'static + FnMut(I) -> O
     {
-        let b = Box::new(result_behavior);
-        self.method.store.get_mut(self.id).set_return(b);
+        self.method.store.get_mut::<I, O>(self.id).set_return(result_behavior);
         self
     }
 }

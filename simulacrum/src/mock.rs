@@ -1,13 +1,9 @@
 //! Mock object internals. Used by the macros to create Mocks for you, or you can
 //! use this API to construct your own Mocks manually if you'd like!
 
-use std::marker::PhantomData;
-use std::any::Any;
-
-use super::{ExpectationId, MethodName};
-use super::expectation::{Expectation, ExpectationError, ExpectationResult};
+use super::MethodName;
 use super::store::ExpectationStore;
-use super::user::{Method, MethodSig};
+use super::user::Method;
 
 pub struct MethodData {
     calls_exact: Option<i64>,
