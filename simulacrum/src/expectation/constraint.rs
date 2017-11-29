@@ -57,7 +57,7 @@ pub enum Constraint<I> {
 impl<I> Constraint<I> where
     I: 'static 
 {
-    fn verify(&mut self, params: I) -> ConstraintResult {
+    fn verify(&mut self) -> ConstraintResult {
         match self {
             &mut Constraint::AlwaysFail => Err(ConstraintError::AlwaysFail),
             &mut Constraint::Times(times) => {
@@ -67,9 +67,12 @@ impl<I> Constraint<I> where
                     _ => Ok(())
                 }
             },
-            &mut Constraint::Params(ref mut validator, current_validity) => {
-                // TODO
-                Ok(()) 
+            &mut Constraint::Params(_, is_valid) => {
+                if is_valid {
+                    Ok(())
+                } else {
+                    Err(ConstraintError::MismatchedParams)
+                }
             },
             _ => Ok(())
         }
@@ -84,7 +87,7 @@ mod tests {
     fn test_always_pass() {
         let mut c: Constraint<()> = Constraint::AlwaysPass;
 
-        let r = c.verify(());
+        let r = c.verify();
 
         assert!(r.is_ok(), "Constraint should always pass");
     }
@@ -93,7 +96,7 @@ mod tests {
     fn test_always_fail() {
         let mut c: Constraint<()> = Constraint::AlwaysFail;
 
-        let r = c.verify(());
+        let r = c.verify();
 
         assert!(r.is_err(), "Constraint should always fail");
         assert_eq!(r.unwrap_err(), ConstraintError::AlwaysFail, "Constraint should return the correct error");
@@ -103,7 +106,7 @@ mod tests {
     fn test_times_pass() {
         let mut c: Constraint<()> = Constraint::Times(0);
 
-        let r = c.verify(());
+        let r = c.verify();
 
         assert!(r.is_ok());
     }
@@ -112,7 +115,7 @@ mod tests {
     fn test_times_fail_called_fewer() {
         let mut c: Constraint<()> = Constraint::Times(1);
 
-        let r = c.verify(());
+        let r = c.verify();
 
         assert!(r.is_err(), "Constraint should fail");
         assert_eq!(r.unwrap_err(), ConstraintError::CalledTooFewTimes(1), "Constraint should return the correct error");
@@ -122,7 +125,7 @@ mod tests {
     fn test_times_fail_called_more() {
         let mut c: Constraint<()> = Constraint::Times(-1);
 
-        let r = c.verify(());
+        let r = c.verify();
 
         assert!(r.is_err(), "Constraint should fail");
         assert_eq!(r.unwrap_err(), ConstraintError::CalledTooManyTimes(1), "Constraint should return the correct error");
@@ -130,18 +133,18 @@ mod tests {
 
     #[test]
     fn test_params_pass() {
-        let mut c: Constraint<()> = Constraint::Params(Box::new(|_| true), true);
+        let mut c: Constraint<()> = Constraint::Params(Box::new(|_| false), true);
 
-        let r = c.verify(());
+        let r = c.verify();
 
         assert!(r.is_ok(), "Constraint should pass");
     }
 
     #[test]
     fn test_params_fail() {
-        let mut c: Constraint<()> = Constraint::Params(Box::new(|_| false), true);
+        let mut c: Constraint<()> = Constraint::Params(Box::new(|_| false), false);
 
-        let r = c.verify(());
+        let r = c.verify();
 
         assert!(r.is_err(), "Constraint should fail");
         assert_eq!(r.unwrap_err(), ConstraintError::MismatchedParams, "Constraint should return the correct error");
