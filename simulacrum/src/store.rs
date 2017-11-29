@@ -75,12 +75,12 @@ impl ExpectationStore {
         unimplemented!()
     }
 
-    /// (Testing) Get the number of total Expectations in the store.
+    /// (For testing) Get the number of total Expectations in the store.
     fn exp_count(&self) -> usize {
         self.0.lock().unwrap().expectations.internal_map().len()
     }
 
-    /// (Testing) Get the number of total Eras in the store.
+    /// (For testing) Get the number of total Eras in the store.
     fn era_count(&self) -> usize {
         self.0.lock().unwrap().eras.len()
     }

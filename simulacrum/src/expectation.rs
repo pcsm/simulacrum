@@ -128,7 +128,6 @@ impl Expectation {
 }
 */
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
