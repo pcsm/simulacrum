@@ -3,8 +3,7 @@ use handlebox::HandleBox;
 use std::sync::Mutex;
 
 use super::{ExpectationId, MethodName};
-use super::constraint::Constraint;
-use super::expectation::{Expectation, ExpectationT, ExpectationEra, ExpectationResult};
+use super::expectation::{Constraint, Expectation, ExpectationT, ExpectationResult};
 use super::user::{MethodSig, MethodTypes};
 
 // A thread-safe store for `Box<ExpectationT>`s, including the order that they should be
@@ -14,6 +13,23 @@ pub(crate) struct ExpectationStore(Mutex<Inner>);
 struct Inner {
     eras: Vec<ExpectationEra>,
     expectations: HandleBox<Box<ExpectationT>>
+}
+
+/// A set of expectations that should be met at the same time.
+///
+/// Calling `Expectations.then()` creates a new era.
+/// 
+/// All expectations in an era must be met before the next era is evaluated.
+pub struct ExpectationEra(Vec<ExpectationId>);
+
+impl ExpectationEra {
+    pub fn new() -> Self {
+        ExpectationEra(Vec::new())
+    }
+
+    pub fn add(&mut self, id: ExpectationId) {
+        self.0.push(id)
+    }
 }
 
 impl ExpectationStore {

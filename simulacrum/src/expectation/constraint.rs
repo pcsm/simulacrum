@@ -1,3 +1,5 @@
+use super::result::{ExpectationError, ExpectationResult};
+
 /// The `Constraint`s attatched to an `Expectation` must all pass in order for the
 /// `Excpectation` to also pass.
 pub enum Constraint<I> where
@@ -14,12 +16,32 @@ pub enum Constraint<I> where
     AlwaysFail
 }
 
+/*
+impl Expectation {
+    pub fn validatemmm(&mut self) -> ExpectationResult {
+        match self {
+            &mut Expectation::CallArgs(key, boxed_t) => {
+                boxed_t.validate()
+            },
+            &mut Expectation::CallTimes(key, times) => {
+                match times {
+                    x if x < 0 => Err(ExpectationError::CalledTooManyTimes(key, x.abs())),
+                    x if x > 0 => Err(ExpectationError::CalledTooFewTimes(key, x)),
+                    _ => Ok(())
+                }
+            },
+        }
+    }
+}
+*/
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_always_pass() {
+
     }
 
     #[test]
