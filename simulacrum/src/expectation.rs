@@ -2,6 +2,7 @@ use std::any::Any;
 use std::fmt;
 
 use super::{ExpectationId, MethodName};
+use super::constraint::Constraint;
 
 pub type ExpectationResult = Result<(), ExpectationError>;
 
@@ -80,20 +81,6 @@ impl<I, O> ExpectationT for Expectation<I, O> where
     fn verify(&mut self) -> ExpectationResult {
         unimplemented!()
     }
-}
-
-pub enum Constraint<I> where
-    I: 'static
-{
-    /// A method must be called with parameters that meet certain requirements.
-    /// The data member is a closure that can be called with the params to verify this.
-    Params(Box<FnMut(I) -> bool>),
-    /// A method must be called a certain number of times
-    Times(i64),
-    /// For testing
-    AlwaysPass,
-    /// For testing
-    AlwaysFail
 }
 
 /// A set of expectations that should be met at the same time.

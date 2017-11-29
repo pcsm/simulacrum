@@ -3,7 +3,8 @@ use handlebox::HandleBox;
 use std::sync::Mutex;
 
 use super::{ExpectationId, MethodName};
-use super::expectation::{Constraint, Expectation, ExpectationT, ExpectationEra, ExpectationResult};
+use super::constraint::Constraint;
+use super::expectation::{Expectation, ExpectationT, ExpectationEra, ExpectationResult};
 use super::user::{MethodSig, MethodTypes};
 
 // A thread-safe store for `Box<ExpectationT>`s, including the order that they should be
