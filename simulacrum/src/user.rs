@@ -98,7 +98,7 @@ impl<'a, I, O> TrackedMethod<'a, I, O> where
     pub fn with<F>(self, param_verifier: F) -> Self where
         F: 'static + FnMut(I) -> bool
     {
-        let constraint = Constraint::Params(Box::new(param_verifier));
+        let constraint = Constraint::Params(Box::new(param_verifier), true);
         self.method.store.get_mut::<I, O>(self.id).constrain(constraint);
         self
     }
