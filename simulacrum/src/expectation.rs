@@ -119,8 +119,27 @@ mod tests {
     fn test_new() {
         let e = Expectation::new("foo");
 
-        assert_eq!(e.name, "foo", "Name");
-        assert_eq!(e.constraints.len(), 0, "Number of Constraints");
-        assert!(e.return_fn.is_none(), "Return Closure");
+        assert_eq!(e.name, "foo", "Name of Constraint should be `foo`");
+        assert_eq!(e.constraints.len(), 0, "Number of Constraints should be 0");
+        assert!(e.return_fn.is_none(), "Return Closure Should Not Exist");
     }
+
+    #[test]
+    fn test_constrain() {
+        let mut e = Expectation::new("test");
+
+        e.constrain(Constraint::AlwaysPass);
+
+        assert_eq!(e.constraints.len(), 1, "Number of Constraints should be 1");
+    }
+
+    // #[test]
+    // fn test_set_return() {
+    //     let mut e = Expectation::new("yaz");
+
+    //     e.set_return(Box::new(|| 7));
+
+    //     assert!(e.return_fn.is_some(), "Return Closure Should Exist");
+    //     assert_eq!((e.return_fn.unwrap())(), 5, "Return Closure Should return 5");
+    // }
 }
