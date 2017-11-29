@@ -11,7 +11,7 @@ use super::user::MethodSig;
 // A HandleBox of Expectations, with one of them being a top-level `Group` that every
 // other Expectation is a member of.
 pub(crate) struct ExpectationsStore {
-    mutex: Mutex<HandleBox<Expectation>>,
+    exps: Mutex<HandleBox<Expectation>>,
     top_group: ExpectationId
 }
 
@@ -20,7 +20,7 @@ impl ExpectationsStore {
         let mut hb = HandleBox::new();
         let top_group = hb.add(Expectation::new_group());
         ExpectationsStore {
-            mutex: Mutex::new(hb),
+            exps: Mutex::new(hb),
             top_group
         }
 }
@@ -49,7 +49,7 @@ impl ExpectationsStore {
 
         // Gather up ids for expectations that match this one
         // self.get_mut(self.top_group).find_matches()
-        // for (id, exp) in self.mutex.lock().unwrap().internal_map().iter() {
+        // for (id, exp) in self.exps.lock().unwrap().internal_map().iter() {
 
         // }
         matcher
@@ -57,7 +57,7 @@ impl ExpectationsStore {
 
     // Add a new Expectation under the top-level `Group` and return its id.
     pub fn add(&mut self, expectation: Expectation) -> ExpectationId {
-        let id = self.mutex.lock().unwrap().add(expectation);
+        let id = self.exps.lock().unwrap().add(expectation);
         self.get_mut(self.top_group).add_to_group(id);
         id
     }
@@ -76,19 +76,19 @@ pub struct ExpectationEditor<'a> {
 
 impl<'a> ExpectationEditor<'a> {
     fn add_to_group(&self, id: ExpectationId) {
-        self.store.mutex.lock().unwrap().get_mut(&self.id).unwrap().add_to_group(id);
+        self.store.exps.lock().unwrap().get_mut(&self.id).unwrap().add_to_group(id);
     }
 
     pub(crate) fn add_to_call(&self, c_exp: CallExpectation) {
-        self.store.mutex.lock().unwrap().get_mut(&self.id).unwrap().add_to_call(c_exp);
+        self.store.exps.lock().unwrap().get_mut(&self.id).unwrap().add_to_call(c_exp);
     }
 
     pub(crate) fn set_call_return(&mut self, return_behavior: Box<Any>) {
-        self.store.mutex.lock().unwrap().get_mut(&self.id).unwrap().set_call_return(return_behavior);
+        self.store.exps.lock().unwrap().get_mut(&self.id).unwrap().set_call_return(return_behavior);
     }
 
     fn verify(&self) -> ExpectationResult {
-        self.store.mutex.lock().unwrap().get_mut(&self.id).unwrap().verify()
+        self.store.exps.lock().unwrap().get_mut(&self.id).unwrap().verify()
     }
 }
 
