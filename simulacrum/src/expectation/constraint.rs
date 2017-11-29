@@ -56,6 +56,13 @@ impl<I> Constraint<I> where
     fn verify(&self) -> ConstraintResult {
         match self {
             &Constraint::AlwaysFail => Err(ConstraintError::AlwaysFail),
+            &Constraint::Times(times) => {
+                match times {
+                    x if x < 0 => Err(ConstraintError::CalledTooManyTimes(x.abs())),
+                    x if x > 0 => Err(ConstraintError::CalledTooFewTimes(x)),
+                    _ => Ok(())
+                }
+            },
             _ => Ok(())
         }
     }
@@ -67,13 +74,6 @@ impl Expectation {
         match self {
             &mut Expectation::CallArgs(key, boxed_t) => {
                 boxed_t.validate()
-            },
-            &mut Expectation::CallTimes(key, times) => {
-                match times {
-                    x if x < 0 => Err(ExpectationError::CalledTooManyTimes(key, x.abs())),
-                    x if x > 0 => Err(ExpectationError::CalledTooFewTimes(key, x)),
-                    _ => Ok(())
-                }
             },
         }
     }
@@ -116,7 +116,10 @@ mod tests {
 
     #[test]
     fn test_times_fail_called_more() {
+        let c: Constraint<()> = Constraint::Times(-1);
 
+        assert!(c.verify().is_err(), "Constraint should fail");
+        assert_eq!(c.verify().unwrap_err(), ConstraintError::CalledTooManyTimes(1), "Constraint should return the correct error");
     }
 
     #[test]
