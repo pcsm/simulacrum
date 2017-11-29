@@ -5,7 +5,7 @@ use std::marker::PhantomData;
 use std::sync::Mutex;
 
 use super::{ExpectationId, MethodName};
-use super::expectation::{CallExpectation, Expectation, ExpectationEra, ExpectationResult};
+use super::expectation::{Constraint, Expectation, ExpectationEra, ExpectationResult};
 use super::user::MethodSig;
 
 // A thread-safe store for Expectations, including the order that they should be
@@ -93,8 +93,8 @@ pub struct ExpectationEditor<'a> {
 }
 
 impl<'a> ExpectationEditor<'a> {
-    pub(crate) fn add(&self, c_exp: CallExpectation) {
-        self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().add(c_exp);
+    pub(crate) fn constrain(&self, constraint: Constraint) {
+        self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().constrain(constraint);
     }
 
     pub(crate) fn set_return(&mut self, return_behavior: Box<Any>) {

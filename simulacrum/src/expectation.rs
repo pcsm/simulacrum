@@ -36,7 +36,7 @@ impl fmt::Display for ExpectationError {
 /// closure to produce return values, if necessary.
 pub struct Expectation {
     name: MethodName,
-    call_exps: Vec<CallExpectation>,
+    constraints: Vec<Constraint>,
     return_fn: Option<Box<Any>>
 }
 
@@ -44,7 +44,7 @@ impl Expectation {
     pub fn new(name: MethodName) -> Self {
         Expectation {
             name,
-            call_exps: Vec::new(),
+            constraints: Vec::new(),
             return_fn: None
         }
     }
@@ -53,8 +53,8 @@ impl Expectation {
         unimplemented!()
     }
 
-    pub(crate) fn add(&mut self, c_exp: CallExpectation) {
-        self.call_exps.push(c_exp);
+    pub(crate) fn constrain(&mut self, constraint: Constraint) {
+        self.constraints.push(constraint);
     }
 
     pub(crate) fn set_return(&mut self, return_behavior: Box<Any>) {
@@ -62,12 +62,16 @@ impl Expectation {
     }
 }
 
-pub enum CallExpectation {
+pub enum Constraint {
     /// A method must be called with arguments that meet certain requirements.
     /// The `Any` in the `Box` is a closure that can be downcasted later and called.
     Params(Box<Any>),
     /// A method must be called a certain number of times
     Times(i64),
+    /// For testing
+    AlwaysPass,
+    /// For testing
+    AlwaysFail
 }
 
 /// A set of expectations that should be met at the same time.
@@ -105,3 +109,18 @@ impl Expectation {
     }
 }
 */
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new() {
+        let e = Expectation::new("foo");
+
+        assert_eq!(e.name, "foo", "Name");
+        assert_eq!(e.constraints.len(), 0, "Number of Constraints");
+        assert!(e.return_fn.is_none(), "Return Closure");
+    }
+}

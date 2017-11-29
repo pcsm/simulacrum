@@ -4,7 +4,7 @@ use std::any::Any;
 use std::marker::PhantomData;
 
 use super::{ExpectationId, MethodName};
-use super::expectation::{CallExpectation, Expectation};
+use super::expectation::{Constraint, Expectation};
 use super::store::ExpectationStore;
 
 // I is a tuple of args for this method excluding self.
@@ -51,7 +51,7 @@ impl<'a, I, O> Method<'a, I, O> {
     pub fn called_times(self, calls: i64) -> TrackedMethod<'a, I, O> {
         // Create an expectation that counts a certain number of calls.
         let mut exp = Expectation::new(self.sig.name);
-        exp.add(CallExpectation::Times(calls));
+        exp.constrain(Constraint::Times(calls));
 
         // Add the expectation to the store.
         let id = self.store.add(exp);
@@ -77,8 +77,8 @@ impl<'a, I, O> TrackedMethod<'a, I, O> {
     pub fn with<F>(self, param_verifier: F) -> Self where
         F: 'static + FnMut(I) -> bool
     {
-        let c_exp = CallExpectation::Params(Box::new(param_verifier));
-        self.method.store.get_mut(self.id).add(c_exp);
+        let constraint = Constraint::Params(Box::new(param_verifier));
+        self.method.store.get_mut(self.id).constrain(constraint);
         self
     }
 
