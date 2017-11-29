@@ -62,5 +62,5 @@ fn main() {
     m.foo();
     assert_eq!(m.goop(true), 5);
 
-    // When the Expectations is dropped, the expectations will be evaluated
+    // When the Expectations struct is dropped, each of its expectations will be evaluated
 }
