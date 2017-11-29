@@ -135,7 +135,7 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let e = Expectation::new("foo");
+        let e: Expectation<(), ()> = Expectation::new("foo");
 
         assert_eq!(e.name, "foo", "Name of Constraint should be `foo`");
         assert_eq!(e.constraints.len(), 0, "Number of Constraints should be 0");
@@ -144,7 +144,7 @@ mod tests {
 
     #[test]
     fn test_constrain() {
-        let mut e = Expectation::new("test");
+        let mut e: Expectation<(), ()> = Expectation::new("test");
 
         e.constrain(Constraint::AlwaysPass);
 
@@ -153,7 +153,7 @@ mod tests {
 
     #[test]
     fn test_set_return() {
-        let mut e = Expectation::new("yaz");
+        let mut e: Expectation<(), i32> = Expectation::new("yaz");
 
         e.set_return(|_| 5);
 

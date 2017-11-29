@@ -152,8 +152,9 @@ mod store_tests {
     #[test]
     fn test_add() {
         let s = ExpectationStore::new();
+        let e: Expectation<(), ()> = Expectation::new("foo");
 
-        s.add(Expectation::new("foo"));
+        s.add(e);
 
         assert_eq!(s.era_count(), 1, "Number of Eras");
         assert_eq!(s.exp_count(), 1, "Number of Expectations");
