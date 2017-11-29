@@ -6,7 +6,7 @@ use std::any::Any;
 
 use super::{ExpectationId, MethodName};
 use super::expectation::{Expectation, ExpectationError, ExpectationResult};
-use super::store::ExpectationsStore;
+use super::store::ExpectationStore;
 use super::user::{Method, MethodSig};
 
 pub struct MethodData {
@@ -15,7 +15,7 @@ pub struct MethodData {
 }
 
 pub struct Expectations {
-    store: ExpectationsStore
+    store: ExpectationStore
 }
 
 impl Expectations {
@@ -23,7 +23,7 @@ impl Expectations {
     /// and store the `ExpectaionStore` object in it.
     pub fn new() -> Self {
         Expectations {
-            store: ExpectationsStore::new()
+            store: ExpectationStore::new()
         }
     }
 

@@ -10,17 +10,17 @@ use super::user::MethodSig;
 
 // A thread-safe store for Expectations, including the order that they should be
 // evaluated in (Eras).
-pub(crate) struct ExpectationsStore(Mutex<Inner>);
+pub(crate) struct ExpectationStore(Mutex<Inner>);
 
 struct Inner {
     eras: Vec<ExpectationEra>,
     expectations: HandleBox<Expectation>
 }
 
-impl ExpectationsStore {
+impl ExpectationStore {
     pub fn new() -> Self {
         let eras = vec![ExpectationEra::new()];
-        ExpectationsStore(Mutex::new(Inner {
+        ExpectationStore(Mutex::new(Inner {
             eras,
             expectations: HandleBox::new()
         }))
@@ -57,7 +57,7 @@ impl ExpectationsStore {
     }
 
     // Add a new Expectation under the current Era and return its id.
-    pub fn add(&mut self, expectation: Expectation) -> ExpectationId {
+    pub fn add(&self, expectation: Expectation) -> ExpectationId {
         // Lock our inner mutex
         let mut inner = self.0.lock().unwrap();
         
@@ -70,16 +70,26 @@ impl ExpectationsStore {
         id
     }
 
-    // Verify all expectations in this store.
+    /// Verify all expectations in this store.
     pub fn verify(&self) -> ExpectationResult {
         unimplemented!()
+    }
+
+    /// (Testing) Get the number of total Expectations in the store.
+    fn exp_count(&self) -> usize {
+        self.0.lock().unwrap().expectations.internal_map().len()
+    }
+
+    /// (Testing) Get the number of total Eras in the store.
+    fn era_count(&self) -> usize {
+        self.0.lock().unwrap().eras.len()
     }
 }
 
 // Used internally to mutably access an `ExpectationStore`.
 pub struct ExpectationEditor<'a> {
     id: ExpectationId,
-    store: &'a ExpectationsStore
+    store: &'a ExpectationStore
 }
 
 impl<'a> ExpectationEditor<'a> {
@@ -104,7 +114,7 @@ impl<'a> ExpectationEditor<'a> {
 pub(crate) struct ExpectationMatcher<'a, I, O> {
     ids: Vec<ExpectationId>,
     sig: MethodSig<I, O>,
-    store: &'a ExpectationsStore
+    store: &'a ExpectationStore
 }
 
 impl<'a, I, O> ExpectationMatcher<'a, I, O> {
@@ -122,10 +132,13 @@ impl<'a, I, O> ExpectationMatcher<'a, I, O> {
 }
 
 #[cfg(test)]
-mod tests {
+mod store_tests {
     use super::*;
 
     #[test]
-    fn it_works() {
+    fn test_new() {
+        let s = ExpectationStore::new();
+        assert_eq!(s.era_count(), 1, "Number of Eras");
+        assert_eq!(s.exp_count(), 0, "Number of Expectations");
     }
 }

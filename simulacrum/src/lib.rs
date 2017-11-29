@@ -49,12 +49,12 @@ struct MethodReturn<T> {
 // I is a tuple of args for this method excluding self.
 // O is the return value or () if there is no return value.
 pub struct TrackedMethod<'a, I, O> {
-    inner: &'a mut ExpectationsStore,
+    inner: &'a mut ExpectationStore,
     name: TrackedMethodKey
 }
 
 impl<'a, I, O> TrackedMethod<'a, I, O> {
-    fn new(inner: &'a mut ExpectationsStore, name: TrackedMethodKey) -> Self {
+    fn new(inner: &'a mut ExpectationStore, name: TrackedMethodKey) -> Self {
         TrackedMethod {
             inner,
             name
