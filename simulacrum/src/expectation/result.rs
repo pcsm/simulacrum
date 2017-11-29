@@ -9,6 +9,7 @@ pub enum ExpectationError {
     CalledTooManyTimes(MethodName, i64),
     CallNotExpected(MethodName),
     MismatchedParams(MethodName),
+    AlwaysFail
 }
 
 impl fmt::Display for ExpectationError {
@@ -25,7 +26,8 @@ impl fmt::Display for ExpectationError {
             },
             &ExpectationError::MismatchedParams(name) => {
                 write!(f, "{} was called with unexpected parameters.", name)
-            }
+            },
+            &ExpectationError::AlwaysFail => write!(f, "Expectation will always fail")
         }
     }
 }
