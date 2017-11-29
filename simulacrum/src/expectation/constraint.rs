@@ -1,4 +1,40 @@
-use super::result::{ExpectationError, ExpectationResult};
+use std::fmt;
+
+pub type ConstraintResult = Result<(), ConstraintError>;
+
+#[derive(Debug, PartialEq)]
+pub enum ConstraintError {
+    AlwaysFail,
+    CalledTooFewTimes(i64),
+    CalledTooManyTimes(i64),
+    CallNotExpected,
+    MismatchedParams,
+}
+
+use self::ConstraintError::*;
+
+impl fmt::Display for ConstraintError {
+
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            &AlwaysFail => {
+                write!(f, "Expectation will always fail")
+            },
+            &CalledTooFewTimes(times) => {
+                write!(f, "Called {} times fewer than expected", times)
+            },
+            &CalledTooManyTimes(times) => {
+                write!(f, "Called {} times more than expected", times)
+            },
+            &CallNotExpected => {
+                write!(f, "Called when not expected")
+            },
+            &MismatchedParams => {
+                write!(f, "Called with unexpected parameters")
+            },
+        }
+    }
+}
 
 /// The `Constraint`s attatched to an `Expectation` must all pass in order for the
 /// `Excpectation` to also pass.
@@ -17,9 +53,9 @@ pub enum Constraint<I> {
 impl<I> Constraint<I> where
     I: 'static 
 {
-    fn verify(&self) -> ExpectationResult {
+    fn verify(&self) -> ConstraintResult {
         match self {
-            &Constraint::AlwaysFail => Err(ExpectationError::AlwaysFail),
+            &Constraint::AlwaysFail => Err(ConstraintError::AlwaysFail),
             _ => Ok(())
         }
     }
@@ -60,16 +96,22 @@ mod tests {
         let c: Constraint<()> = Constraint::AlwaysFail;
 
         assert!(c.verify().is_err(), "Constraint should always fail");
+        assert_eq!(c.verify().unwrap_err(), ConstraintError::AlwaysFail, "Constraint should return the correct error");
     }
 
     #[test]
     fn test_times_pass() {
+        let c: Constraint<()> = Constraint::Times(0);
 
+        assert!(c.verify().is_ok());
     }
 
     #[test]
     fn test_times_fail_called_fewer() {
+        let c: Constraint<()> = Constraint::Times(1);
 
+        assert!(c.verify().is_err(), "Constraint should fail");
+        assert_eq!(c.verify().unwrap_err(), ConstraintError::CalledTooFewTimes(1), "Constraint should return the correct error");
     }
 
     #[test]
