@@ -79,6 +79,20 @@ impl<'a, I, O> Method<'a, I, O> where
             method: self
         }
     }
+
+    /// This method can be called any number of times, including zero.
+    pub fn called_any(self) -> TrackedMethod<'a, I, O> {
+        // Create an empty expectation
+        let mut exp: Expectation<I, O> = Expectation::new(self.sig.name);
+
+        // Add the expectation to the store.
+        let id = self.store.add(exp);
+
+        TrackedMethod {
+            id,
+            method: self
+        }
+    }
 }
 
 /// Once you've specified the number of times you expect a method to be called,
