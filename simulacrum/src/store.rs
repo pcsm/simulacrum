@@ -5,25 +5,26 @@ use std::marker::PhantomData;
 use std::sync::Mutex;
 
 use super::{ExpectationId, MethodName};
-use super::expectation::{CallExpectation, Expectation, ExpectationResult};
+use super::expectation::{CallExpectation, Expectation, ExpectationEra, ExpectationResult};
 use super::user::MethodSig;
 
-// A HandleBox of Expectations, with one of them being a top-level `Group` that every
-// other Expectation is a member of.
-pub(crate) struct ExpectationsStore {
-    exps: Mutex<HandleBox<Expectation>>,
-    top_group: ExpectationId
+// A thread-safe store for Expectations, including the order that they should be
+// evaluated in (Eras).
+pub(crate) struct ExpectationsStore(Mutex<Inner>);
+
+struct Inner {
+    eras: Vec<ExpectationEra>,
+    expectations: HandleBox<Expectation>
 }
 
 impl ExpectationsStore {
     pub fn new() -> Self {
-        let mut hb = HandleBox::new();
-        let top_group = hb.add(Expectation::new_group());
-        ExpectationsStore {
-            exps: Mutex::new(hb),
-            top_group
-        }
-}
+        let eras = vec![ExpectationEra::new()];
+        ExpectationsStore(Mutex::new(Inner {
+            eras,
+            expectations: HandleBox::new()
+        }))
+    }
 
     pub fn get_mut(&self, id: ExpectationId) -> ExpectationEditor {
         ExpectationEditor {
@@ -49,22 +50,29 @@ impl ExpectationsStore {
 
         // Gather up ids for expectations that match this one
         // self.get_mut(self.top_group).find_matches()
-        // for (id, exp) in self.exps.lock().unwrap().internal_map().iter() {
+        // for (id, exp) in self.expectations.lock().unwrap().internal_map().iter() {
 
         // }
         matcher
     }
 
-    // Add a new Expectation under the top-level `Group` and return its id.
+    // Add a new Expectation under the current Era and return its id.
     pub fn add(&mut self, expectation: Expectation) -> ExpectationId {
-        let id = self.exps.lock().unwrap().add(expectation);
-        self.get_mut(self.top_group).add_to_group(id);
+        // Lock our inner mutex
+        let mut inner = self.0.lock().unwrap();
+        
+        // Add a new expectation
+        let id = inner.expectations.add(expectation);
+
+        // Add that new expectation to the current Era
+        inner.eras.last_mut().unwrap().add(id);
+
         id
     }
 
     // Verify all expectations in this store.
     pub fn verify(&self) -> ExpectationResult {
-        self.get_mut(self.top_group).verify()
+        unimplemented!()
     }
 }
 
@@ -75,20 +83,16 @@ pub struct ExpectationEditor<'a> {
 }
 
 impl<'a> ExpectationEditor<'a> {
-    fn add_to_group(&self, id: ExpectationId) {
-        self.store.exps.lock().unwrap().get_mut(&self.id).unwrap().add_to_group(id);
+    pub(crate) fn add(&self, c_exp: CallExpectation) {
+        self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().add(c_exp);
     }
 
-    pub(crate) fn add_to_call(&self, c_exp: CallExpectation) {
-        self.store.exps.lock().unwrap().get_mut(&self.id).unwrap().add_to_call(c_exp);
-    }
-
-    pub(crate) fn set_call_return(&mut self, return_behavior: Box<Any>) {
-        self.store.exps.lock().unwrap().get_mut(&self.id).unwrap().set_call_return(return_behavior);
+    pub(crate) fn set_return(&mut self, return_behavior: Box<Any>) {
+        self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().set_return(return_behavior);
     }
 
     fn verify(&self) -> ExpectationResult {
-        self.store.exps.lock().unwrap().get_mut(&self.id).unwrap().verify()
+        self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().verify()
     }
 }
 
@@ -117,11 +121,11 @@ impl<'a, I, O> ExpectationMatcher<'a, I, O> {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-//     fn it_works() {
-//     }
-// }
+    #[test]
+    fn it_works() {
+    }
+}

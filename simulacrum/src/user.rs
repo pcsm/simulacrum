@@ -50,8 +50,8 @@ impl<'a, I, O> Method<'a, I, O> {
     /// You expect this method to be called `calls` number of times. 
     pub fn called_times(self, calls: i64) -> TrackedMethod<'a, I, O> {
         // Create an expectation that counts a certain number of calls.
-        let mut exp = Expectation::new_call(self.sig.name);
-        exp.add_to_call(CallExpectation::Times(calls));
+        let mut exp = Expectation::new(self.sig.name);
+        exp.add(CallExpectation::Times(calls));
 
         // Add the expectation to the store.
         let id = self.store.add(exp);
@@ -78,7 +78,7 @@ impl<'a, I, O> TrackedMethod<'a, I, O> {
         F: 'static + FnMut(I) -> bool
     {
         let c_exp = CallExpectation::Params(Box::new(param_verifier));
-        self.method.store.get_mut(self.id).add_to_call(c_exp);
+        self.method.store.get_mut(self.id).add(c_exp);
         self
     }
 
@@ -86,7 +86,7 @@ impl<'a, I, O> TrackedMethod<'a, I, O> {
         F: 'static + FnMut(I) -> O
     {
         let b = Box::new(result_behavior);
-        self.method.store.get_mut(self.id).set_call_return(b);
+        self.method.store.get_mut(self.id).set_return(b);
         self
     }
 }

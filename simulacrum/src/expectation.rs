@@ -32,72 +32,33 @@ impl fmt::Display for ExpectationError {
     }
 }
 
-pub enum Expectation {
-    /// Expectations that must all be met
-    Group(Vec<ExpectationId>),
-    /// A method must be called. The `Option<Box<Any>>` is a closure to produce return
-    /// values, if necessary.
-    Call(MethodName, Vec<CallExpectation>, Option<Box<Any>>),
-    /// Expectations evaluated in this specific order
-    Sequence(ExpectationId, ExpectationId),
+/// An expectation that a method must be called. Also includes an optional
+/// closure to produce return values, if necessary.
+pub struct Expectation {
+    name: MethodName,
+    call_exps: Vec<CallExpectation>,
+    return_fn: Option<Box<Any>>
 }
 
 impl Expectation {
-    pub fn new_group() -> Self {
-        Expectation::Group(Vec::new())
-    }
-
-    pub fn new_call(name: MethodName) -> Self {
-        Expectation::Call(name, Vec::new(), None)
+    pub fn new(name: MethodName) -> Self {
+        Expectation {
+            name,
+            call_exps: Vec::new(),
+            return_fn: None
+        }
     }
 
     pub fn verify(&mut self) -> ExpectationResult {
         unimplemented!()
     }
 
-    // pub(crate) fn find_matches<I, O>(&self, matcher: &mut ExpectationMatcher<I, O>) where
-    //     I: 'static,
-    //     O: 'static
-    // {
-    //     match self {
-    //         &Expectation::Group(ref vec) => {
-
-    //         },
-    //         &Expectation::Sequence(first, last) => {
-    //             unimplemented!()
-    //         },
-    //         &Expectation::Call(name, ref vec, _) => {
-    //             unimplemented!()
-    //         },
-    //         _ => { }
-    //     }
-    // }
-
-    pub(crate) fn add_to_group(&mut self, id: ExpectationId) {
-        match self {
-            &mut Expectation::Group(ref mut vec) => {
-                vec.push(id);
-            },
-            _ => panic!(".add_to_group() called on non-Group Expectation")
-        }
+    pub(crate) fn add(&mut self, c_exp: CallExpectation) {
+        self.call_exps.push(c_exp);
     }
 
-    pub(crate) fn add_to_call(&mut self, c_exp: CallExpectation) {
-        match self {
-            &mut Expectation::Call(_, ref mut vec, _) => {
-                vec.push(c_exp);
-            },
-            _ => panic!(".add_to_call() called on non-Call Expectation")
-        }
-    }
-
-    pub(crate) fn set_call_return(&mut self, return_behavior: Box<Any>) {
-        match self {
-            &mut Expectation::Call(_, _, ref mut ret_option) => {
-                *ret_option = Some(return_behavior)
-            },
-            _ => panic!(".set_call_return() called on non-Call Expectation")
-        }
+    pub(crate) fn set_return(&mut self, return_behavior: Box<Any>) {
+        self.return_fn = Some(return_behavior);
     }
 }
 
@@ -107,6 +68,23 @@ pub enum CallExpectation {
     Params(Box<Any>),
     /// A method must be called a certain number of times
     Times(i64),
+}
+
+/// A set of expectations that should be met at the same time.
+///
+/// Calling `Expectations.then()` creates a new era.
+/// 
+/// All expectations in an era must be met before the next era is evaluated.
+pub struct ExpectationEra(Vec<ExpectationId>);
+
+impl ExpectationEra {
+    pub fn new() -> Self {
+        ExpectationEra(Vec::new())
+    }
+
+    pub fn add(&mut self, id: ExpectationId) {
+        self.0.push(id)
+    }
 }
 
 /*
