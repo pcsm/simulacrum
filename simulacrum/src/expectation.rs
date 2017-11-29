@@ -33,19 +33,27 @@ impl fmt::Display for ExpectationError {
 
 /// An expectation that a method must be called. Also includes an optional
 /// closure to produce return values, if necessary.
-pub struct Expectation<I, O> {
+pub struct Expectation<I, O> where
+    I: 'static
+{
     name: MethodName,
-    constraints: Vec<Constraint>,
+    constraints: Vec<Constraint<I>>,
     return_fn: Option<Box<FnMut(I) -> O>>
 }
 
-impl<I, O> Expectation<I, O> {
+impl<I, O> Expectation<I, O> where
+    I: 'static
+{
     pub fn new(name: MethodName) -> Self {
         Expectation {
             name,
             constraints: Vec::new(),
             return_fn: None
         }
+    }
+
+    pub(crate) fn constrain(&mut self, constraint: Constraint<I>) {
+        self.constraints.push(constraint);
     }
 
     pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
@@ -58,8 +66,6 @@ impl<I, O> Expectation<I, O> {
 pub trait ExpectationT {
     fn as_any(&mut self) -> &mut Any;
 
-    fn constrain(&mut self, constraint: Constraint);
-
     fn verify(&mut self) -> ExpectationResult;
 }
 
@@ -71,19 +77,17 @@ impl<I, O> ExpectationT for Expectation<I, O> where
         self
     }
 
-    fn constrain(&mut self, constraint: Constraint) {
-        self.constraints.push(constraint);
-    }
-
     fn verify(&mut self) -> ExpectationResult {
         unimplemented!()
     }
 }
 
-pub enum Constraint {
-    /// A method must be called with arguments that meet certain requirements.
-    /// The `Any` in the `Box` is a closure that can be downcasted later and called.
-    Params(Box<Any>),
+pub enum Constraint<I> where
+    I: 'static
+{
+    /// A method must be called with parameters that meet certain requirements.
+    /// The data member is a closure that can be called with the params to verify this.
+    Params(Box<FnMut(I) -> bool>),
     /// A method must be called a certain number of times
     Times(i64),
     /// For testing

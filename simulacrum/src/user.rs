@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 
 use super::{ExpectationId, MethodName};
-use super::expectation::{Constraint, Expectation, ExpectationT};
+use super::expectation::{Constraint, Expectation};
 use super::store::ExpectationStore;
 
 // I is a tuple of args for this method excluding self.
