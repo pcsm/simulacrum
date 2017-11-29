@@ -34,10 +34,10 @@ impl fmt::Display for ExpectationError {
 
 /// An expectation that a method must be called. Also includes an optional
 /// closure to produce return values, if necessary.
-pub struct Expectation {
+pub struct Expectation<I, O> {
     name: MethodName,
     constraints: Vec<Constraint>,
-    return_fn: Option<Box<Any>>
+    return_fn: Option<Box<FnMut(I) -> O>>
 }
 
 impl Expectation {
@@ -57,8 +57,10 @@ impl Expectation {
         self.constraints.push(constraint);
     }
 
-    pub(crate) fn set_return(&mut self, return_behavior: Box<Any>) {
-        self.return_fn = Some(return_behavior);
+    pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
+        F: 'static + FnMut(I) -> O
+    {
+        self.return_fn = Some(Box::new(return_behavior));
     }
 }
 
@@ -133,13 +135,14 @@ mod tests {
         assert_eq!(e.constraints.len(), 1, "Number of Constraints should be 1");
     }
 
-    // #[test]
-    // fn test_set_return() {
-    //     let mut e = Expectation::new("yaz");
+    #[test]
+    fn test_set_return() {
+        let mut e = Expectation::new("yaz");
 
-    //     e.set_return(Box::new(|| 7));
+        e.set_return(|_| 5);
 
-    //     assert!(e.return_fn.is_some(), "Return Closure Should Exist");
-    //     assert_eq!((e.return_fn.unwrap())(), 5, "Return Closure Should return 5");
-    // }
+        assert!(e.return_fn.is_some(), "Return Closure Should Exist");
+        let mut f = e.return_fn.unwrap();
+        assert_eq!(f(()), 5, "Return Closure Should return 5");
+    }
 }
