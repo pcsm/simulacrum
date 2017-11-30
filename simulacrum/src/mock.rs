@@ -32,8 +32,7 @@ impl Expectations {
     }
 
     pub fn then(&mut self) {
-        // TODO
-        unimplemented!()
+        self.store.new_era();
     }
 
     /// When a tracked method is called on the mock object, call this with the method's name
