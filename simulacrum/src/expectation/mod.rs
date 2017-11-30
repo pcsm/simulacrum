@@ -136,6 +136,17 @@ mod tests {
     }
 
     #[test]
+    #[should_panic]
+    fn test_return_no_closure_given() {
+        let mut e: Expectation<(), i32> = Expectation::new("yaz");
+
+        // Did not set the return here
+
+        // Panic: .returning() was not called, so we don't know what to return
+        e.return_value_for(&());
+    }
+
+    #[test]
     fn test_verify_pass() {
         let mut e: Expectation<(), ()> = Expectation::new("zonk");
 

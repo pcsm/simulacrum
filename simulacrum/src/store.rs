@@ -205,7 +205,7 @@ impl<'a, I, O> ExpectationMatcher<'a, I, O> where
             self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().handle_call(&params);
             self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().return_value_for(&params)
         } else {
-            panic!("No expectations matched method call `{}`.", self.sig.name);
+            panic!("Can't return a value for method `{}` with no matching expectations.", self.sig.name);
         }
     }
 

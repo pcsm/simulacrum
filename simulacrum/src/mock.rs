@@ -163,4 +163,15 @@ mod tests {
 
         assert_eq!(r, 5);
     }
+
+    #[test]
+    #[should_panic]
+    fn test_returning_no_matches() {
+        let e = Expectations::new();
+
+        // Not expecting "boye" here, so when it's called, we should panic
+
+        // Panic: No expectation matches, so we can't return a value
+        e.was_called_returning::<(), i32>("boye", ());
+    }
 }
