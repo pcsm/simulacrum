@@ -81,6 +81,34 @@ impl ExpectationStore {
         // Lock our inner mutex
         let mut inner = self.0.lock().unwrap();
 
+        // If all of our Eras are verfied, we're good to go!
+        if inner.current_unverified_era >= inner.eras.len() {
+            inner.status = Ok(());
+            return inner.status.clone();
+        }
+
+        let mut current_unverified_era = inner.current_unverified_era;
+        let mut status = Ok(());
+
+        'eras: for era_index in inner.current_unverified_era .. inner.eras.len() {
+            let era = &inner.eras[era_index];
+            for id in era.iter() {
+                let expectation = inner.expectations.get(id).unwrap();
+                let r = expectation.verify();
+                if r.is_err() {
+                    // Note the current Era index
+                    current_unverified_era = era_index;
+                    // Note the error in this Era
+                    status = r;
+                    // Stop processing Eras since this one is still incomplete
+                    break 'eras;
+                }
+            }
+        }
+
+        inner.current_unverified_era = current_unverified_era;
+        inner.status = status;
+
         // Mark Eras as complete if all of their expectations have been met
         // 'eras: for era in inner.eras.iter() {
         //     // Once an era is complete, we don't need to check it anymore
