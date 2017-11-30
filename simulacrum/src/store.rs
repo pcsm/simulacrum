@@ -11,30 +11,36 @@ use super::user::{MethodSig, MethodTypes};
 pub(crate) struct ExpectationStore(Mutex<Inner>);
 
 struct Inner {
-    eras: Vec<ExpectationEra>,
+    eras: Vec<Era>,
     expectations: HandleBox<Box<ExpectationT>>
 }
 
-/// A set of expectations that should be met at the same time.
-///
-/// Calling `Expectations.then()` creates a new era.
-/// 
-/// All expectations in an era must be met before the next era is evaluated.
-pub struct ExpectationEra(Vec<ExpectationId>);
+// A set of expectations that should be met at the same time.
+//
+// Calling `ExpectationsStore.then()` creates a new era.
+// 
+// All expectations in an era must be met before the next era is evaluated.
+struct Era {
+    expectations: Vec<ExpectationId>,
+    pub is_valid: bool
+}
 
-impl ExpectationEra {
-    pub fn new() -> Self {
-        ExpectationEra(Vec::new())
+impl Era {
+    fn new() -> Self {
+        Self {
+            expectations: Vec::new(),
+            is_valid: false
+        }
     }
 
-    pub fn add(&mut self, id: ExpectationId) {
-        self.0.push(id)
+    fn add(&mut self, id: ExpectationId) {
+        self.expectations.push(id)
     }
 }
 
 impl ExpectationStore {
     pub fn new() -> Self {
-        let eras = vec![ExpectationEra::new()];
+        let eras = vec![Era::new()];
         ExpectationStore(Mutex::new(Inner {
             eras,
             expectations: HandleBox::new()
