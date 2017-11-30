@@ -19,22 +19,22 @@ impl fmt::Display for ConstraintError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             &ConstraintError::AlwaysFail => {
-                write!(f, "Expectation will always fail")
+                write!(f, "Expectation will always fail.")
             },
             &ConstraintError::CalledTooFewTimes(times) => {
-                write!(f, "Called {} times fewer than expected", times)
+                write!(f, "Called {} times fewer than expected.", times)
             },
             &ConstraintError::CalledTooManyTimes(times) => {
-                write!(f, "Called {} times more than expected", times)
+                write!(f, "Called {} times more than expected.", times)
             },
             &ConstraintError::CallNotExpected => {
-                write!(f, "Called when not expected")
+                write!(f, "Called when not expected.")
             },
             &ConstraintError::Custom(ref msg) => {
                 write!(f, "{}", msg)
             },
             &ConstraintError::MismatchedParams => {
-                write!(f, "Called with unexpected parameters")
+                write!(f, "Called with unexpected parameters.")
             },
         }
     }
