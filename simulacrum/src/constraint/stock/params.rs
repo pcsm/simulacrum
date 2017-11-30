@@ -41,21 +41,58 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_params_pass() {
+    fn test_new() {
         let c = Params::new(|_| false);
 
+        let r = <Constraint<()>>::verify(&c);
+
+        assert!(r.is_ok(), "Constraint should pass after being created");
+    }
+
+    #[test]
+    fn test_handle_call_pass() {
+        // Validator closure approves of any input
+        let mut c = Params::new(|_| true);
+
+        c.handle_call(());
         let r = <Constraint<()>>::verify(&c);
 
         assert!(r.is_ok(), "Constraint should pass");
     }
 
-    // #[test]
-    // fn test_params_fail() {
-    //     let c = Params::new(|_| false);
+    #[test]
+    fn test_handle_call_fail() {
+        // Validator closure disapproves of any input
+        let mut c = Params::new(|_| false);
 
-    // let r = <Constraint<()>>::verify(&c);
+        c.handle_call(());
+        let r = <Constraint<()>>::verify(&c);
 
-    //     assert!(r.is_err(), "Constraint should fail");
-    //     assert_eq!(r.unwrap_err(), ConstraintError::MismatchedParams, "Constraint should return the correct error");
-    // }
+        assert!(r.is_err(), "Constraint should fail");
+        assert_eq!(r.unwrap_err(), ConstraintError::MismatchedParams, "Constraint should return the correct error");
+    }
+
+    #[test]
+    fn test_handle_call_good_then_bad() {
+        // Validator closure approves input over 5
+        let mut c = Params::new(|arg| arg > 5);
+
+        c.handle_call(10); // Good
+        c.handle_call(3); // Bad
+        let r = <Constraint<i32>>::verify(&c);
+
+        assert!(r.is_err(), "Constraint should fail");
+    }
+
+    #[test]
+    fn test_handle_call_bad_then_good() {
+        // Validator closure approves input over 5
+        let mut c = Params::new(|arg| arg > 5);
+
+        c.handle_call(3); // Bad
+        c.handle_call(10); // Good
+        let r = <Constraint<i32>>::verify(&c);
+
+        assert!(r.is_err(), "Constraint should fail");
+    }
 }
