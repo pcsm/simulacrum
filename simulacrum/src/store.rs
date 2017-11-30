@@ -32,7 +32,7 @@ impl ExpectationStore {
         ExpectationEditor {
             id,
             store: &self,
-            types: MethodTypes::new()
+            _types: MethodTypes::new()
         }
     }
 
@@ -42,11 +42,11 @@ impl ExpectationStore {
     {
         let sig = MethodSig {
             name,
-            types: MethodTypes::new()
+            _types: MethodTypes::new()
         };
 
         // Lock our inner mutex
-        let mut inner = self.0.lock().unwrap();
+        let inner = self.0.lock().unwrap();
 
         // Only return ids if we have unverified Eras remaining
         if inner.current_unverified_era < inner.eras.len() {
@@ -58,13 +58,13 @@ impl ExpectationStore {
 
             ExpectationMatcher {
                 ids,
-                sig,
+                _sig: sig,
                 store: &self
             }
         } else {
             ExpectationMatcher {
                 ids: Vec::new(),
-                sig,
+                _sig: sig,
                 store: &self
             }
         }
@@ -129,11 +129,13 @@ impl ExpectationStore {
     }
 
     /// (For testing) Get the number of total Expectations in the store.
+    #[allow(dead_code)]
     fn exp_count(&self) -> usize {
         self.0.lock().unwrap().expectations.internal_map().len()
     }
 
     /// (For testing) Get the number of total Eras in the store.
+    #[allow(dead_code)]
     fn era_count(&self) -> usize {
         self.0.lock().unwrap().eras.len()
     }
@@ -143,7 +145,7 @@ impl ExpectationStore {
 pub struct ExpectationEditor<'a, I, O> {
     id: ExpectationId,
     store: &'a ExpectationStore,
-    types: MethodTypes<I, O>
+    _types: MethodTypes<I, O>
 }
 
 impl<'a, I, O> ExpectationEditor<'a, I, O> where
@@ -162,6 +164,7 @@ impl<'a, I, O> ExpectationEditor<'a, I, O> where
         self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().set_return(return_behavior);
     }
 
+    #[allow(dead_code)]
     fn verify(&self) -> ExpectationResult {
         self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().verify()
     }
@@ -174,7 +177,7 @@ impl<'a, I, O> ExpectationEditor<'a, I, O> where
 // O is the return value or () if there is no return value.
 pub(crate) struct ExpectationMatcher<'a, I, O> {
     ids: Vec<ExpectationId>,
-    sig: MethodSig<I, O>,
+    _sig: MethodSig<I, O>,
     store: &'a ExpectationStore
 }
 

@@ -26,7 +26,7 @@ impl<I, O> MethodTypes<I, O> {
 
 pub(crate) struct MethodSig<I, O> {
     pub(crate) name: MethodName,
-    pub(crate) types: MethodTypes<I, O>
+    pub(crate) _types: MethodTypes<I, O>
 }
 
 /// What you get from calling `.expect_METHOD_NAME()` on a Mock.
@@ -49,7 +49,7 @@ impl<'a, I, O> Method<'a, I, O> where
         };
         let sig = MethodSig {
             name,
-            types
+            _types: types
         };
         Self {
             store,
@@ -85,7 +85,7 @@ impl<'a, I, O> Method<'a, I, O> where
     /// This method can be called any number of times, including zero.
     pub fn called_any(self) -> TrackedMethod<'a, I, O> {
         // Create an empty expectation
-        let mut exp: Expectation<I, O> = Expectation::new(self.sig.name);
+        let exp: Expectation<I, O> = Expectation::new(self.sig.name);
 
         // Add the expectation to the store.
         let id = self.store.add(exp);
