@@ -25,7 +25,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_always_pass() {
+    fn test_pass() {
         let c: AlwaysPass = AlwaysPass;
 
         let r = <Constraint<()>>::verify(&c);
@@ -34,7 +34,7 @@ mod tests {
     }
 
     #[test]
-    fn test_always_fail() {
+    fn test_fail() {
         let c = AlwaysFail;
 
         let r = <Constraint<()>>::verify(&c);
