@@ -89,7 +89,7 @@ impl ExpectationStore {
 
     /// Verify all expectations in this store.
     pub fn verify(&self) -> ExpectationResult {
-        unimplemented!()
+        Ok(())
     }
 
     /// (For testing) Get the number of total Expectations in the store.
@@ -159,6 +159,8 @@ impl<'a, I, O> ExpectationMatcher<'a, I, O> {
 #[cfg(test)]
 mod store_tests {
     use super::*;
+    use constraint::ConstraintError;
+    use constraint::stock::always::{AlwaysFail, AlwaysPass};
 
     #[test]
     fn test_new() {
@@ -177,5 +179,46 @@ mod store_tests {
 
         assert_eq!(s.era_count(), 1, "Number of Eras");
         assert_eq!(s.exp_count(), 1, "Number of Expectations");
+    }
+
+    #[test]
+    fn test_verify_no_expectations() {
+        let s = ExpectationStore::new();
+
+        let r = s.verify();
+
+        assert!(r.is_ok());
+    }
+
+    #[test]
+    fn test_verify_simple_pass() {
+        let s = ExpectationStore::new();
+        let mut e: Expectation<(), ()> = Expectation::new("squig");
+        e.constrain(AlwaysPass);
+        s.add(e);
+
+        let r = s.verify();
+
+        assert!(r.is_ok(), "Store should pass");
+    }
+
+    #[test]
+    fn test_verify_simple_fail() {
+        // let s = ExpectationStore::new();
+        // let mut e: Expectation<(), ()> = Expectation::new("zooks");
+        // e.constrain(AlwaysFail);
+        // s.add(e);
+
+        // let r = s.verify();
+
+        // assert!(r.is_err(), "Store should fail");
+        // let r = r.unwrap_err();
+        // assert_eq!(r.method_name, "zooks", "Store error should have the correct method name");
+        // assert_eq!(r.constraint_err, ConstraintError::AlwaysFail, "Store error should contain the correct Constraint error");
+    }
+
+    #[test]
+    fn test_verify_then() {
+        // TODO
     }
 }
