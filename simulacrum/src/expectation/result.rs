@@ -1,7 +1,7 @@
 use std::fmt;
-use constraint::{ConstraintError, ConstraintResult};
 
 use MethodName;
+use constraint::ConstraintError;
 
 pub type ExpectationResult = Result<(), ExpectationError>;
 

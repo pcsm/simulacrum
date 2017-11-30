@@ -12,6 +12,7 @@ pub trait Constraint<I> {
     ///
     /// Constraint state so that when `verify()` is called, it will return the
     /// correct result.
+    #[allow(unused_variables)]
     fn handle_call(&mut self, params: I) { }
 
     /// At the end of the test, see if the Constraint passed or failed.

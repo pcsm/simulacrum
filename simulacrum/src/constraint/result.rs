@@ -13,8 +13,6 @@ pub enum ConstraintError {
     MismatchedParams,
 }
 
-use self::ConstraintError::*;
-
 impl fmt::Display for ConstraintError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {

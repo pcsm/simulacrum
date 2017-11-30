@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 
 use super::{ExpectationId, MethodName};
 use super::expectation::Expectation;
-use super::constraint::Constraint;
 use super::constraint::stock::times::Times;
 use super::constraint::stock::params::Params;
 use super::store::ExpectationStore;

@@ -1,11 +1,11 @@
 use std::any::Any;
 
-use super::{ExpectationId, MethodName};
+use super::MethodName;
+
+pub mod result;
 
 pub use super::constraint::Constraint;
 pub use self::result::{ExpectationError, ExpectationResult};
-
-pub mod result;
 
 /// An expectation that a method must be called. Also includes an optional
 /// closure to produce return values, if necessary.

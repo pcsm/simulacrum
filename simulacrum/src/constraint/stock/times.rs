@@ -10,7 +10,7 @@ impl Times {
 }
 
 impl<I> Constraint<I> for Times {
-    fn handle_call(&mut self, params: I) {
+    fn handle_call(&mut self, _params: I) {
         self.0 -= 1;
     }
 
