@@ -74,6 +74,14 @@ impl ExpectationStore {
         id
     }
 
+    // Begin a new Era and make it the current one.
+    pub fn new_era(&self) {
+        // Lock our inner mutex
+        let mut inner = self.0.lock().unwrap();
+
+        inner.eras.push(Vec::new());
+    }
+
     /// Verify all expectations in this store.
     pub fn verify(&self) -> ExpectationResult {
         // Lock our inner mutex
@@ -177,6 +185,7 @@ mod store_tests {
     use super::*;
     use constraint::ConstraintError;
     use constraint::stock::always::{AlwaysFail, AlwaysPass};
+    use constraint::stock::times::Times;
 
     #[test]
     fn test_new() {
@@ -232,10 +241,5 @@ mod store_tests {
         let r = r.unwrap_err();
         assert_eq!(r.method_name, "zooks", "Store error should have the correct method name");
         assert_eq!(r.constraint_err, ConstraintError::AlwaysFail, "Store error should contain the correct Constraint error");
-    }
-
-    #[test]
-    fn test_verify_then() {
-        // TODO
     }
 }
