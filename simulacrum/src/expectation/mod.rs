@@ -28,6 +28,12 @@ impl<I, O> Expectation<I, O> where
         }
     }
 
+    pub fn handle_call(&mut self, params: I) {
+        for constraint in self.constraints.iter_mut() {
+            constraint.handle_call(params);
+        }
+    }
+
     pub(crate) fn constrain<C>(&mut self, constraint: C) where
         C: Constraint<I> + 'static
     {
@@ -77,7 +83,7 @@ impl<I, O> ExpectationT for Expectation<I, O> where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use constraint::ConstraintError;
+    use constraint::{ConstraintError, ConstraintMock};
     use constraint::stock::always::{AlwaysFail, AlwaysPass};
 
     #[test]
@@ -87,6 +93,18 @@ mod tests {
         assert_eq!(e.name, "foo", "Name of Constraint should be `foo`");
         assert_eq!(e.constraints.len(), 0, "Number of Constraints should be 0");
         assert!(e.return_fn.is_none(), "Return Closure Should Not Exist");
+    }
+
+    #[test]
+    fn test_handle_call() {
+        let mut e: Expectation<(), ()> = Expectation::new("foo");
+        let mut m = ConstraintMock::new();
+        m.expect_handle_call();
+        e.constrain(m);
+
+        e.handle_call(());
+
+        // ConstraintMock verifies on Drop
     }
 
     #[test]

@@ -181,7 +181,10 @@ pub(crate) struct ExpectationMatcher<'a, I, O> {
 impl<'a, I, O> ExpectationMatcher<'a, I, O> {
     /// Tell each matched Expectation that this method was called.
     pub fn was_called(self, params: I) -> Self {
-        unimplemented!()
+        for id in self.ids.iter() {
+            self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap();
+        }
+        self
     }
 
     /// Return the result of the closure the user provided with `TrackedMethod.returning()`.
