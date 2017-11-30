@@ -5,11 +5,6 @@ use super::MethodName;
 use super::store::ExpectationStore;
 use super::user::Method;
 
-pub struct MethodData {
-    calls_exact: Option<i64>,
-    name: MethodName
-}
-
 pub struct Expectations {
     store: ExpectationStore
 }
