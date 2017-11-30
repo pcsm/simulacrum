@@ -157,7 +157,7 @@ impl<'a, I, O> ExpectationEditor<'a, I, O> where
     }
 
     pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
-        F: 'static + FnMut(I) -> O
+        F: 'static + FnMut(&I) -> O
     {
         self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().set_return(return_behavior);
     }
@@ -178,11 +178,14 @@ pub(crate) struct ExpectationMatcher<'a, I, O> {
     store: &'a ExpectationStore
 }
 
-impl<'a, I, O> ExpectationMatcher<'a, I, O> {
+impl<'a, I, O> ExpectationMatcher<'a, I, O> where
+    I: 'static,
+    O: 'static
+{
     /// Tell each matched Expectation that this method was called.
     pub fn was_called(self, params: I) -> Self {
         for id in self.ids.iter() {
-            self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap();
+            self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().handle_call(&params);
         }
         self
     }

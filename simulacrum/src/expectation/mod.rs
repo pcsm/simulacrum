@@ -14,7 +14,7 @@ pub struct Expectation<I, O> where
 {
     name: MethodName,
     constraints: Vec<Box<Constraint<I>>>,
-    return_fn: Option<Box<FnMut(I) -> O>>
+    return_fn: Option<Box<FnMut(&I) -> O>>
 }
 
 impl<I, O> Expectation<I, O> where
@@ -28,7 +28,7 @@ impl<I, O> Expectation<I, O> where
         }
     }
 
-    pub fn handle_call(&mut self, params: I) {
+    pub fn handle_call(&mut self, params: &I) {
         for constraint in self.constraints.iter_mut() {
             constraint.handle_call(params);
         }
@@ -41,7 +41,7 @@ impl<I, O> Expectation<I, O> where
     }
 
     pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
-        F: 'static + FnMut(I) -> O
+        F: 'static + FnMut(&I) -> O
     {
         self.return_fn = Some(Box::new(return_behavior));
     }
@@ -102,7 +102,7 @@ mod tests {
         m.expect_handle_call();
         e.constrain(m);
 
-        e.handle_call(());
+        e.handle_call(&());
 
         // ConstraintMock verifies on Drop
     }
@@ -124,7 +124,7 @@ mod tests {
 
         assert!(e.return_fn.is_some(), "Return Closure Should Exist");
         let mut f = e.return_fn.unwrap();
-        assert_eq!(f(()), 5, "Return Closure Should return 5");
+        assert_eq!(f(&()), 5, "Return Closure Should return 5");
     }
 
     #[test]

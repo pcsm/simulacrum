@@ -75,7 +75,7 @@ fn main() {
     let mut m = CoolTraitMock::new();
     m.expect_bar().called_never();
     m.expect_foo().called_once();
-    m.then().expect_goop().called_once().with(|arg| arg == true).returning(|_| 5);
+    m.then().expect_goop().called_once().with(|arg| *arg == true).returning(|_| 5);
     m.then().expect_zing().called_once().with(|args| args.0 == 13 && args.1 == false);
 
     // Execute test code

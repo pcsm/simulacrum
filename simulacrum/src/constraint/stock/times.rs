@@ -10,7 +10,7 @@ impl Times {
 }
 
 impl<I> Constraint<I> for Times {
-    fn handle_call(&mut self, _params: I) {
+    fn handle_call(&mut self, _params: &I) {
         self.0 -= 1;
     }
 
@@ -61,8 +61,8 @@ mod tests {
         let mut c = Times::new(2);
 
         // Called twice
-        c.handle_call(());
-        c.handle_call(());
+        c.handle_call(&());
+        c.handle_call(&());
         let r = <Constraint<()>>::verify(&c);
 
         assert!(r.is_ok());

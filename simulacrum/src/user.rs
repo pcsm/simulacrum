@@ -112,7 +112,7 @@ impl<'a, I, O> TrackedMethod<'a, I, O> where
     /// Specify a function that verifies the parameters.
     /// If it returns `false`, the expectation will be invalidated.
     pub fn with<F>(self, param_verifier: F) -> Self where
-        F: 'static + FnMut(I) -> bool
+        F: 'static + FnMut(&I) -> bool
     {
         let constraint = Params::new(param_verifier);
         self.method.store.get_mut::<I, O>(self.id).constrain(constraint);
@@ -120,7 +120,7 @@ impl<'a, I, O> TrackedMethod<'a, I, O> where
     }
 
     pub fn returning<F>(self, result_behavior: F) -> Self where
-        F: 'static + FnMut(I) -> O
+        F: 'static + FnMut(&I) -> O
     {
         self.method.store.get_mut::<I, O>(self.id).set_return(result_behavior);
         self
