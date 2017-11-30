@@ -243,6 +243,15 @@ mod store_tests {
     }
 
     #[test]
+    fn test_new_era() {
+        let s = ExpectationStore::new();
+        
+        s.new_era();
+
+        assert_eq!(s.era_count(), 2, "Number of Eras after creating a new one");
+    }
+
+    #[test]
     fn test_verify_no_expectations() {
         let s = ExpectationStore::new();
 
