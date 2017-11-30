@@ -22,14 +22,14 @@ struct Inner {
 // All expectations in an era must be met before the next era is evaluated.
 struct Era {
     expectations: Vec<ExpectationId>,
-    pub is_valid: bool
+    pub is_complete: bool
 }
 
 impl Era {
     fn new() -> Self {
         Self {
             expectations: Vec::new(),
-            is_valid: false
+            is_complete: false
         }
     }
 
