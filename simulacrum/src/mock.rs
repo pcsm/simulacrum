@@ -186,6 +186,18 @@ mod tests {
     }
 
     #[test]
+    fn test_then_never() {
+        // Test to see that `called_never()` is only enforced until the era is completed
+        let mut e = Expectations::new();
+        e.expect::<(), ()>("bruh").called_never();
+        e.expect::<(), ()>("fren").called_once();
+        e.then().expect::<(), ()>("bruh").called_once();
+        
+        e.was_called::<(), ()>("fren", ()); // Matches first era, completing it
+        e.was_called::<(), ()>("bruh", ()); // Matches second era, completing it
+    }
+
+    #[test]
     #[should_panic]
     fn test_then_partial_fail() {
         let mut e = Expectations::new();
