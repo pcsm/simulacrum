@@ -1,6 +1,8 @@
 //! Mock object internals. Used by the macros to create Mocks for you, or you can
 //! use this API to construct your own Mocks manually if you'd like!
 
+use std::thread;
+
 use super::MethodName;
 use super::store::ExpectationStore;
 use super::user::Method;
@@ -62,9 +64,15 @@ impl Expectations {
 }
 
 impl Drop for Expectations {
-    /// All expectations will be verified when the mock object is dropped.
+    /// All expectations will be verified when the mock object is dropped, 
+    /// panicking if any of them are unmet.
+    ///
+    /// In the case where the Expectations object is being dropped because the
+    /// thread is _already_ panicking, the Expectations object is not verified.
     fn drop(&mut self) {
-        self.verify();
+        if !thread::panicking() {
+            self.verify();
+        }
     }
 }
 
