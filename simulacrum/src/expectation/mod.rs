@@ -45,6 +45,8 @@ pub trait ExpectationT {
     fn as_any(&mut self) -> &mut Any;
 
     fn verify(&self) -> ExpectationResult;
+
+    fn name(&self) -> MethodName;
 }
 
 impl<I, O> ExpectationT for Expectation<I, O> where
@@ -65,6 +67,10 @@ impl<I, O> ExpectationT for Expectation<I, O> where
             }
         }
         Ok(())
+    }
+
+    fn name(&self) -> MethodName {
+        self.name
     }
 }
 

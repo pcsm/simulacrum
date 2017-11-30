@@ -40,22 +40,30 @@ impl ExpectationStore {
         I: 'static,
         O: 'static
     {
+
+        // Lock our inner mutex
+        let mut inner = self.0.lock().unwrap();
+
+        // If all of our Eras are verfied, push a new one
+        if inner.current_unverified_era >= inner.eras.len() {
+            inner.eras.push(Vec::new());
+        }
+
+        // Gather up ids for expectations that match this one in the current Era
+        let mut ids = inner.eras.get(inner.current_unverified_era).unwrap().clone();
+        ids.retain(|&id| {
+            inner.expectations.get(&id).unwrap().name() == name
+        });
+
         let sig = MethodSig {
             name,
             types: MethodTypes::new()
         };
-        let mut matcher = ExpectationMatcher {
-            ids: Vec::new(),
+        ExpectationMatcher {
+            ids,
             sig,
             store: &self
-        };
-
-        // Gather up ids for expectations that match this one
-        // self.get_mut(self.top_group).find_matches()
-        // for (id, exp) in self.expectations.lock().unwrap().internal_map().iter() {
-
-        // }
-        matcher
+        }
     }
 
     // Add a new Expectation under the current Era and return its id.
@@ -178,6 +186,11 @@ impl<'a, I, O> ExpectationMatcher<'a, I, O> {
         // TODO: Call returning behavior and return the result
         unimplemented!()
     }
+
+    // For Testing
+    fn id_count(&self) -> usize {
+        self.ids.len()
+    }
 }
 
 #[cfg(test)]
@@ -242,4 +255,46 @@ mod store_tests {
         assert_eq!(r.method_name, "zooks", "Store error should have the correct method name");
         assert_eq!(r.constraint_err, ConstraintError::AlwaysFail, "Store error should contain the correct Constraint error");
     }
+
+    #[test]
+    fn test_matcher() {
+        let s = ExpectationStore::new();
+        let mut e: Expectation<(), ()> = Expectation::new("frolf");
+        e.constrain(AlwaysPass);
+        s.add(e);
+        let mut e: Expectation<(), ()> = Expectation::new("star");
+        e.constrain(AlwaysPass);
+        s.add(e);
+
+        let m = s.matcher_for::<(), ()>("star");
+
+        assert_eq!(m.id_count(), 1, "Ids matched should be 1");
+    }
+
+    #[test]
+    fn test_matcher_current_era() {
+        let s = ExpectationStore::new();
+        let mut e: Expectation<(), ()> = Expectation::new("frob");
+        e.constrain(AlwaysPass);
+        s.add(e);
+
+        s.new_era();
+
+        // Add the same method twice! It doesn't make sense in practice, but we want
+        // to only return one Id, signifying that the first Era was matched against.
+        let mut e: Expectation<(), ()> = Expectation::new("frob");
+        e.constrain(AlwaysPass);
+        s.add(e);
+        let mut e: Expectation<(), ()> = Expectation::new("frob");
+        e.constrain(AlwaysPass);
+        s.add(e);
+
+        let m = s.matcher_for::<(), ()>("frob");
+
+        assert_eq!(m.id_count(), 1, "Ids matched should be 1");
+    }
+
+    // #[test]
+    // fn test_matcher_current_era_passed() {
+    // }
 }
