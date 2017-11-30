@@ -186,9 +186,13 @@ impl<'a, I, O> ExpectationMatcher<'a, I, O> where
     O: 'static
 {
     /// Tell each matched Expectation that this method was called.
+    #[allow(unused_must_use)]
     pub fn was_called(self, params: I) -> Self {
         for id in self.ids.iter() {
             self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().handle_call(&params);
+            
+            // We don't care about the result, we're just doing it to advance the era if necessary
+            self.store.verify();
         }
         self
     }
@@ -200,10 +204,16 @@ impl<'a, I, O> ExpectationMatcher<'a, I, O> where
     /// If multiple Expectations are matched, the last one matched is used.
     ///
     /// If no closure was specified or no expectations matched, this method panics.
+    #[allow(unused_must_use)]
     pub fn was_called_returning(mut self, params: I) -> O {
         if let Some(id) = self.ids.pop() {
             self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().handle_call(&params);
-            self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().return_value_for(&params)
+            let result = self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().return_value_for(&params);
+
+            // We don't care about the result, we're just doing it to advance the era if necessary
+            self.store.verify();
+
+            result
         } else {
             panic!("Can't return a value for method `{}` with no matching expectations.", self.sig.name);
         }

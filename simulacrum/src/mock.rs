@@ -174,4 +174,84 @@ mod tests {
         // Panic: No expectation matches, so we can't return a value
         e.was_called_returning::<(), i32>("boye", ());
     }
+
+    #[test]
+    fn test_then() {
+        let mut e = Expectations::new();
+        e.expect::<i32, ()>("fren").called_once().with(|&arg| arg > 5);
+        e.then().expect::<i32, ()>("fren").called_once().with(|&arg| arg < 3);
+        
+        e.was_called::<i32, ()>("fren", 10); // Matches first era, completing it
+        e.was_called::<i32, ()>("fren", 1); // Matches second era, completing it
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_then_partial_fail() {
+        let mut e = Expectations::new();
+        e.expect::<i32, ()>("fren").called_once().with(|&arg| arg > 5);
+        e.then().expect::<i32, ()>("fren").called_times(2).with(|&arg| arg < 3);
+        
+        e.was_called::<i32, ()>("fren", 10); // Matches first era, completing it
+        e.was_called::<i32, ()>("fren", 1); // Matches second era, but still incomplete
+
+        // Panic: "fren" was expected to be called twice in the second era
+    }
+
+    #[test]
+    fn test_then_multi_call() {
+        let mut e = Expectations::new();
+
+        // These expectations can be called in any order
+        e.expect::<(), ()>("eh").called_once();
+        e.expect::<(), ()>("donk").called_times(2); 
+
+        // These expectations are called afterwards in any order
+        e.then().expect::<(), ()>("calxx").called_times(3);
+        e.expect::<(), ()>("mer").called_once();
+        
+        e.was_called::<(), ()>("donk", ());
+        e.was_called::<(), ()>("eh", ());
+        e.was_called::<(), ()>("donk", ()); // Completes first era
+        e.was_called::<(), ()>("calxx", ());
+        e.was_called::<(), ()>("mer", ());
+        e.was_called::<(), ()>("calxx", ());
+        e.was_called::<(), ()>("calxx", ()); // Completes second era
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_then_wrong_order_fail() {
+        let mut e = Expectations::new();
+
+        // These expectations can be called in any order
+        e.expect::<(), ()>("eh").called_once();
+        e.expect::<(), ()>("donk").called_once();
+
+        // These expectations are called afterwards in any order
+        e.then().expect::<(), ()>("calxx").called_once();
+        e.expect::<(), ()>("mer").called_once();
+        
+        e.was_called::<(), ()>("mer", ()); // No matching expectations
+        e.was_called::<(), ()>("calxx", ()); // No matching expectations
+        e.was_called::<(), ()>("donk", ()); 
+        e.was_called::<(), ()>("eh", ()); // Completes first era
+
+        // Panic: Second era was never completed
+    }
+
+    #[test]
+    fn test_then_specific() {
+        let mut e = Expectations::new();
+
+        e.expect::<(), ()>("eh").called_once();
+        e.then().expect::<(), ()>("donk").called_once();
+        e.then().expect::<(), ()>("mer").called_once();
+        e.expect::<(), ()>("eh").called_once();
+
+        e.was_called::<(), ()>("eh", ()); // Completes first era
+        e.was_called::<(), ()>("donk", ()); // Completes second era
+        e.was_called::<(), ()>("eh", ());
+        e.was_called::<(), ()>("mer", ()); // Completes third era
+    }
 }
