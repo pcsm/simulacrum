@@ -7,8 +7,8 @@ pub type ExpectationResult = Result<(), ExpectationError>;
 
 #[derive(Debug, PartialEq)]
 pub struct ExpectationError {
-    constraint_err: ConstraintError,
-    method_name: MethodName
+    pub constraint_err: ConstraintError,
+    pub method_name: MethodName
 }
 
 impl fmt::Display for ExpectationError {

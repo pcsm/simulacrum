@@ -44,7 +44,7 @@ impl<I, O> Expectation<I, O> where
 pub trait ExpectationT {
     fn as_any(&mut self) -> &mut Any;
 
-    fn verify(&mut self) -> ExpectationResult;
+    fn verify(&self) -> ExpectationResult;
 }
 
 impl<I, O> ExpectationT for Expectation<I, O> where
@@ -55,15 +55,27 @@ impl<I, O> ExpectationT for Expectation<I, O> where
         self
     }
 
-    fn verify(&mut self) -> ExpectationResult {
-        unimplemented!()
+    fn verify(&self) -> ExpectationResult {
+
+        for constraint in self.constraints.iter() {
+            let r = constraint.verify();
+            if r.is_err() {
+                let e = ExpectationError {
+                    constraint_err: r.unwrap_err(),
+                    method_name: self.name
+                };
+                return Err(e);
+            }
+        }
+        Ok(())
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use constraint::stock::always::AlwaysPass;
+    use constraint::ConstraintError;
+    use constraint::stock::always::{AlwaysFail, AlwaysPass};
 
     #[test]
     fn test_new() {
@@ -92,5 +104,30 @@ mod tests {
         assert!(e.return_fn.is_some(), "Return Closure Should Exist");
         let mut f = e.return_fn.unwrap();
         assert_eq!(f(()), 5, "Return Closure Should return 5");
+    }
+
+    #[test]
+    fn test_verify_pass() {
+        let mut e: Expectation<(), ()> = Expectation::new("zonk");
+
+        e.constrain(AlwaysPass);
+        e.constrain(AlwaysPass);
+        let r = e.verify();
+
+        assert!(r.is_ok(), "Expectation should pass");
+    }
+
+    #[test]
+    fn test_verify_fail() {
+        let mut e: Expectation<(), ()> = Expectation::new("boop");
+
+        e.constrain(AlwaysPass);
+        e.constrain(AlwaysFail); // Will cause Expectation to fail
+        let r = e.verify();
+
+        assert!(r.is_err(), "Expectation should fail");
+        let r = r.unwrap_err();
+        assert_eq!(r.method_name, "boop", "Expectation error should have the correct method name");
+        assert_eq!(r.constraint_err, ConstraintError::AlwaysFail, "Expectation error should contain the correct Constraint error");
     }
 }
