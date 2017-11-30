@@ -31,8 +31,9 @@ impl Expectations {
         Method::new(&mut self.store, name)
     }
 
-    pub fn then(&mut self) {
+    pub fn then(&mut self) -> &mut Self {
         self.store.new_era();
+        self
     }
 
     /// When a tracked method is called on the mock object, call this with the method's name
