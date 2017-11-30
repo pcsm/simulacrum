@@ -56,15 +56,12 @@ impl<I, O> ExpectationT for Expectation<I, O> where
     }
 
     fn verify(&self) -> ExpectationResult {
-
         for constraint in self.constraints.iter() {
-            let r = constraint.verify();
-            if r.is_err() {
-                let e = ExpectationError {
-                    constraint_err: r.unwrap_err(),
+            if let Err(constraint_err) = constraint.verify() {
+                return Err(ExpectationError {
+                    constraint_err,
                     method_name: self.name
-                };
-                return Err(e);
+                })
             }
         }
         Ok(())
