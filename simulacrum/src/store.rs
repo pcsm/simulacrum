@@ -13,8 +13,7 @@ pub(crate) struct ExpectationStore(Mutex<Inner>);
 struct Inner {
     current_unverified_era: usize,
     eras: Vec<Era>,
-    expectations: HandleBox<Box<ExpectationT>>,
-    status: ExpectationResult
+    expectations: HandleBox<Box<ExpectationT>>
 }
 
 type Era = Vec<ExpectationId>;
@@ -25,8 +24,7 @@ impl ExpectationStore {
         ExpectationStore(Mutex::new(Inner {
             current_unverified_era: 0,
             eras,
-            expectations: HandleBox::new(),
-            status: Ok(())
+            expectations: HandleBox::new()
         }))
     }
 
@@ -83,8 +81,7 @@ impl ExpectationStore {
 
         // If all of our Eras are verfied, we're good to go!
         if inner.current_unverified_era >= inner.eras.len() {
-            inner.status = Ok(());
-            return inner.status.clone();
+            return Ok(());
         }
 
         let mut current_unverified_era = inner.current_unverified_era;
@@ -107,44 +104,8 @@ impl ExpectationStore {
         }
 
         inner.current_unverified_era = current_unverified_era;
-        inner.status = status;
 
-        // Mark Eras as complete if all of their expectations have been met
-        // 'eras: for era in inner.eras.iter() {
-        //     // Once an era is complete, we don't need to check it anymore
-        //     if !era.is_complete() {
-        //         for id in era.expectations.iter() {
-        //             let expectation = inner.expectations.get(id).unwrap();
-        //             let r = expectation.verify();
-
-        //             if r.is_err() {
-        //                 // Note the error in this Era
-        //                 era.status = r;
-        //                 // Stop processing Eras since this one is still incomplete
-        //                 break 'eras;
-        //             }
-        //         }
-
-        //         // If we get here, it means that all the Expectations in this Era
-        //         // have been met, so we can mark it as complete.
-        //         era.status = Ok(());
-        //     }
-        // }
-
-        // // Verify each Era in order
-        // for era in inner.eras.iter_mut() {
-        //     if !era.is_complete() {
-        //         unimplemented!()
-        //     }
-        //     // if let Err(expectation_error) = era.status {
-        //     // }
-        // }
-
-        Ok(())
-    }
-
-    fn status(&self) -> ExpectationResult {
-        self.0.lock().unwrap().status.clone()
+        status
     }
 
     /// (For testing) Get the number of total Expectations in the store.
@@ -221,7 +182,7 @@ mod store_tests {
     fn test_new() {
         let s = ExpectationStore::new();
 
-        assert!(s.status().is_ok(), "Store should be Ok after creation");
+        assert!(s.verify().is_ok(), "Store should be Ok after creation");
         assert_eq!(s.era_count(), 1, "Store should have one Era after creation");
         assert_eq!(s.exp_count(), 0, "Store should have no Expectations after creation");
     }
