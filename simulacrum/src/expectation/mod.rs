@@ -14,7 +14,7 @@ pub struct Expectation<I, O> where
     I: 'static
 {
     name: MethodName,
-    constraints: Vec<Constraint<I>>,
+    constraints: Vec<Box<Constraint<I>>>,
     return_fn: Option<Box<FnMut(I) -> O>>
 }
 
@@ -29,8 +29,10 @@ impl<I, O> Expectation<I, O> where
         }
     }
 
-    pub(crate) fn constrain(&mut self, constraint: Constraint<I>) {
-        self.constraints.push(constraint);
+    pub(crate) fn constrain<C>(&mut self, constraint: C) where
+        C: Constraint<I> + 'static
+    {
+        self.constraints.push(Box::new(constraint));
     }
 
     pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
@@ -62,6 +64,7 @@ impl<I, O> ExpectationT for Expectation<I, O> where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::constraint::AlwaysPass;
 
     #[test]
     fn test_new() {
@@ -76,7 +79,7 @@ mod tests {
     fn test_constrain() {
         let mut e: Expectation<(), ()> = Expectation::new("test");
 
-        e.constrain(Constraint::AlwaysPass);
+        e.constrain(AlwaysPass);
 
         assert_eq!(e.constraints.len(), 1, "Number of Constraints should be 1");
     }

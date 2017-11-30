@@ -114,7 +114,9 @@ impl<'a, I, O> ExpectationEditor<'a, I, O> where
     I: 'static,
     O: 'static
 {
-    pub(crate) fn constrain(&self, constraint: Constraint<I>) {
+    pub(crate) fn constrain<C>(&self, constraint: C) where
+        C: Constraint<I> + 'static
+    {
         self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().constrain(constraint);
     }
 
