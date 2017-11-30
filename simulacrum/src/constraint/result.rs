@@ -1,4 +1,3 @@
-use std::clone::Clone;
 use std::fmt;
 
 /// The Error type is a message to be printed to the user.

@@ -1,4 +1,3 @@
-use std::clone::Clone;
 use std::fmt;
 
 use MethodName;

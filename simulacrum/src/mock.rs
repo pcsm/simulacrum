@@ -38,13 +38,25 @@ impl Expectations {
 
     /// When a tracked method is called on the mock object, call this with the method's name
     /// in order to tell the `Expectations` that the method was called.
-    pub fn was_called<I, O>(&self, name: MethodName, params: I) -> O where
+    ///
+    /// Does not return a value.
+    pub fn was_called<I, O>(&self, name: MethodName, params: I) where
         I: 'static,
         O: 'static
     {
         self.store
             .matcher_for::<I, O>(name)
-            .with(params)
+            .was_called(params);
+    }
+
+    /// Same as `was_called()`, but also returns the result.
+    pub fn was_called_returning<I, O>(&self, name: MethodName, params: I) -> O where
+        I: 'static,
+        O: 'static
+    {
+        self.store
+            .matcher_for::<I, O>(name)
+            .was_called(params)
             .returning()
     }
 
@@ -62,11 +74,17 @@ impl Drop for Expectations {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-//     fn it_works() {
-//     }
-// }
+    #[test]
+    fn test_called_once() {
+        let mut e = Expectations::new();
+        e.expect::<(), ()>("spoo").called_once();
+        
+        e.was_called::<(), ()>("spoo", ());
+
+        // Verified on drop
+    }
+}

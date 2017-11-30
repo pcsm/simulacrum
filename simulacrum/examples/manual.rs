@@ -62,7 +62,7 @@ impl CoolTrait for CoolTraitMock {
     }
 
     fn goop(&mut self, flag: bool) -> u32 {
-        self.e.was_called::<bool, u32>("goop", flag)
+        self.e.was_called_returning::<bool, u32>("goop", flag)
     }
 
     fn zing(&self, first: i32, second: bool) {

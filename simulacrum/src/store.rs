@@ -179,19 +179,19 @@ pub(crate) struct ExpectationMatcher<'a, I, O> {
 }
 
 impl<'a, I, O> ExpectationMatcher<'a, I, O> {
-    /// Validate params with param verifier closure the Mock user provided with `TrackedMethod.with()`.
-    pub fn with(self, params: I) -> Self {
-        // TODO: Validate params with param verifier fn
+    /// Tell each matched Expectation that this method was called.
+    pub fn was_called(self, params: I) -> Self {
         unimplemented!()
     }
 
-    /// Return the result of the closure the Mock user provided with `TrackedMethod.returning()`.
+    /// Return the result of the closure the user provided with `TrackedMethod.returning()`.
     pub fn returning(self) -> O {
         // TODO: Call returning behavior and return the result
         unimplemented!()
     }
 
     // For Testing
+    #[allow(dead_code)]
     fn id_count(&self) -> usize {
         self.ids.len()
     }
@@ -202,7 +202,6 @@ mod store_tests {
     use super::*;
     use constraint::ConstraintError;
     use constraint::stock::always::{AlwaysFail, AlwaysPass};
-    use constraint::stock::times::Times;
 
     #[test]
     fn test_new() {
@@ -261,7 +260,7 @@ mod store_tests {
     }
 
     #[test]
-    fn test_matcher() {
+    fn test_match() {
         let s = ExpectationStore::new();
         let mut e: Expectation<(), ()> = Expectation::new("frolf");
         e.constrain(AlwaysPass);
@@ -276,7 +275,7 @@ mod store_tests {
     }
 
     #[test]
-    fn test_matcher_current_era() {
+    fn test_match_current_era() {
         let s = ExpectationStore::new();
         let mut e: Expectation<(), ()> = Expectation::new("frob");
         e.constrain(AlwaysPass);
@@ -299,7 +298,7 @@ mod store_tests {
     }
 
     #[test]
-    fn test_matcher_current_era_passed() {
+    fn test_match_current_era_passed() {
         let s = ExpectationStore::new();
         let mut e: Expectation<(), ()> = Expectation::new("buzz");
         e.constrain(AlwaysPass);
