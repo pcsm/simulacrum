@@ -3,9 +3,16 @@ extern crate simulacrum;
 use simulacrum::*;
 
 trait CoolTrait {
+    // Shared self
     fn foo(&self);
+
+    // Mutable self
     fn bar(&mut self);
+
+    // One parameter and returning a value
     fn goop(&mut self, flag: bool) -> u32;
+
+    // Multiple parameters
     fn zing(&self, first: i32, second: bool);
 
     // Note: It doesn't work with references yet!
