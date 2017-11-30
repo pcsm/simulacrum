@@ -10,7 +10,7 @@ pub enum ConstraintError {
     CalledTooManyTimes(i64),
     CallNotExpected,
     Custom(String), // For custom constraints from users
-    MismatchedParams,
+    MismatchedParams(String),
 }
 
 impl fmt::Display for ConstraintError {
@@ -31,8 +31,8 @@ impl fmt::Display for ConstraintError {
             &ConstraintError::Custom(ref msg) => {
                 write!(f, "{}", msg)
             },
-            &ConstraintError::MismatchedParams => {
-                write!(f, "Called with unexpected parameters.")
+            &ConstraintError::MismatchedParams(ref msg) => {
+                write!(f, "Called with unexpected parameters: {}.", msg)
             },
         }
     }

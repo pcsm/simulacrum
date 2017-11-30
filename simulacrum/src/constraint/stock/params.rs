@@ -1,9 +1,12 @@
+use debugit::DebugIt;
+
 use constraint::{Constraint, ConstraintError, ConstraintResult};
 
 /// A method must be called with parameters that meet certain requirements.
 pub struct Params<I> {
     /// Should be `true` if the method has been called with valid parameters every time.
     is_valid: bool,
+    invalid_param_msg: String,
     /// A closure that will be called with the parameters to validate that they 
     /// conform to the requirements.
     validator: Box<FnMut(&I) -> bool>
@@ -15,6 +18,7 @@ impl<I> Params<I> {
     {
         Params {
             is_valid: true,
+            invalid_param_msg: "".to_owned(),
             validator: Box::new(validator)
         }
     }
@@ -24,6 +28,9 @@ impl<I> Constraint<I> for Params<I> {
     fn handle_call(&mut self, params: &I) {
         if self.is_valid {
             self.is_valid = (self.validator)(params);
+            if !self.is_valid {
+                self.invalid_param_msg = format!("{:?}", DebugIt(params));
+            }
         }
     }
 
@@ -31,7 +38,7 @@ impl<I> Constraint<I> for Params<I> {
         if self.is_valid {
             Ok(())
         } else {
-            Err(ConstraintError::MismatchedParams)
+            Err(ConstraintError::MismatchedParams(self.invalid_param_msg.clone()))
         }
     }
 }
@@ -61,6 +68,8 @@ mod tests {
     }
 
     #[test]
+    // Note: This test will fail on stable rust b/c the debugit crate relies on
+    // core_intrinsics & specialization features.
     fn test_handle_call_fail() {
         // Validator closure disapproves of any input
         let mut c = Params::new(|_| false);
@@ -69,7 +78,7 @@ mod tests {
         let r = <Constraint<()>>::verify(&c);
 
         assert!(r.is_err(), "Constraint should fail");
-        assert_eq!(r.unwrap_err(), ConstraintError::MismatchedParams, "Constraint should return the correct error");
+        assert_eq!(r.unwrap_err(), ConstraintError::MismatchedParams("()".to_owned()), "Constraint should return the correct error");
     }
 
     #[test]

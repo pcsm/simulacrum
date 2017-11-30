@@ -1,3 +1,4 @@
+extern crate debugit;
 extern crate handlebox;
 
 pub mod constraint;
