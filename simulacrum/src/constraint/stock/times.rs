@@ -28,7 +28,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_times_pass() {
+    fn test_pass() {
         let c = Times::new(0);
 
         let r = <Constraint<()>>::verify(&c);
@@ -37,7 +37,7 @@ mod tests {
     }
 
     #[test]
-    fn test_times_fail_called_fewer() {
+    fn test_fail_called_fewer() {
         let c = Times::new(1);
 
         let r = <Constraint<()>>::verify(&c);
@@ -47,12 +47,24 @@ mod tests {
     }
 
     #[test]
-    fn test_times_fail_called_more() {
+    fn test_fail_called_more() {
         let c = Times::new(-1);
 
         let r = <Constraint<()>>::verify(&c);
 
         assert!(r.is_err(), "Constraint should fail");
         assert_eq!(r.unwrap_err(), ConstraintError::CalledTooManyTimes(1), "Constraint should return the correct error");
+    }
+
+    #[test]
+    fn test_handle_call() {
+        let mut c = Times::new(2);
+
+        // Called twice
+        c.handle_call(());
+        c.handle_call(());
+        let r = <Constraint<()>>::verify(&c);
+
+        assert!(r.is_ok());
     }
 }
