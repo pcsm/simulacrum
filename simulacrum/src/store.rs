@@ -58,13 +58,13 @@ impl ExpectationStore {
 
             ExpectationMatcher {
                 ids,
-                _sig: sig,
+                sig,
                 store: &self
             }
         } else {
             ExpectationMatcher {
                 ids: Vec::new(),
-                _sig: sig,
+                sig,
                 store: &self
             }
         }
@@ -177,7 +177,7 @@ impl<'a, I, O> ExpectationEditor<'a, I, O> where
 // O is the return value or () if there is no return value.
 pub(crate) struct ExpectationMatcher<'a, I, O> {
     ids: Vec<ExpectationId>,
-    _sig: MethodSig<I, O>,
+    sig: MethodSig<I, O>,
     store: &'a ExpectationStore
 }
 
@@ -193,10 +193,20 @@ impl<'a, I, O> ExpectationMatcher<'a, I, O> where
         self
     }
 
-    /// Return the result of the closure the user provided with `TrackedMethod.returning()`.
-    pub fn returning(self) -> O {
-        // TODO: Call returning behavior and return the result
-        unimplemented!()
+    /// Same as `was_called()`, but returns a value as well.
+    ///
+    /// Returns the result of the closure the user provided with `TrackedMethod.returning()`.
+    ///
+    /// If multiple Expectations are matched, the last one matched is used.
+    ///
+    /// If no closure was specified or no expectations matched, this method panics.
+    pub fn was_called_returning(mut self, params: I) -> O {
+        if let Some(id) = self.ids.pop() {
+            self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().handle_call(&params);
+            self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().return_value_for(&params)
+        } else {
+            panic!("No expectations matched method call `{}`.", self.sig.name);
+        }
     }
 
     // For Testing

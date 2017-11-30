@@ -51,8 +51,7 @@ impl Expectations {
     {
         self.store
             .matcher_for::<I, O>(name)
-            .was_called(params)
-            .returning()
+            .was_called_returning(params)
     }
 
     fn verify(&self) {
@@ -121,5 +120,47 @@ mod tests {
         e.expect::<(), ()>("blitz").called_never();
         
         e.was_called::<(), ()>("blitz", ());
+    }
+
+    #[test]
+    fn test_called_any_zero() {
+        let mut e = Expectations::new();
+        e.expect::<(), ()>("mega").called_any();
+    }
+
+    #[test]
+    fn test_called_any_two() {
+        let mut e = Expectations::new();
+        e.expect::<(), ()>("mega").called_any();
+
+        e.was_called::<(), ()>("mega", ());
+        e.was_called::<(), ()>("mega", ());
+    }
+
+    #[test]
+    fn test_param() {
+        let mut e = Expectations::new();
+        e.expect::<i32, ()>("doog").called_once().with(|&arg| arg > 5);
+        
+        e.was_called::<i32, ()>("doog", 10);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_param_fail() {
+        let mut e = Expectations::new();
+        e.expect::<i32, ()>("doog").called_once().with(|&arg| arg > 5);
+        
+        e.was_called::<i32, ()>("doog", 1);
+    }
+
+    #[test]
+    fn test_returning() {
+        let mut e = Expectations::new();
+        e.expect::<(), i32>("boye").called_any().returning(|_| 5);
+
+        let r = e.was_called_returning::<(), i32>("boye", ());
+
+        assert_eq!(r, 5);
     }
 }

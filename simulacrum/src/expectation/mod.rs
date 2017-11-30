@@ -18,7 +18,8 @@ pub struct Expectation<I, O> where
 }
 
 impl<I, O> Expectation<I, O> where
-    I: 'static
+    I: 'static,
+    O: 'static
 {
     pub fn new(name: MethodName) -> Self {
         Expectation {
@@ -31,6 +32,14 @@ impl<I, O> Expectation<I, O> where
     pub fn handle_call(&mut self, params: &I) {
         for constraint in self.constraints.iter_mut() {
             constraint.handle_call(params);
+        }
+    }
+
+    pub fn return_value_for(&mut self, params: &I) -> O {
+        if self.return_fn.is_some() {
+            (self.return_fn.as_mut().unwrap())(params)
+        } else {
+            panic!("No return closure specified for `{}`, which should return.", self.name);
         }
     }
 
@@ -117,14 +126,13 @@ mod tests {
     }
 
     #[test]
-    fn test_set_return() {
+    fn test_return() {
         let mut e: Expectation<(), i32> = Expectation::new("yaz");
 
         e.set_return(|_| 5);
 
         assert!(e.return_fn.is_some(), "Return Closure Should Exist");
-        let mut f = e.return_fn.unwrap();
-        assert_eq!(f(&()), 5, "Return Closure Should return 5");
+        assert_eq!(e.return_value_for(&()), 5, "Return Closure Should return 5");
     }
 
     #[test]
