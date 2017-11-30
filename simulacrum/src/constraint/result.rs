@@ -1,9 +1,10 @@
+use std::clone::Clone;
 use std::fmt;
 
 /// The Error type is a message to be printed to the user.
 pub type ConstraintResult = Result<(), ConstraintError>;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ConstraintError {
     AlwaysFail,
     CalledTooFewTimes(i64),

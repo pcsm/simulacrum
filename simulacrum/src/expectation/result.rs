@@ -1,3 +1,4 @@
+use std::clone::Clone;
 use std::fmt;
 
 use MethodName;
@@ -5,7 +6,7 @@ use constraint::ConstraintError;
 
 pub type ExpectationResult = Result<(), ExpectationError>;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ExpectationError {
     pub constraint_err: ConstraintError,
     pub method_name: MethodName

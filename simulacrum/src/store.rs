@@ -11,39 +11,22 @@ use super::user::{MethodSig, MethodTypes};
 pub(crate) struct ExpectationStore(Mutex<Inner>);
 
 struct Inner {
+    current_unverified_era: usize,
     eras: Vec<Era>,
-    expectations: HandleBox<Box<ExpectationT>>
+    expectations: HandleBox<Box<ExpectationT>>,
+    status: ExpectationResult
 }
 
-// A set of expectations that should be met at the same time.
-//
-// Calling `ExpectationsStore.then()` creates a new era.
-// 
-// All expectations in an era must be met before the next era is evaluated.
-struct Era {
-    expectations: Vec<ExpectationId>,
-    pub is_complete: bool
-}
-
-impl Era {
-    fn new() -> Self {
-        Self {
-            expectations: Vec::new(),
-            is_complete: false
-        }
-    }
-
-    fn add(&mut self, id: ExpectationId) {
-        self.expectations.push(id)
-    }
-}
+type Era = Vec<ExpectationId>;
 
 impl ExpectationStore {
     pub fn new() -> Self {
         let eras = vec![Era::new()];
         ExpectationStore(Mutex::new(Inner {
+            current_unverified_era: 0,
             eras,
-            expectations: HandleBox::new()
+            expectations: HandleBox::new(),
+            status: Ok(())
         }))
     }
 
@@ -88,14 +71,52 @@ impl ExpectationStore {
         let id = inner.expectations.add(Box::new(expectation));
 
         // Add that new expectation to the current Era
-        inner.eras.last_mut().unwrap().add(id);
+        inner.eras.last_mut().unwrap().push(id);
 
         id
     }
 
     /// Verify all expectations in this store.
     pub fn verify(&self) -> ExpectationResult {
+        // Lock our inner mutex
+        let mut inner = self.0.lock().unwrap();
+
+        // Mark Eras as complete if all of their expectations have been met
+        // 'eras: for era in inner.eras.iter() {
+        //     // Once an era is complete, we don't need to check it anymore
+        //     if !era.is_complete() {
+        //         for id in era.expectations.iter() {
+        //             let expectation = inner.expectations.get(id).unwrap();
+        //             let r = expectation.verify();
+
+        //             if r.is_err() {
+        //                 // Note the error in this Era
+        //                 era.status = r;
+        //                 // Stop processing Eras since this one is still incomplete
+        //                 break 'eras;
+        //             }
+        //         }
+
+        //         // If we get here, it means that all the Expectations in this Era
+        //         // have been met, so we can mark it as complete.
+        //         era.status = Ok(());
+        //     }
+        // }
+
+        // // Verify each Era in order
+        // for era in inner.eras.iter_mut() {
+        //     if !era.is_complete() {
+        //         unimplemented!()
+        //     }
+        //     // if let Err(expectation_error) = era.status {
+        //     // }
+        // }
+
         Ok(())
+    }
+
+    fn status(&self) -> ExpectationResult {
+        self.0.lock().unwrap().status.clone()
     }
 
     /// (For testing) Get the number of total Expectations in the store.
@@ -172,8 +193,9 @@ mod store_tests {
     fn test_new() {
         let s = ExpectationStore::new();
 
-        assert_eq!(s.era_count(), 1, "Number of Eras");
-        assert_eq!(s.exp_count(), 0, "Number of Expectations");
+        assert!(s.status().is_ok(), "Store should be Ok after creation");
+        assert_eq!(s.era_count(), 1, "Store should have one Era after creation");
+        assert_eq!(s.exp_count(), 0, "Store should have no Expectations after creation");
     }
 
     #[test]
@@ -210,17 +232,17 @@ mod store_tests {
 
     #[test]
     fn test_verify_simple_fail() {
-        // let s = ExpectationStore::new();
-        // let mut e: Expectation<(), ()> = Expectation::new("zooks");
-        // e.constrain(AlwaysFail);
-        // s.add(e);
+        let s = ExpectationStore::new();
+        let mut e: Expectation<(), ()> = Expectation::new("zooks");
+        e.constrain(AlwaysFail);
+        s.add(e);
 
-        // let r = s.verify();
+        let r = s.verify();
 
-        // assert!(r.is_err(), "Store should fail");
-        // let r = r.unwrap_err();
-        // assert_eq!(r.method_name, "zooks", "Store error should have the correct method name");
-        // assert_eq!(r.constraint_err, ConstraintError::AlwaysFail, "Store error should contain the correct Constraint error");
+        assert!(r.is_err(), "Store should fail");
+        let r = r.unwrap_err();
+        assert_eq!(r.method_name, "zooks", "Store error should have the correct method name");
+        assert_eq!(r.constraint_err, ConstraintError::AlwaysFail, "Store error should contain the correct Constraint error");
     }
 
     #[test]
