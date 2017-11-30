@@ -1,5 +1,6 @@
 extern crate handlebox;
 
+pub mod constraint;
 pub mod expectation;
 pub mod user;
 pub mod mock;

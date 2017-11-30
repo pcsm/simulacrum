@@ -2,11 +2,10 @@ use std::any::Any;
 
 use super::{ExpectationId, MethodName};
 
-pub mod constraint;
-pub mod result;
-
-pub use self::constraint::Constraint;
+pub use super::constraint::Constraint;
 pub use self::result::{ExpectationError, ExpectationResult};
+
+pub mod result;
 
 /// An expectation that a method must be called. Also includes an optional
 /// closure to produce return values, if necessary.
@@ -64,7 +63,7 @@ impl<I, O> ExpectationT for Expectation<I, O> where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::constraint::AlwaysPass;
+    use constraint::stock::always::AlwaysPass;
 
     #[test]
     fn test_new() {

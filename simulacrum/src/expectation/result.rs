@@ -1,5 +1,5 @@
 use std::fmt;
-use super::constraint::{ConstraintError, ConstraintResult};
+use constraint::{ConstraintError, ConstraintResult};
 
 use MethodName;
 
