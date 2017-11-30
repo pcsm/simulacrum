@@ -40,29 +40,33 @@ impl ExpectationStore {
         I: 'static,
         O: 'static
     {
-
-        // Lock our inner mutex
-        let mut inner = self.0.lock().unwrap();
-
-        // If all of our Eras are verfied, push a new one
-        if inner.current_unverified_era >= inner.eras.len() {
-            inner.eras.push(Vec::new());
-        }
-
-        // Gather up ids for expectations that match this one in the current Era
-        let mut ids = inner.eras.get(inner.current_unverified_era).unwrap().clone();
-        ids.retain(|&id| {
-            inner.expectations.get(&id).unwrap().name() == name
-        });
-
         let sig = MethodSig {
             name,
             types: MethodTypes::new()
         };
-        ExpectationMatcher {
-            ids,
-            sig,
-            store: &self
+
+        // Lock our inner mutex
+        let mut inner = self.0.lock().unwrap();
+
+        // Only return ids if we have unverified Eras remaining
+        if inner.current_unverified_era < inner.eras.len() {
+            // Gather up ids for expectations that match this one in the current Era
+            let mut ids = inner.eras.get(inner.current_unverified_era).unwrap().clone();
+            ids.retain(|&id| {
+                inner.expectations.get(&id).unwrap().name() == name
+            });
+
+            ExpectationMatcher {
+                ids,
+                sig,
+                store: &self
+            }
+        } else {
+            ExpectationMatcher {
+                ids: Vec::new(),
+                sig,
+                store: &self
+            }
         }
     }
 
@@ -294,7 +298,18 @@ mod store_tests {
         assert_eq!(m.id_count(), 1, "Ids matched should be 1");
     }
 
-    // #[test]
-    // fn test_matcher_current_era_passed() {
-    // }
+    #[test]
+    fn test_matcher_current_era_passed() {
+        let s = ExpectationStore::new();
+        let mut e: Expectation<(), ()> = Expectation::new("buzz");
+        e.constrain(AlwaysPass);
+        s.add(e);
+
+        // Cheat and bump up the current unverified era to the end
+        s.0.lock().unwrap().current_unverified_era = 1; 
+
+        let m = s.matcher_for::<(), ()>("buzz");
+
+        assert_eq!(m.id_count(), 0, "Ids matched should be 0");
+    }
 }
