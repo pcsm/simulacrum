@@ -82,4 +82,44 @@ mod tests {
 
         // Verified on drop
     }
+
+    #[test]
+    #[should_panic]
+    fn test_called_once_fail() {
+        let mut e = Expectations::new();
+        e.expect::<(), ()>("spoo").called_once();
+    }
+
+    #[test]
+    fn test_called_twice() {
+        let mut e = Expectations::new();
+        e.expect::<(), ()>("nom").called_times(2);
+        
+        e.was_called::<(), ()>("nom", ());
+        e.was_called::<(), ()>("nom", ());
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_called_twice_fail() {
+        let mut e = Expectations::new();
+        e.expect::<(), ()>("nom").called_times(2);
+        
+        e.was_called::<(), ()>("nom", ());
+    }
+
+    #[test]
+    fn test_called_never_pass() {
+        let mut e = Expectations::new();
+        e.expect::<(), ()>("blitz").called_never();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_called_never_fail() {
+        let mut e = Expectations::new();
+        e.expect::<(), ()>("blitz").called_never();
+        
+        e.was_called::<(), ()>("blitz", ());
+    }
 }
