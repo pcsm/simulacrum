@@ -1,10 +1,13 @@
 #![feature(proc_macro)]
 
-             extern crate syn;
-#[macro_use] extern crate quote;
              extern crate proc_macro;
+#[macro_use] extern crate quote;
+             extern crate simulacrum;
+             extern crate syn;
 
 use proc_macro::TokenStream;
+use simulacrum::*;
+
 use std::str::FromStr;
 
 fn print_funcs(funcs: Vec<syn::TraitItem>) {
@@ -38,7 +41,9 @@ fn simulacrum_internal(input: &str) -> quote::Tokens {
     let output = quote! {
         #item
 
-        pub struct #name;
+        pub struct #name {
+            e: Expectations
+        }
     };
 
     output
@@ -60,45 +65,35 @@ mod tests {
     #[test]
     fn it_works() {
         let input = quote! {
-            pub trait ContainerBehavior<D, E> {
-                // Retrieve a list of this views's children, if you have any.
-                fn children(&self) -> Option<&Vec<ViewRef<E>>>;
+            pub trait CoolTrait {
+                // Shared self
+                fn foo(&self);
 
-                /// The view's frame has been updated, so lay out its children.
-                fn layout(&mut self, state: &ViewState<D>);
+                // Mutable self
+                fn bar(&mut self);
 
-                /// This view's data has been updated, so lay out its children if you need to.
-                #[allow(unused_variables)]
-                fn data_updated(&mut self, state: &ViewState<D>) { }
-                
-                // Lifecycle
-                #[allow(unused_variables)]
-                fn setup(&mut self, state: &ViewState<D>) { }
-                #[allow(unused_variables)]
-                fn cleanup(&mut self, state: &ViewState<D>) { }
+                // One parameter and returning a value
+                fn goop(&mut self, flag: bool) -> u32;
+
+                // Multiple parameters
+                fn zing(&self, first: i32, second: bool);
+
+                // Note: It doesn't work with references yet!
+                // fn boop(&self, name: &'static str)
             }
         };
 
         let expected = quote! {
-            pub trait ContainerBehavior<D, E> {
-                // Retrieve a list of this views's children, if you have any.
-                fn children(&self) -> Option<&Vec<ViewRef<E> > >;
-
-                /// The view's frame has been updated, so lay out its children.
-                fn layout(&mut self, state: &ViewState<D>);
-
-                /// This view's data has been updated, so lay out its children if you need to.
-                #[allow(unused_variables)]
-                fn data_updated(&mut self, state: &ViewState<D>) { }
-                
-                // Lifecycle
-                #[allow(unused_variables)]
-                fn setup(&mut self, state: &ViewState<D>) { }
-                #[allow(unused_variables)]
-                fn cleanup(&mut self, state: &ViewState<D>) { }
+            pub trait CoolTrait {
+                fn foo(&self);
+                fn bar(&mut self);
+                fn goop(&mut self, flag: bool) -> u32;
+                fn zing(&self, first: i32, second: bool);
             }
 
-            pub struct ContainerBehaviorMock;
+            pub struct CoolTraitMock {
+                e: Expectations
+            }
         };
 
         let result = simulacrum_internal(input.as_str());
