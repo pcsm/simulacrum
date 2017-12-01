@@ -44,6 +44,14 @@ fn simulacrum_internal(input: &str) -> quote::Tokens {
         pub struct #name {
             e: Expectations
         }
+
+        impl #name {
+            pub fn new() -> Self {
+                Self {
+                    e: Expectations::new()
+                }
+            }
+        }
     };
 
     output
@@ -93,6 +101,14 @@ mod tests {
 
             pub struct CoolTraitMock {
                 e: Expectations
+            }
+
+            impl CoolTraitMock {
+                pub fn new() -> Self {
+                    Self {
+                        e: Expectations::new()
+                    }
+                }
             }
         };
 
