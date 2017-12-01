@@ -1,4 +1,5 @@
 #![feature(proc_macro)]
+#![recursion_limit="128"]
 
              extern crate proc_macro;
 #[macro_use] extern crate quote;
@@ -25,6 +26,12 @@ fn get_trait_items(item: &syn::Item) -> Vec<syn::TraitItem> {
     }
 }
 
+fn generate_expects(trait_items: &Vec<syn::TraitItem>) -> quote::Tokens {
+    unimplemented!()
+    // for trait_item in trait_items {
+    // }
+}
+
 fn simulacrum_internal(input: &str) -> quote::Tokens {
     // Generate the AST from the token stream we were given
     let item = syn::parse_item(&input.to_string()).unwrap();
@@ -35,8 +42,8 @@ fn simulacrum_internal(input: &str) -> quote::Tokens {
     let name = syn::Ident::new(format!("{}Mock", name.as_str()));
 
     // Print out function information
-    let items = get_trait_items(&item);
-    print_funcs(items);
+    let trait_item = get_trait_items(&item);
+    let expects = generate_expects(&trait_item);
 
     let output = quote! {
         #item
@@ -51,6 +58,13 @@ fn simulacrum_internal(input: &str) -> quote::Tokens {
                     e: Expectations::new()
                 }
             }
+
+            pub fn then(&mut self) -> &mut Self {
+                self.e.then();
+                self
+            }
+
+            #expects
         }
     };
 
@@ -108,6 +122,27 @@ mod tests {
                     Self {
                         e: Expectations::new()
                     }
+                }
+
+                pub fn then(&mut self) -> &mut Self {
+                    self.e.then();
+                    self
+                }
+
+                pub fn expect_foo(&mut self) -> Method<(), ()> {
+                    self.e.expect::<(), ()>("foo")
+                }
+
+                pub fn expect_bar(&mut self) -> Method<(), ()> {
+                    self.e.expect::<(), ()>("bar")
+                }
+
+                pub fn expect_goop(&mut self) -> Method<bool, u32> {
+                    self.e.expect::<bool, u32>("goop")
+                }
+
+                pub fn expect_zing(&mut self) -> Method<(i32, bool), ()> {
+                    self.e.expect::<(i32, bool), ()>("zing")
                 }
             }
         };
