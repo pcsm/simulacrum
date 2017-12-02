@@ -8,9 +8,13 @@
 
 use proc_macro::TokenStream;
 use quote::ToTokens;
-use simulacrum::*;
 
 use std::str::FromStr;
+
+struct Method {
+    ident: syn::Ident,
+    sig: syn::MethodSig
+}
 
 #[proc_macro_attribute]
 pub fn simulacrum(_args: TokenStream, input: TokenStream) -> TokenStream {
@@ -75,22 +79,36 @@ fn get_trait_items(item: &syn::Item) -> Vec<syn::TraitItem> {
 }
 
 fn generate_expects(trait_items: &Vec<syn::TraitItem>) -> quote::Tokens {
+    let methods = gather_trait_methods(trait_items);
+
     let mut result = quote::Tokens::new();
+    for method in methods {
+        let ident = method.ident;
+        let ident_tokens = quote!{ #ident };
+        let ident_str = ident_tokens.as_str();
+        let name = expectify_method_name(&ident);
+        let otype = generate_output_type(&method.sig.decl.output);
+        let ituple = generate_input_tuple(&method.sig.decl.inputs);
+        let expect_method = quote! {
+            pub fn #name(&mut self) -> Method<#ituple, #otype> {
+                self.e.expect::<#ituple, #otype>(#ident_str)
+            }
+        };
+        result.append(expect_method)
+    }
+    result
+}
+
+fn gather_trait_methods(trait_items: &Vec<syn::TraitItem>) -> Vec<Method> {
+    let mut result = Vec::new();
     for item in trait_items {
         match item.node {
             syn::TraitItemKind::Method(ref sig, _) => {
-                let ident = &item.ident;
-                let ident_tokens = quote!{ #ident };
-                let ident_str = ident_tokens.as_str();
-                let name = expectify_method_name(&ident);
-                let otype = generate_output_type(&sig.decl.output);
-                let ituple = generate_input_tuple(&sig.decl.inputs);
-                let expect_method = quote! {
-                    pub fn #name(&mut self) -> Method<#ituple, #otype> {
-                        self.e.expect::<#ituple, #otype>(#ident_str)
-                    }
+                let m = Method {
+                    ident: item.ident.clone(),
+                    sig: sig.clone()
                 };
-                result.append(expect_method)
+                result.push(m);
             },
             _ => { }
         }
@@ -151,9 +169,9 @@ fn gather_captured_arg_types(input: &Vec<syn::FnArg>) -> Vec<syn::Ty> {
 
 fn generate_stubs(trait_items: &Vec<syn::TraitItem>) -> quote::Tokens {
     let mut result = quote::Tokens::new();
-    // for item in trait_items {
-    //     match item.node {
-    //         syn::TraitItemKind::Method(ref sig, _) => {
+    for item in trait_items {
+        match item.node {
+            syn::TraitItemKind::Method(ref sig, _) => {
     //             let ident = &item.ident;
     //             let ident_tokens = quote!{ #ident };
     //             let ident_str = ident_tokens.as_str();
@@ -165,10 +183,10 @@ fn generate_stubs(trait_items: &Vec<syn::TraitItem>) -> quote::Tokens {
     //                 }
     //             };
     //             result.append(expect_method)
-    //         },
-    //         _ => { }
-    //     }
-    // }
+            },
+            _ => { }
+        }
+    }
     result
 }
 
@@ -274,6 +292,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn it_works() {
         let input = quote! {
             pub trait CoolTrait {
