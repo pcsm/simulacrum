@@ -33,12 +33,14 @@ fn generate_expects(trait_items: &Vec<syn::TraitItem>) -> quote::Tokens {
         match item.node {
             syn::TraitItemKind::Method(ref sig, _) => {
                 let ident = &item.ident;
+                let ident_tokens = quote!{ #ident };
+                let ident_str = ident_tokens.as_str();
                 let name = expectify_method_name(&ident);
                 let otype = generate_output_type(&sig.decl.output);
-                let itypes = &sig.decl.inputs;
+                let ituple = generate_input_tuple(&sig.decl.inputs);
                 let expect_method = quote! {
-                    pub fn #name(&mut self) -> Method<(), #otype> {
-                        self.e.expect::<(), #otype>("#ident")
+                    pub fn #name(&mut self) -> Method<#ituple, #otype> {
+                        self.e.expect::<#ituple, #otype>(#ident_str)
                     }
                 };
                 result.append(expect_method)
@@ -64,7 +66,8 @@ fn generate_input_tuple(input: &Vec<syn::FnArg>) -> quote::Tokens {
     let types = gather_captured_arg_types(input);
 
     let mut result = quote::Tokens::new();
-    match types.len() {
+    let num_types = types.len();
+    match num_types {
         1 => {
             let first = types.first().unwrap();
             first.to_tokens(&mut result);
@@ -76,8 +79,8 @@ fn generate_input_tuple(input: &Vec<syn::FnArg>) -> quote::Tokens {
                 ty.to_tokens(&mut result);
                 num_added += 1;
 
-                if num_added < input.len() {
-                    result.append(", ");
+                if num_added < num_types {
+                    result.append(",");
                 }
             }
             result.append(")");
@@ -213,6 +216,35 @@ mod tests {
         input.push(arg);
 
         let expected = quote! { i32 };
+
+        let result = generate_input_tuple(&input);
+
+        assert_eq!(expected, result);
+    }
+
+    #[test]
+    // Test for fn blah(&self, arg1: i32, arg2: bool)
+    fn test_generate_input_tuple_self_ref_two_captured() {
+        let mut input = Vec::new();
+        // &self
+        let arg = syn::FnArg::SelfRef(None, syn::Mutability::Immutable);
+        input.push(arg);
+        // arg1: i32
+        let binding_mode = syn::BindingMode::ByValue(syn::Mutability::Immutable);
+        let ident = syn::parse_ident("arg1").unwrap();
+        let pattern = syn::Pat::Ident(binding_mode, ident, None);
+        let ty = syn::parse_type("i32").unwrap();
+        let arg = syn::FnArg::Captured(pattern, ty);
+        input.push(arg);
+        // arg2: bool
+        let binding_mode = syn::BindingMode::ByValue(syn::Mutability::Immutable);
+        let ident = syn::parse_ident("arg2").unwrap();
+        let pattern = syn::Pat::Ident(binding_mode, ident, None);
+        let ty = syn::parse_type("bool").unwrap();
+        let arg = syn::FnArg::Captured(pattern, ty);
+        input.push(arg);
+
+        let expected = quote! { ( i32, bool ) };
 
         let result = generate_input_tuple(&input);
 
