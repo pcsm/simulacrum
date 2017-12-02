@@ -27,14 +27,35 @@ fn get_trait_items(item: &syn::Item) -> Vec<syn::TraitItem> {
 }
 
 fn generate_expects(trait_items: &Vec<syn::TraitItem>) -> quote::Tokens {
-    // unimplemented!();
-    for trait_item in trait_items {
+    let mut result = quote::Tokens::new();
+    for item in trait_items {
         match item.node {
-            syn::TraitItemKind::Method(_, _) => {
-                quote::Tokens::new()
+            syn::TraitItemKind::Method(ref sig, _) => {
+                let ident = &item.ident;
+                let name = expectify_method_name(&ident);
+                let otype = generate_output_type(&sig.decl.output);
+                let itypes = &sig.decl.inputs;
+                let expect_method = quote! {
+                    pub fn #name(&mut self) -> Method<(), #otype> {
+                        self.e.expect::<(), #otype>("#ident")
+                    }
+                };
+                result.append(expect_method)
             },
-            _ => quote::Tokens::new()
+            _ => { }
         }
+    }
+    result
+}
+
+fn expectify_method_name(ident: &syn::Ident) -> syn::Ident {
+    syn::Ident::new(format!("expect_{}", ident))
+}
+
+fn generate_output_type(ret_type: &syn::FunctionRetTy) -> quote::Tokens {
+    match ret_type {
+        &syn::FunctionRetTy::Default => quote! { () },
+        &syn::FunctionRetTy::Ty(ref ty) => quote! { #ty }
     }
 }
 
@@ -91,6 +112,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[ignore]
     fn it_works() {
         let input = quote! {
             pub trait CoolTrait {
