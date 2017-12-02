@@ -60,30 +60,42 @@ fn generate_output_type(output: &syn::FunctionRetTy) -> quote::Tokens {
     }
 }
 
-fn generate_input_types(input: &Vec<syn::FnArg>) -> quote::Tokens {
+fn generate_input_tuple(input: &Vec<syn::FnArg>) -> quote::Tokens {
+    let types = gather_input_types(input);
+
     let mut result = quote::Tokens::new();
-    match input.len() {
+    match types.len() {
         1 => {
-            // input.first().unwrap().to_tokens(&mut result);
-            let first = input.first().unwrap();
-            match first {
-                &syn::FnArg::Captured(ref _pattern, ref ty) => {
-                    ty.to_tokens(&mut result);
-                },
-                _ => {
-                    result.append("( )");
-                }
-            }
+            let first = types.first().unwrap();
+            first.to_tokens(&mut result);
         },
         _ => {
             result.append("(");
-            for arg in input {
-                arg.to_tokens(&mut result);
-                result.append(", ");
+            let mut num_added = 0;
+            for ty in types {
+                ty.to_tokens(&mut result);
+                num_added += 1;
+
+                if num_added < input.len() {
+                    result.append(", ");
+                }
             }
             result.append(")");
         }
-    };
+    }
+    result
+}
+
+fn gather_input_types(input: &Vec<syn::FnArg>) -> Vec<syn::Ty> {
+    let mut result = Vec::new();
+    for arg in input {
+        match arg {
+            &syn::FnArg::Captured(ref _pattern, ref ty) => {
+                result.push(ty.clone());
+            },
+            _ => { }
+        }
+    }
     result
 }
 
@@ -141,19 +153,19 @@ mod tests {
 
     #[test]
     // Test for fn blah()
-    fn test_generate_input_types_none() {
+    fn test_generate_input_tuple_none() {
         let input = Vec::new();
 
         let expected = quote! { () };
 
-        let result = generate_input_types(&input);
+        let result = generate_input_tuple(&input);
 
         assert_eq!(expected, result);
     }
 
     #[test]
     // Test for fn blah(arg: i32)
-    fn test_generate_input_types_one_captured() {
+    fn test_generate_input_tuple_one_captured() {
         let mut input = Vec::new();
         // arg: i32
         let binding_mode = syn::BindingMode::ByValue(syn::Mutability::Immutable);
@@ -165,14 +177,14 @@ mod tests {
 
         let expected = quote! { i32 };
 
-        let result = generate_input_types(&input);
+        let result = generate_input_tuple(&input);
 
         assert_eq!(expected, result);
     }
 
     #[test]
     // Test for fn blah(&self)
-    fn test_generate_input_types_self_ref() {
+    fn test_generate_input_tuple_self_ref() {
         let mut input = Vec::new();
         // &self
         let arg = syn::FnArg::SelfRef(None, syn::Mutability::Immutable);
@@ -180,14 +192,14 @@ mod tests {
 
         let expected = quote! { () };
 
-        let result = generate_input_types(&input);
+        let result = generate_input_tuple(&input);
 
         assert_eq!(expected, result);
     }
 
     #[test]
     // Test for fn blah(&self, arg: i32)
-    fn test_generate_input_types_self_ref_one_captured() {
+    fn test_generate_input_tuple_self_ref_one_captured() {
         let mut input = Vec::new();
         // &self
         let arg = syn::FnArg::SelfRef(None, syn::Mutability::Immutable);
@@ -202,7 +214,7 @@ mod tests {
 
         let expected = quote! { i32 };
 
-        let result = generate_input_types(&input);
+        let result = generate_input_tuple(&input);
 
         assert_eq!(expected, result);
     }
