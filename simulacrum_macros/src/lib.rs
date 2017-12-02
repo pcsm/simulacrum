@@ -12,10 +12,57 @@ use simulacrum::*;
 
 use std::str::FromStr;
 
-fn print_funcs(funcs: Vec<syn::TraitItem>) {
-    for func in funcs {
-        println!("{:?}", func.ident);
-    }
+#[proc_macro_attribute]
+pub fn simulacrum(_args: TokenStream, input: TokenStream) -> TokenStream {
+    // Generate the Rust code string to use as the output
+    let output = simulacrum_internal(&input.to_string());
+
+    // Turn that Rust back into a token stream
+    TokenStream::from_str(output.as_str()).unwrap()
+}
+
+fn simulacrum_internal(input: &str) -> quote::Tokens {
+    // Generate the AST from the token stream we were given
+    let item = syn::parse_item(&input.to_string()).unwrap();
+
+    // Generate struct name
+    let ident = &item.ident;
+    let name = quote! { #ident };
+    let name = syn::Ident::new(format!("{}Mock", name.as_str()));
+
+    // Print out function information
+    let trait_item = get_trait_items(&item);
+    let expects = generate_expects(&trait_item);
+    let stubs = generate_stubs(&trait_item);
+
+    let output = quote! {
+        #item
+
+        pub struct #name {
+            e: Expectations
+        }
+
+        impl #name {
+            pub fn new() -> Self {
+                Self {
+                    e: Expectations::new()
+                }
+            }
+
+            pub fn then(&mut self) -> &mut Self {
+                self.e.then();
+                self
+            }
+
+            #expects
+        }
+
+        impl #ident for #name {
+            #stubs
+        }
+    };
+
+    output
 }
 
 fn get_trait_items(item: &syn::Item) -> Vec<syn::TraitItem> {
@@ -102,52 +149,27 @@ fn gather_captured_arg_types(input: &Vec<syn::FnArg>) -> Vec<syn::Ty> {
     result
 }
 
-fn simulacrum_internal(input: &str) -> quote::Tokens {
-    // Generate the AST from the token stream we were given
-    let item = syn::parse_item(&input.to_string()).unwrap();
-
-    // Generate struct name
-    let ident = &item.ident;
-    let name = quote! { #ident };
-    let name = syn::Ident::new(format!("{}Mock", name.as_str()));
-
-    // Print out function information
-    let trait_item = get_trait_items(&item);
-    let expects = generate_expects(&trait_item);
-
-    let output = quote! {
-        #item
-
-        pub struct #name {
-            e: Expectations
-        }
-
-        impl #name {
-            pub fn new() -> Self {
-                Self {
-                    e: Expectations::new()
-                }
-            }
-
-            pub fn then(&mut self) -> &mut Self {
-                self.e.then();
-                self
-            }
-
-            #expects
-        }
-    };
-
-    output
-}
-
-#[proc_macro_attribute]
-pub fn simulacrum(_args: TokenStream, input: TokenStream) -> TokenStream {
-    // Generate the Rust code string to use as the output
-    let output = simulacrum_internal(&input.to_string());
-
-    // Turn that Rust back into a token stream
-    TokenStream::from_str(output.as_str()).unwrap()
+fn generate_stubs(trait_items: &Vec<syn::TraitItem>) -> quote::Tokens {
+    let mut result = quote::Tokens::new();
+    // for item in trait_items {
+    //     match item.node {
+    //         syn::TraitItemKind::Method(ref sig, _) => {
+    //             let ident = &item.ident;
+    //             let ident_tokens = quote!{ #ident };
+    //             let ident_str = ident_tokens.as_str();
+    //             let otype = generate_output_type(&sig.decl.output);
+    //             let ituple = generate_input_tuple(&sig.decl.inputs);
+    //             let expect_method = quote! {
+    //                 pub fn #ident(&mut self) -> Method<#ituple, #otype> {
+    //                     self.e.expect::<#ituple, #otype>(#ident_str)
+    //                 }
+    //             };
+    //             result.append(expect_method)
+    //         },
+    //         _ => { }
+    //     }
+    // }
+    result
 }
 
 #[cfg(test)]
@@ -310,6 +332,24 @@ mod tests {
 
                 pub fn expect_zing(&mut self) -> Method<(i32, bool), ()> {
                     self.e.expect::<(i32, bool), ()>("zing")
+                }
+            }
+
+            impl CoolTrait for CoolTraitMock {
+                fn foo(&self) {
+                    self.e.was_called::<(), ()>("foo", ())
+                }
+
+                fn bar(&mut self) {
+                    self.e.was_called::<(), ()>("bar", ())
+                }
+
+                fn goop(&mut self, flag: bool) -> u32 {
+                    self.e.was_called_returning::<bool, u32>("goop", flag)
+                }
+
+                fn zing(&self, first: i32, second: bool) {
+                    self.e.was_called::<(i32, bool), ()>("zing", (first, second))
                 }
             }
         };
