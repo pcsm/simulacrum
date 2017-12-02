@@ -7,6 +7,7 @@
              extern crate syn;
 
 use proc_macro::TokenStream;
+use quote::ToTokens;
 use simulacrum::*;
 
 use std::str::FromStr;
@@ -52,11 +53,29 @@ fn expectify_method_name(ident: &syn::Ident) -> syn::Ident {
     syn::Ident::new(format!("expect_{}", ident))
 }
 
-fn generate_output_type(ret_type: &syn::FunctionRetTy) -> quote::Tokens {
-    match ret_type {
+fn generate_output_type(output: &syn::FunctionRetTy) -> quote::Tokens {
+    match output {
         &syn::FunctionRetTy::Default => quote! { () },
         &syn::FunctionRetTy::Ty(ref ty) => quote! { #ty }
     }
+}
+
+fn generate_input_types(input: &Vec<syn::FnArg>) -> quote::Tokens {
+    let mut result = quote::Tokens::new();
+    match input.len() {
+        1 => {
+            input.first().unwrap().to_tokens(&mut result);
+        },
+        _ => {
+            result.append("(");
+            for arg in input {
+                arg.to_tokens(&mut result);
+                result.append(", ");
+            }
+            result.append(")");
+        }
+    };
+    result
 }
 
 fn simulacrum_internal(input: &str) -> quote::Tokens {
@@ -110,6 +129,33 @@ pub fn simulacrum(_args: TokenStream, input: TokenStream) -> TokenStream {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    // Test for fn blah()
+    fn test_generate_input_types_none() {
+        let mut input = Vec::new();
+
+        let expected = quote! { () };
+
+        let result = generate_input_types(&input);
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    #[ignore]
+    // Test for fn blah(&self)
+    fn test_generate_input_types_self_ref() {
+        let mut input = Vec::new();
+        let arg = syn::FnArg::SelfRef(None, syn::Mutability::Immutable);
+        input.push(arg);
+
+        let expected = quote! { () };
+
+        let result = generate_input_types(&input);
+
+        assert_eq!(result, expected);
+    }
 
     #[test]
     #[ignore]
