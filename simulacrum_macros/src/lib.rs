@@ -20,7 +20,7 @@ fn print_funcs(funcs: Vec<syn::TraitItem>) {
 
 fn get_trait_items(item: &syn::Item) -> Vec<syn::TraitItem> {
     match item.node {
-        syn::ItemKind::Trait(unsafety, ref generics, ref ty_param_bound, ref items) => {
+        syn::ItemKind::Trait(_unsafety, ref _generics, ref _ty_param_bound, ref items) => {
             items.clone()
         },
         _ => vec![].clone()
@@ -142,7 +142,7 @@ mod tests {
     #[test]
     // Test for fn blah()
     fn test_generate_input_types_none() {
-        let mut input = Vec::new();
+        let input = Vec::new();
 
         let expected = quote! { () };
 
