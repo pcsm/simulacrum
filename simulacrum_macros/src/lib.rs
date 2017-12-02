@@ -148,13 +148,33 @@ mod tests {
 
         let result = generate_input_types(&input);
 
-        assert_eq!(result, expected);
+        assert_eq!(expected, result);
+    }
+
+    #[test]
+    // Test for fn blah(foo: i32)
+    fn test_generate_input_types_only_captured() {
+        let mut input = Vec::new();
+        // arg: i32
+        let binding_mode = syn::BindingMode::ByValue(syn::Mutability::Immutable);
+        let ident = syn::parse_ident("foo").unwrap();
+        let pattern = syn::Pat::Ident(binding_mode, ident, None);
+        let ty = syn::parse_type("i32").unwrap();
+        let arg = syn::FnArg::Captured(pattern, ty);
+        input.push(arg);
+
+        let expected = quote! { i32 };
+
+        let result = generate_input_types(&input);
+
+        assert_eq!(expected, result);
     }
 
     #[test]
     // Test for fn blah(&self)
     fn test_generate_input_types_self_ref() {
         let mut input = Vec::new();
+        // &self
         let arg = syn::FnArg::SelfRef(None, syn::Mutability::Immutable);
         input.push(arg);
 
@@ -162,7 +182,30 @@ mod tests {
 
         let result = generate_input_types(&input);
 
-        assert_eq!(result, expected);
+        assert_eq!(expected, result);
+    }
+
+    #[test]
+    #[ignore]
+    // Test for fn blah(&self, arg: i32)
+    fn test_generate_input_types_self_ref_one_captured() {
+        let mut input = Vec::new();
+        // &self
+        let arg = syn::FnArg::SelfRef(None, syn::Mutability::Immutable);
+        input.push(arg);
+        // arg: i32
+        let binding_mode = syn::BindingMode::ByValue(syn::Mutability::Immutable);
+        let ident = syn::parse_ident("arg").unwrap();
+        let pattern = syn::Pat::Ident(binding_mode, ident, None);
+        let ty = syn::parse_type("i32").unwrap();
+        let arg = syn::FnArg::Captured(pattern, ty);
+        input.push(arg);
+
+        let expected = quote! { i32 };
+
+        let result = generate_input_types(&input);
+
+        assert_eq!(expected, result);
     }
 
     #[test]
@@ -231,6 +274,6 @@ mod tests {
 
         let result = simulacrum_internal(input.as_str());
 
-        assert_eq!(result, expected);
+        assert_eq!(expected, result);
     }
 }
