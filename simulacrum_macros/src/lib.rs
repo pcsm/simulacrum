@@ -27,9 +27,15 @@ fn get_trait_items(item: &syn::Item) -> Vec<syn::TraitItem> {
 }
 
 fn generate_expects(trait_items: &Vec<syn::TraitItem>) -> quote::Tokens {
-    unimplemented!()
-    // for trait_item in trait_items {
-    // }
+    // unimplemented!();
+    for trait_item in trait_items {
+        match item.node {
+            syn::TraitItemKind::Method(_, _) => {
+                quote::Tokens::new()
+            },
+            _ => quote::Tokens::new()
+        }
+    }
 }
 
 fn simulacrum_internal(input: &str) -> quote::Tokens {
