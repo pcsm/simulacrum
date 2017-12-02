@@ -61,7 +61,7 @@ fn generate_output_type(output: &syn::FunctionRetTy) -> quote::Tokens {
 }
 
 fn generate_input_tuple(input: &Vec<syn::FnArg>) -> quote::Tokens {
-    let types = gather_input_types(input);
+    let types = gather_captured_arg_types(input);
 
     let mut result = quote::Tokens::new();
     match types.len() {
@@ -86,7 +86,7 @@ fn generate_input_tuple(input: &Vec<syn::FnArg>) -> quote::Tokens {
     result
 }
 
-fn gather_input_types(input: &Vec<syn::FnArg>) -> Vec<syn::Ty> {
+fn gather_captured_arg_types(input: &Vec<syn::FnArg>) -> Vec<syn::Ty> {
     let mut result = Vec::new();
     for arg in input {
         match arg {
