@@ -114,7 +114,7 @@ fn generate_expects(methods: &Vec<Method>) -> quote::Tokens {
                 self.e.expect::<#ituple, #otype>(#ident_str)
             }
         };
-        result.append(expect_method)
+        result.append(expect_method);
     }
     result
 }
@@ -173,19 +173,36 @@ fn gather_captured_arg_types(input: &Vec<syn::FnArg>) -> Vec<syn::Ty> {
 fn generate_stubs(methods: &Vec<Method>) -> quote::Tokens {
     let mut result = quote::Tokens::new();
     for method in methods {
-        // let ident = &method.ident;
-        // let ident_tokens = quote!{ #ident };
-        // let ident_str = ident_tokens.as_str();
-        // let name = expectify_method_name(ident);
-        // let otype = generate_output_type(&method.sig.decl.output);
-        // let ituple = generate_input_tuple(&method.sig.decl.inputs);
-        // let expect_method = quote! {
-        //     pub fn #name(&mut self) -> Method<#ituple, #otype> {
-        //         self.e.expect::<#ituple, #otype>(#ident_str)
-        //     }
-        // };
-        // result.append(expect_method)
+        let ident = &method.ident;
+        let ident_tokens = quote!{ #ident };
+        let ident_str = ident_tokens.as_str();
+        let otype = generate_output_type(&method.sig.decl.output);
+        let ituple = generate_input_tuple(&method.sig.decl.inputs);
+        let itypes = generate_input_types(&method.sig.decl.inputs);
+        // TODO: generate method sig tokens 
+        let mut method_sig_tokens = quote::Tokens::new();
+        // TODO: generate method sig tokens 
+        let mut body_tokens = quote::Tokens::new();
+        let stub_method = quote! {
+            #method_sig_tokens {
+                #body_tokens
+            }
+        };
+        result.append(stub_method);
     }
+    result
+}
+
+fn generate_input_types(input: &Vec<syn::FnArg>) -> quote::Tokens {
+    let mut result = quote::Tokens::new();
+    // for arg in input {
+    //     match arg {
+    //         &syn::FnArg::Captured(ref _pattern, ref ty) => {
+    //             result.push(ty.clone());
+    //         },
+    //         _ => { }
+    //     }
+    // }
     result
 }
 
