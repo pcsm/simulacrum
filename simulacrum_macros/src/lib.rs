@@ -67,8 +67,8 @@ fn generate_input_types(input: &Vec<syn::FnArg>) -> quote::Tokens {
             // input.first().unwrap().to_tokens(&mut result);
             let first = input.first().unwrap();
             match first {
-                arg @ &syn::FnArg::Captured(_, _) => {
-                    arg.to_tokens(&mut result);
+                &syn::FnArg::Captured(ref _pattern, ref ty) => {
+                    ty.to_tokens(&mut result);
                 },
                 _ => {
                     result.append("( )");
@@ -152,12 +152,12 @@ mod tests {
     }
 
     #[test]
-    // Test for fn blah(foo: i32)
-    fn test_generate_input_types_only_captured() {
+    // Test for fn blah(arg: i32)
+    fn test_generate_input_types_one_captured() {
         let mut input = Vec::new();
         // arg: i32
         let binding_mode = syn::BindingMode::ByValue(syn::Mutability::Immutable);
-        let ident = syn::parse_ident("foo").unwrap();
+        let ident = syn::parse_ident("arg").unwrap();
         let pattern = syn::Pat::Ident(binding_mode, ident, None);
         let ty = syn::parse_type("i32").unwrap();
         let arg = syn::FnArg::Captured(pattern, ty);
@@ -186,7 +186,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     // Test for fn blah(&self, arg: i32)
     fn test_generate_input_types_self_ref_one_captured() {
         let mut input = Vec::new();
