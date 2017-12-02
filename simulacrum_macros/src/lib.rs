@@ -64,7 +64,16 @@ fn generate_input_types(input: &Vec<syn::FnArg>) -> quote::Tokens {
     let mut result = quote::Tokens::new();
     match input.len() {
         1 => {
-            input.first().unwrap().to_tokens(&mut result);
+            // input.first().unwrap().to_tokens(&mut result);
+            let first = input.first().unwrap();
+            match first {
+                arg @ &syn::FnArg::Captured(_, _) => {
+                    arg.to_tokens(&mut result);
+                },
+                _ => {
+                    result.append("( )");
+                }
+            }
         },
         _ => {
             result.append("(");
@@ -143,7 +152,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     // Test for fn blah(&self)
     fn test_generate_input_types_self_ref() {
         let mut input = Vec::new();
