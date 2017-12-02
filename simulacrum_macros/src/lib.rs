@@ -252,7 +252,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn it_works() {
         let input = quote! {
             pub trait CoolTrait {
