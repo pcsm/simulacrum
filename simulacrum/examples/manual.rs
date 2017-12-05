@@ -15,8 +15,8 @@ trait CoolTrait {
     // Multiple parameters
     fn zing(&self, first: i32, second: bool);
 
-    // Note: It doesn't work with references yet!
-    // fn boop(&self, name: &'static str)
+    // Static reference
+    fn boop(&self, name: &'static str);
 }
 
 pub struct CoolTraitMock {
@@ -50,6 +50,10 @@ impl CoolTraitMock {
     pub fn expect_zing(&mut self) -> Method<(i32, bool), ()> {
         self.e.expect::<(i32, bool), ()>("zing")
     }
+
+    pub fn expect_boop(&mut self) -> Method<&'static str, ()> {
+        self.e.expect::<&'static str, ()>("boop")
+    }
 }
 
 impl CoolTrait for CoolTraitMock {
@@ -68,6 +72,10 @@ impl CoolTrait for CoolTraitMock {
     fn zing(&self, first: i32, second: bool) {
         self.e.was_called::<(i32, bool), ()>("zing", (first, second))
     }
+
+    fn boop(&self, name: &'static str) {
+        self.e.was_called::<&'static str, ()>("boop", name)
+    }
 }
 
 fn main() {
@@ -77,11 +85,14 @@ fn main() {
     m.expect_foo().called_once();
     m.then().expect_goop().called_once().with(|&arg| arg == true).returning(|_| 5);
     m.then().expect_zing().called_once().with(|args| args.0 == 13 && args.1 == false);
+    m.expect_boop().called_times(2);
 
     // Execute test code
     m.foo();
     assert_eq!(m.goop(true), 5);
     m.zing(13, false);
+    m.boop("hey");
+    m.boop("yo");
 
     // When the Expectations struct is dropped, each of its expectations will be evaluated
 }
