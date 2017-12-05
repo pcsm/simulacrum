@@ -17,6 +17,12 @@ trait CoolTrait {
 
     // Static reference
     fn boop(&self, name: &'static str);
+
+    // Reference - doesn't work yet
+    // fn store(&self, bit: &bool);
+
+    // Mutable reference - doesn't work yet
+    // fn toggle(&self, bit: &mut bool);
 }
 
 pub struct CoolTraitMock {
@@ -54,6 +60,14 @@ impl CoolTraitMock {
     pub fn expect_boop(&mut self) -> Method<&'static str, ()> {
         self.e.expect::<&'static str, ()>("boop")
     }
+
+    // pub fn expect_store(&self, bit: &bool) -> Method<&bool, ()> {
+    //     self.e.expect::<&bool, ()>("store")
+    // }
+
+    // pub fn expect_toggle(&self, bit: &mut bool) -> Method<&mut bool, ()> {
+    //     self.e.expect::<&mut bool, ()>("toggle")
+    // }
 }
 
 impl CoolTrait for CoolTraitMock {
@@ -76,6 +90,14 @@ impl CoolTrait for CoolTraitMock {
     fn boop(&self, name: &'static str) {
         self.e.was_called::<&'static str, ()>("boop", name)
     }
+
+    // fn store(&self, bit: &bool) {
+    //     self.e.was_called::<&bool, ()>("store", bit)
+    // }
+
+    // fn toggle(&self, bit: &mut bool) {
+    //     self.e.was_called::<&mut bool, ()>("toggle", bit)
+    // }
 }
 
 fn main() {
