@@ -1,0 +1,6 @@
+[package]
+name = "simulacrum_exp"
+version = "0.1.0"
+authors = ["Jason Grlicky <jason@paracosm.us>"]
+
+[dependencies]
