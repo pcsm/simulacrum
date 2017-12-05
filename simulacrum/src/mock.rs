@@ -94,6 +94,8 @@ mod tests {
     #[should_panic]
     fn test_called_once_fail() {
         let mut e = Expectations::new();
+
+        // Panic: "poo" should have been called once, but was never called
         e.expect::<(), ()>("spoo").called_once();
     }
 
@@ -112,6 +114,7 @@ mod tests {
         let mut e = Expectations::new();
         e.expect::<(), ()>("nom").called_times(2);
         
+        // Panic: "nom" should have been called twice, but was only called once
         e.was_called::<(), ()>("nom", ());
     }
 
@@ -127,6 +130,7 @@ mod tests {
         let mut e = Expectations::new();
         e.expect::<(), ()>("blitz").called_never();
         
+        // Panic: "blitz" should have never been called
         e.was_called::<(), ()>("blitz", ());
     }
 
@@ -159,6 +163,7 @@ mod tests {
         let mut e = Expectations::new();
         e.expect::<i32, ()>("doog").called_once().with(|&arg| arg > 5);
         
+        // Panic: "doog"'s parameter was not > 5
         e.was_called::<i32, ()>("doog", 1);
     }
 
