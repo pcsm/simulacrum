@@ -61,11 +61,11 @@ impl CoolTraitMock {
         self.e.expect::<&'static str, ()>("boop")
     }
 
-    // pub fn expect_store(&self, bit: &bool) -> Method<&bool, ()> {
+    // pub fn expect_store(&mut self) -> Method<&bool, ()> {
     //     self.e.expect::<&bool, ()>("store")
     // }
 
-    // pub fn expect_toggle(&self, bit: &mut bool) -> Method<&mut bool, ()> {
+    // pub fn expect_toggle(&mut self) -> Method<&mut bool, ()> {
     //     self.e.expect::<&mut bool, ()>("toggle")
     // }
 }
