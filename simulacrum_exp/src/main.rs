@@ -33,9 +33,9 @@ impl<'a, I, O> MethodInner<'a, I, O> {
     }
 }
 
-pub struct Method<I, O>(Mutex<MethodInner<I, O>>);
+pub struct Method<'a, I, O>(Mutex<MethodInner<'a, I, O>>);
 
-impl<I, O> Method<I, O> {
+impl<'a, I, O> Method<'a, I, O> {
     fn new(name: MethodName) -> Self {
         Method(Mutex::new(MethodInner {
             constraints: Vec::new(),
@@ -79,6 +79,7 @@ impl<I, O> Method<I, O> {
     // }
 
     pub fn returning<F>(self, result_behavior: F) -> Self where
+        F: 'a,
         F: FnMut(I) -> O
     {
         self.0.lock().unwrap().return_fn = Some(Box::new(result_behavior));
@@ -100,23 +101,23 @@ trait CoolTrait {
 
 /* DEMO */
 
-struct CoolTraitMock {
-    _is_even_m: Method<i32, bool>
+struct CoolTraitMock<'a> {
+    _is_even_m: Method<'a, i32, bool>
 }
 
-impl CoolTraitMock {
+impl<'a> CoolTraitMock<'a> {
     fn new() -> Self {
         Self {
             _is_even_m: Method::new("is_even")
         }
     }
 
-    fn expect_is_even(&mut self) -> &mut Method<i32, bool> {
+    fn expect_is_even(&mut self) -> &mut Method<'a, i32, bool> {
         &mut self._is_even_m
     }
 }
 
-impl CoolTrait for CoolTraitMock {
+impl<'a> CoolTrait for CoolTraitMock<'a> {
     fn is_even(&self, num: i32) -> bool {
         self._is_even_m.was_called_returning(num)
     }
