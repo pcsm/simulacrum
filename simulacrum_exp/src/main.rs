@@ -125,6 +125,7 @@ impl<'a> CoolTraitMock<'a> {
     fn expect_lowercase(&mut self) -> &mut Method<'a, *mut str, ()> {
         &mut self.m_lowercase
     }
+
     fn expect_multiply(&mut self) -> &mut Method<'a, (*mut i32, i32), ()> {
         &mut self.m_multiply
     }

@@ -18,11 +18,11 @@ trait CoolTrait {
     // Static reference
     fn boop(&self, name: &'static str);
 
-    // Reference - doesn't work yet
-    // fn store(&self, bit: &bool);
+    // Shared reference
+    fn store(&self, val: &i64);
 
-    // Mutable reference - doesn't work yet
-    // fn toggle(&self, bit: &mut bool);
+    // Mutable reference
+    fn toggle(&self, bit: &mut bool);
 }
 
 pub struct CoolTraitMock {
@@ -61,13 +61,13 @@ impl CoolTraitMock {
         self.e.expect::<&'static str, ()>("boop")
     }
 
-    // pub fn expect_store(&mut self) -> Method<&bool, ()> {
-    //     self.e.expect::<&bool, ()>("store")
-    // }
+    pub fn expect_store(&mut self) -> Method<*const i64, ()> {
+        self.e.expect::<*const i64, ()>("store")
+    }
 
-    // pub fn expect_toggle(&mut self) -> Method<&mut bool, ()> {
-    //     self.e.expect::<&mut bool, ()>("toggle")
-    // }
+    pub fn expect_toggle(&mut self) -> Method<*mut bool, ()> {
+        self.e.expect::<*mut bool, ()>("toggle")
+    }
 }
 
 impl CoolTrait for CoolTraitMock {
@@ -91,13 +91,13 @@ impl CoolTrait for CoolTraitMock {
         self.e.was_called::<&'static str, ()>("boop", name)
     }
 
-    // fn store(&self, bit: &bool) {
-    //     self.e.was_called::<&bool, ()>("store", bit)
-    // }
+    fn store(&self, val: &i64) {
+        self.e.was_called::<*const i64, ()>("store", val)
+    }
 
-    // fn toggle(&self, bit: &mut bool) {
-    //     self.e.was_called::<&mut bool, ()>("toggle", bit)
-    // }
+    fn toggle(&self, bit: &mut bool) {
+        self.e.was_called_returning::<*mut bool, ()>("toggle", bit)
+    }
 }
 
 fn main() {
@@ -108,6 +108,12 @@ fn main() {
     m.then().expect_goop().called_once().with(|&arg| arg == true).returning(|_| 5);
     m.then().expect_zing().called_once().with(|args| args.0 == 13 && args.1 == false);
     m.expect_boop().called_times(2);
+    m.expect_store().called_once().with(|&arg| unsafe { *arg.as_ref().unwrap() == 777 });
+    m.expect_toggle().called_once()
+                     .with(|&arg| unsafe { *arg.as_mut().unwrap() == true })
+                     .returning(|&arg| {
+                         unsafe { *arg.as_mut().unwrap() = false }
+                     });
 
     // Execute test code
     m.foo();
@@ -115,6 +121,10 @@ fn main() {
     m.zing(13, false);
     m.boop("hey");
     m.boop("yo");
+    m.store(&777);
+    let mut b = true;
+    m.toggle(&mut b);
+    assert_eq!(b, false);
 
     // When the Expectations struct is dropped, each of its expectations will be evaluated
 }
