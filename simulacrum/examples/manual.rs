@@ -110,7 +110,9 @@ fn main() {
     m.expect_boop().called_times(2);
     m.expect_store().called_once().with(|&arg| unsafe { *arg.as_ref().unwrap() == 777 });
     m.expect_toggle().called_once()
-                     .with(|&arg| unsafe { *arg.as_mut().unwrap() == true })
+                     .with(|&arg| {
+                         unsafe { *arg.as_ref().unwrap() == true }
+                     )
                      .returning(|&arg| {
                          unsafe { *arg.as_mut().unwrap() = false }
                      });
