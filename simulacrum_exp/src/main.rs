@@ -100,18 +100,21 @@ pub trait Constraint<I> {
 trait CoolTrait {
     fn is_even(&self, num: i32) -> bool;
     fn lowercase(&self, s: &mut str);
+    fn multiply(&self, result: &mut i32, factor: i32);
 }
 
 struct CoolTraitMock<'a> {
     m_is_even: Method<'a, i32, bool>,
-    m_lowercase: Method<'a, *mut str, ()>
+    m_lowercase: Method<'a, *mut str, ()>,
+    m_multiply: Method<'a, (*mut i32, i32), ()>
 }
 
 impl<'a> CoolTraitMock<'a> {
     fn new() -> Self {
         Self {
             m_is_even: Method::new("is_even"),
-            m_lowercase: Method::new("lowercase")
+            m_lowercase: Method::new("lowercase"),
+            m_multiply: Method::new("multiply")
         }
     }
 
@@ -121,6 +124,9 @@ impl<'a> CoolTraitMock<'a> {
 
     fn expect_lowercase(&mut self) -> &mut Method<'a, *mut str, ()> {
         &mut self.m_lowercase
+    }
+    fn expect_multiply(&mut self) -> &mut Method<'a, (*mut i32, i32), ()> {
+        &mut self.m_multiply
     }
 }
 
@@ -133,6 +139,10 @@ impl<'a> CoolTrait for CoolTraitMock<'a> {
         // self.m_lowercase.was_called_returning(s)
         self.m_lowercase.was_called_returning(s as *mut str)
     }
+
+    fn multiply(&self, result: &mut i32, factor: i32) {
+        self.m_multiply.was_called_returning((result as *mut i32, factor))
+    }
 }
 
 fn main() {
@@ -143,8 +153,17 @@ fn main() {
             s.as_mut().unwrap().make_ascii_lowercase();
         }
     });
+    m.expect_multiply().returning(|args| {
+        unsafe {
+            *args.0 = 10;
+        }
+    });
 
     let mut s = "HELLO".to_owned();
     m.lowercase(&mut s);
     assert_eq!(s, "hello".to_owned());
+
+    let mut res = 5;
+    m.multiply(&mut res, 999);
+    assert_eq!(res, 10);
 }
