@@ -12,3 +12,13 @@ macro_rules! params {
         Tuple2(Box::new($a), Box::new($b))
     };
 }
+
+/// Use this macro to create an `.expect_METHOD_NAME()` method.
+#[macro_export]
+macro_rules! expect_method {
+    ($name:ident, $key:expr, $inputs:ty, $output:ty) => {
+        pub fn $name(&mut self) -> Method<$inputs, $output> {
+            self.e.expect::<$inputs, $output>($key)
+        }
+    };
+}
