@@ -9,3 +9,22 @@ pub trait Validator<I> {
     /// if they are acceptable, and `false` if they are not.
     fn validate(&mut self, param: &I) -> bool;
 }
+
+
+/// `Validator` is automatically implemented for types that implement `PartialEq`.
+impl<I: PartialEq> Validator<I> for I {
+    fn validate(&mut self, param: &I) -> bool {
+        &*param == self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_validate() {
+        let v = 555;
+        assert!(555.validate(&v));
+    }
+}
