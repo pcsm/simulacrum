@@ -5,6 +5,7 @@ pub mod constraint;
 pub mod expectation;
 pub mod user;
 pub mod mock;
+pub mod validator;
 mod store;
 
 pub type MethodName = &'static str;

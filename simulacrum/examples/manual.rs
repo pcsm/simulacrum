@@ -112,7 +112,7 @@ fn main() {
     m.expect_toggle().called_once()
                      .with(|&arg| {
                          unsafe { *arg.as_ref().unwrap() == true }
-                     )
+                     })
                      .returning(|&arg| {
                          unsafe { *arg.as_mut().unwrap() = false }
                      });
