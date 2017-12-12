@@ -22,3 +22,29 @@ macro_rules! expect_method {
         }
     };
 }
+
+#[macro_export]
+macro_rules! create_mock {
+    ($name:ident: { $($method_name:ident: $key:expr, $inputs:ty, $output:ty;)* }) => {
+        pub struct $name {
+            e: Expectations
+        }
+
+        impl $name {
+            pub fn new() -> Self {
+                Self {
+                    e: Expectations::new()
+                }
+            }
+
+            pub fn then(&mut self) -> &mut Self {
+                self.e.then();
+                self
+            }
+
+            $(
+                expect_method!($method_name, $key, $inputs, $output);
+            )*
+        }
+    };
+}
