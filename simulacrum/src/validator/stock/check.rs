@@ -24,6 +24,6 @@ mod tests {
     fn test_validate() {
         let mut c = passes(|arg: &i32| *arg == 555);
         let v: i32 = 555;
-        assert!(c.verify(&v));
+        assert!(c.validate(&v));
     }
 }

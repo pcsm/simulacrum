@@ -3,3 +3,5 @@
 pub mod check;
 pub mod compare;
 pub mod deref;
+pub mod trivial;
+pub mod tuple;
