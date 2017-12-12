@@ -81,8 +81,16 @@ mod tests {
     }
 
     #[test]
-    fn test_4_all() {
-        let mut c = params!(any(), any(), any(), any());
+    #[should_panic]
+    fn test_3_fail() {
+        let mut c = params!(none(), any(), none());
+        assert!(c.validate(&((), (), ())));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_4_fail() {
+        let mut c = params!(any(), none(), any(), none());
         assert!(c.validate(&((), (), (), ())));
     }
 }
