@@ -1,6 +1,7 @@
 use debugit::DebugIt;
 
 use constraint::{Constraint, ConstraintError, ConstraintResult};
+use validator::Validator;
 
 /// A method must be called with parameters that meet certain requirements.
 pub struct Params<I> {
@@ -9,12 +10,12 @@ pub struct Params<I> {
     invalid_param_msg: String,
     /// A closure that will be called with the parameters to validate that they 
     /// conform to the requirements.
-    validator: Box<FnMut(&I) -> bool>
+    validator: Box<Validator<I>>
 }
 
 impl<I> Params<I> {
-    pub fn new<F>(validator: F) -> Self where
-        F: FnMut(&I) -> bool + 'static
+    pub fn new<V>(validator: V) -> Self where
+        V: Validator<I> + 'static
     {
         Params {
             is_valid: true,
@@ -27,7 +28,7 @@ impl<I> Params<I> {
 impl<I> Constraint<I> for Params<I> {
     fn handle_call(&mut self, params: &I) {
         if self.is_valid {
-            self.is_valid = (self.validator)(params);
+            self.is_valid = self.validator.validate(params);
             if !self.is_valid {
                 self.invalid_param_msg = format!("{:?}", DebugIt(params));
             }
@@ -46,10 +47,12 @@ impl<I> Constraint<I> for Params<I> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use validator::stock::trivial::*;
+    use validator::stock::check::*;
 
     #[test]
     fn test_new() {
-        let c = Params::new(|_| false);
+        let c = Params::new(none());
 
         let r = <Constraint<()>>::verify(&c);
 
@@ -58,8 +61,8 @@ mod tests {
 
     #[test]
     fn test_handle_call_pass() {
-        // Validator closure approves of any input
-        let mut c = Params::new(|_| true);
+        // Validator approves of any input
+        let mut c = Params::new(any());
 
         c.handle_call(&());
         let r = <Constraint<()>>::verify(&c);
@@ -72,7 +75,7 @@ mod tests {
     // core_intrinsics & specialization features.
     fn test_handle_call_fail() {
         // Validator closure disapproves of any input
-        let mut c = Params::new(|_| false);
+        let mut c = Params::new(none());
 
         c.handle_call(&());
         let r = <Constraint<()>>::verify(&c);
@@ -84,7 +87,7 @@ mod tests {
     #[test]
     fn test_handle_call_good_then_bad() {
         // Validator closure approves input over 5
-        let mut c = Params::new(|arg| *arg > 5);
+        let mut c = Params::new(passes(|arg| *arg > 5));
 
         c.handle_call(&10); // Good
         c.handle_call(&3); // Bad
@@ -96,7 +99,7 @@ mod tests {
     #[test]
     fn test_handle_call_bad_then_good() {
         // Validator closure approves input over 5
-        let mut c = Params::new(|arg| *arg > 5);
+        let mut c = Params::new(passes(|arg| *arg > 5));
 
         c.handle_call(&3); // Bad
         c.handle_call(&10); // Good

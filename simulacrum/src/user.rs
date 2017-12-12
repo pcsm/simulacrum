@@ -7,6 +7,7 @@ use super::expectation::Expectation;
 use super::constraint::stock::times::Times;
 use super::constraint::stock::params::Params;
 use super::store::ExpectationStore;
+use super::validator::Validator;
 
 // I is a tuple of args for this method excluding self.
 // O is the return value or () if there is no return value.
@@ -109,12 +110,14 @@ impl<'a, I, O> TrackedMethod<'a, I, O> where
     I: 'static,
     O: 'static
 {
-    /// Specify a function that verifies the parameters.
-    /// If it returns `false`, the expectation will be invalidated.
-    pub fn with<F>(self, param_verifier: F) -> Self where
-        F: 'static + FnMut(&I) -> bool
+    /// Specify a `Validator` object that will validate parameters when called.
+    ///
+    /// If it returns `false` when its `validate()` method is called, the
+    /// expectation will be invalidated.
+    pub fn with<V>(self, validator: V) -> Self where
+        V: Validator<I> + 'static
     {
-        let constraint = Params::new(param_verifier);
+        let constraint = Params::new(validator);
         self.method.store.get_mut::<I, O>(self.id).constrain(constraint);
         self
     }

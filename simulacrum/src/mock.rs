@@ -79,6 +79,7 @@ impl Drop for Expectations {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use validator::stock::compare::*;
 
     #[test]
     fn test_called_once() {
@@ -152,7 +153,7 @@ mod tests {
     #[test]
     fn test_param() {
         let mut e = Expectations::new();
-        e.expect::<i32, ()>("doog").called_once().with(|&arg| arg > 5);
+        e.expect::<i32, ()>("doog").called_once().with(gt(5));
         
         e.was_called::<i32, ()>("doog", 10);
     }
@@ -161,7 +162,7 @@ mod tests {
     #[should_panic]
     fn test_param_fail() {
         let mut e = Expectations::new();
-        e.expect::<i32, ()>("doog").called_once().with(|&arg| arg > 5);
+        e.expect::<i32, ()>("doog").called_once().with(gt(5));
         
         // Panic: "doog"'s parameter was not > 5
         e.was_called::<i32, ()>("doog", 1);
@@ -191,8 +192,8 @@ mod tests {
     #[test]
     fn test_then() {
         let mut e = Expectations::new();
-        e.expect::<i32, ()>("fren").called_once().with(|&arg| arg > 5);
-        e.then().expect::<i32, ()>("fren").called_once().with(|&arg| arg < 3);
+        e.expect::<i32, ()>("fren").called_once().with(gt(5));
+        e.then().expect::<i32, ()>("fren").called_once().with(lt(3));
         
         e.was_called::<i32, ()>("fren", 10); // Matches first era, completing it
         e.was_called::<i32, ()>("fren", 1); // Matches second era, completing it
@@ -214,8 +215,8 @@ mod tests {
     #[should_panic]
     fn test_then_partial_fail() {
         let mut e = Expectations::new();
-        e.expect::<i32, ()>("fren").called_once().with(|&arg| arg > 5);
-        e.then().expect::<i32, ()>("fren").called_times(2).with(|&arg| arg < 3);
+        e.expect::<i32, ()>("fren").called_once().with(gt(5));
+        e.then().expect::<i32, ()>("fren").called_times(2).with(lt(3));
         
         e.was_called::<i32, ()>("fren", 10); // Matches first era, completing it
         e.was_called::<i32, ()>("fren", 1); // Matches second era, but still incomplete

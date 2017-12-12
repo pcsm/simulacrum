@@ -1,8 +1,8 @@
 use super::super::Validator;
 
-/// Parameter(s) must equal the provided value.
 pub struct GreaterThan<I: PartialOrd>(I);
 
+/// Parameter(s) must be > the provided value.
 pub fn gt<I: PartialOrd>(other: I) -> GreaterThan<I> {
     GreaterThan(other)
 }
@@ -10,6 +10,19 @@ pub fn gt<I: PartialOrd>(other: I) -> GreaterThan<I> {
 impl<I: PartialOrd> Validator<I> for GreaterThan<I> {
     fn validate(&mut self, param: &I) -> bool {
         *param > self.0
+    }
+}
+
+pub struct LessThan<I: PartialOrd>(I);
+
+/// Parameter(s) must be < the provided value.
+pub fn lt<I: PartialOrd>(other: I) -> LessThan<I> {
+    LessThan(other)
+}
+
+impl<I: PartialOrd> Validator<I> for LessThan<I> {
+    fn validate(&mut self, param: &I) -> bool {
+        *param < self.0
     }
 }
 
@@ -28,6 +41,20 @@ mod tests {
     fn test_gt_fail() {
         let mut c = gt(555);
         let v = 1;
+        assert!(!c.validate(&v));
+    }
+
+    #[test]
+    fn test_lt() {
+        let mut c = lt(10);
+        let v = 1;
+        assert!(c.validate(&v));
+    }
+
+    #[test]
+    fn test_lt_fail() {
+        let mut c = lt(10);
+        let v = 25;
         assert!(!c.validate(&v));
     }
 }
