@@ -34,11 +34,10 @@ impl<I, V> Validator<*const I> for Deref<I, V> where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::super::compare::*;
 
     #[test]
     fn test_validate_const() {
-        let mut c = deref(eq(888));
+        let mut c = deref(888);
         let v = &888 as *const i32;
         assert!(c.validate(&v));
     }
@@ -46,14 +45,14 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_validate_const_fail() {
-        let mut c = deref(eq(555));
+        let mut c = deref(555);
         let v = &888 as *const i32;
         assert!(c.validate(&v));
     }
 
     #[test]
     fn test_validate_mut() {
-        let mut c = deref(eq(888));
+        let mut c = deref(888);
         let v = &mut 888 as *mut i32;
         assert!(c.validate(&v));
     }
@@ -61,7 +60,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_validate_mut_fail() {
-        let mut c = deref(eq(555));
+        let mut c = deref(555);
         let v = &mut 888 as *mut i32;
         assert!(c.validate(&v));
     }
