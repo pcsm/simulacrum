@@ -1,7 +1,7 @@
 use super::super::Validator;
 
 /// A family of `Validators` that splits tuples into their own validators.
-pub struct Tuple2<A, B>(Box<Validator<A>>, Box<Validator<B>>);
+pub struct Tuple2<A, B>(pub Box<Validator<A>>, pub Box<Validator<B>>);
 
 impl<A, B> Validator<(A, B)> for Tuple2<A, B> {
     fn validate(&mut self, param: &(A, B)) -> bool {
@@ -10,7 +10,7 @@ impl<A, B> Validator<(A, B)> for Tuple2<A, B> {
     }
 }
 
-pub struct Tuple3<A, B, C>(Box<Validator<A>>, Box<Validator<B>>, Box<Validator<C>>);
+pub struct Tuple3<A, B, C>(pub Box<Validator<A>>, pub Box<Validator<B>>, pub Box<Validator<C>>);
 
 impl<A, B, C> Validator<(A, B, C)> for Tuple3<A, B, C> {
     fn validate(&mut self, param: &(A, B, C)) -> bool {
@@ -20,7 +20,7 @@ impl<A, B, C> Validator<(A, B, C)> for Tuple3<A, B, C> {
     }
 }
 
-pub struct Tuple4<A, B, C, D>(Box<Validator<A>>, Box<Validator<B>>, Box<Validator<C>>, Box<Validator<D>>);
+pub struct Tuple4<A, B, C, D>(pub Box<Validator<A>>, pub Box<Validator<B>>, pub Box<Validator<C>>, pub Box<Validator<D>>);
 
 impl<A, B, C, D> Validator<(A, B, C, D)> for Tuple4<A, B, C, D> {
     fn validate(&mut self, param: &(A, B, C, D)) -> bool {

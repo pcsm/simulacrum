@@ -10,3 +10,4 @@ pub use check::passes;
 pub use compare::{gt, lt};
 pub use deref::deref;
 pub use trivial::{any, none};
+pub use tuple::*;
