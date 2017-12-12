@@ -108,7 +108,6 @@ fn main() {
     m.then().expect_goop().called_once().with(|&arg| arg == true).returning(|_| 5);
     // m.then().expect_goop().called_once().with(true).returning(|_| 5);
     m.then().expect_zing().called_once().with(|args| args.0 == 13 && args.1 == false);
-    // m.then().expect_zing().called_once().with((13, false));
     // m.then().expect_zing().called_once().with(params!(13, false));
     m.expect_boop().called_times(2);
     m.expect_store().called_once().with(|&arg| unsafe { *arg.as_ref().unwrap() == 777 });
