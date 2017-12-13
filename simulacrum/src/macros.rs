@@ -30,11 +30,26 @@ macro_rules! create_expect_method {
 }
 
 #[macro_export]
+macro_rules! create_expect_methods {
+    () => {};
+    ($name:ident($key:expr) $inputs:ty => $output:ty; $($tail:tt)*) => {
+        create_expect_method!($name($key) $inputs => $output);
+        create_expect_methods!($($tail)*);
+    };
+    ($name:ident($key:expr) $inputs:ty; $($tail:tt)*) => {
+        create_expect_method!($name($key) $inputs);
+        create_expect_methods!($($tail)*);
+    };
+    ($name:ident($key:expr); $($tail:tt)*) => {
+        create_expect_method!($name($key));
+        create_expect_methods!($($tail)*);
+    };
+}
+
+#[macro_export]
 macro_rules! create_mock {
     ($name:ident: {
-        $([
-            $($method:tt)*
-        ])*
+        $($methods:tt)*
     }) => {
         pub struct $name {
             e: Expectations
@@ -52,9 +67,7 @@ macro_rules! create_mock {
                 self
             }
 
-            $(
-                create_expect_method!($($method)*);
-            )*
+            create_expect_methods!($($methods)*);
         }
     };
 }

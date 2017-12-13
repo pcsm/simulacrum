@@ -26,17 +26,17 @@ trait CoolTrait {
     fn toggle(&self, bit: &mut bool);
 }
 
-create_mock! (
+create_mock! {
     CoolTraitMock: {
-        [expect_foo("foo")]
-        [expect_bar("bar")]
-        [expect_goop("goop") bool => u32]
-        [expect_zing("zing") (i32, bool)]
-        [expect_boop("boop") &'static str]
-        [expect_store("store") *const i64]
-        [expect_toggle("toggle") *mut bool]
+        expect_foo("foo");
+        expect_bar("bar");
+        expect_goop("goop") bool => u32;
+        expect_zing("zing") (i32, bool);
+        expect_boop("boop") &'static str;
+        expect_store("store") *const i64;
+        expect_toggle("toggle") *mut bool;
     }
-);
+}
 
 impl CoolTrait for CoolTraitMock {
     fn foo(&self) {
