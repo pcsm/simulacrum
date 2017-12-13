@@ -44,7 +44,7 @@ macro_rules! create_mock {
         create_expect_method!($name($key));
         create_mock!(@create_expect_methods $($tail)*);
     };
-    ($name:ident: {
+    (struct $name:ident: {
         $($methods:tt)*
     }) => {
         pub struct $name {

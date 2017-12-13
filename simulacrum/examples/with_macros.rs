@@ -27,7 +27,7 @@ trait CoolTrait {
 }
 
 create_mock! {
-    CoolTraitMock: {
+    struct CoolTraitMock: {
         expect_foo("foo");
         expect_bar("bar");
         expect_goop("goop") bool => u32;
