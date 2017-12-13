@@ -1,35 +1,27 @@
+//! A family of `Validators` that splits tuples into their own validators.
+
 use super::super::Validator;
 
-/// A family of `Validators` that splits tuples into their own validators.
-pub struct Tuple2<A, B>(pub Box<Validator<A>>, pub Box<Validator<B>>);
+macro_rules! create_tuple_validator {
+    ($name:ident: $(($index:tt, $generic:ident)),*) => {
+        pub struct $name<$($generic),*>(
+            $(pub Box<Validator<$generic>>),*
+        );
 
-impl<A, B> Validator<(A, B)> for Tuple2<A, B> {
-    fn validate(&mut self, param: &(A, B)) -> bool {
-        self.0.validate(&param.0) &&
-        self.1.validate(&param.1)
-    }
+        impl<$($generic),*> Validator<($($generic),*)> for $name<$($generic),*> {
+            fn validate(&mut self, param: &($($generic),*)) -> bool {
+                $(self.$index.validate(&param.$index) &&)*
+                true
+            }
+        }
+    };
 }
 
-pub struct Tuple3<A, B, C>(pub Box<Validator<A>>, pub Box<Validator<B>>, pub Box<Validator<C>>);
-
-impl<A, B, C> Validator<(A, B, C)> for Tuple3<A, B, C> {
-    fn validate(&mut self, param: &(A, B, C)) -> bool {
-        self.0.validate(&param.0) &&
-        self.1.validate(&param.1) &&
-        self.2.validate(&param.2)
-    }
-}
-
-pub struct Tuple4<A, B, C, D>(pub Box<Validator<A>>, pub Box<Validator<B>>, pub Box<Validator<C>>, pub Box<Validator<D>>);
-
-impl<A, B, C, D> Validator<(A, B, C, D)> for Tuple4<A, B, C, D> {
-    fn validate(&mut self, param: &(A, B, C, D)) -> bool {
-        self.0.validate(&param.0) &&
-        self.1.validate(&param.1) &&
-        self.2.validate(&param.2) &&
-        self.3.validate(&param.3)
-    }
-}
+create_tuple_validator!(Tuple2: (0, A), (1, B));
+create_tuple_validator!(Tuple3: (0, A), (1, B), (2, C));
+create_tuple_validator!(Tuple4: (0, A), (1, B), (2, C), (3, D));
+create_tuple_validator!(Tuple5: (0, A), (1, B), (2, C), (3, D), (4, E));
+create_tuple_validator!(Tuple6: (0, A), (1, B), (2, C), (3, D), (4, E), (5, F));
 
 #[cfg(test)]
 mod tests {
@@ -67,16 +59,20 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
     fn test_3_fail() {
         let mut c = params!(none(), any(), none());
-        assert!(c.validate(&((), (), ())));
+        assert!(!c.validate(&((), (), ())));
     }
 
     #[test]
-    #[should_panic]
+    fn test_4_all() {
+        let mut c = params!(any(), any(), any(), any());
+        assert!(c.validate(&((), (), (), ())));
+    }
+
+    #[test]
     fn test_4_fail() {
         let mut c = params!(any(), none(), any(), none());
-        assert!(c.validate(&((), (), (), ())));
+        assert!(!c.validate(&((), (), (), ())));
     }
 }
