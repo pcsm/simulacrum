@@ -14,19 +14,18 @@ macro_rules! params {
 }
 
 /// Use this macro to create an `.expect_METHOD_NAME()` method.
-/// $method_name:ident($key:expr) $inputs:ty => $output:ty
 #[macro_export]
-macro_rules! expect_method {
+macro_rules! create_expect_method {
     ($name:ident($key:expr) $inputs:ty => $output:ty) => {
         pub fn $name(&mut self) -> Method<$inputs, $output> {
             self.e.expect::<$inputs, $output>($key)
         }
     };
     ($name:ident($key:expr) $inputs:ty) => {
-        expect_method!($name($key) $inputs => ());
+        create_expect_method!($name($key) $inputs => ());
     };
     ($name:ident($key:expr)) => {
-        expect_method!($name($key) () => ());
+        create_expect_method!($name($key) () => ());
     };
 }
 
@@ -54,8 +53,7 @@ macro_rules! create_mock {
             }
 
             $(
-                // expect_method!($method_name, $key, $inputs, $output);
-                expect_method!($($method)*);
+                create_expect_method!($($method)*);
             )*
         }
     };
