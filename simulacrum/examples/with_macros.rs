@@ -26,15 +26,52 @@ trait CoolTrait {
     fn toggle(&self, bit: &mut bool);
 }
 
+// create_mock! {
+//     struct CoolTraitMock: {
+//         expect_foo("foo");
+//         expect_bar("bar");
+//         expect_goop("goop") bool => u32;
+//         expect_zing("zing") (i32, bool);
+//         expect_boop("boop") &'static str;
+//         expect_store("store") *const i64;
+//         expect_toggle("toggle") *mut bool;
+//     }
+// }
+
+// impl_mock! {
+//     impl CoolTrait for CoolTraitMock {
+//         fn foo(&self);
+//         fn bar(&mut self);
+//         fn goop(&mut self, flag: bool) -> u32;
+//         fn zing(&self, first: i32, second: bool);
+//         fn boop(&self, name: &'static str);
+//         fn store(&self, val: &i64);
+//         fn toggle(&self, bit: &mut bool);
+//     }
+// }
+
 create_mock! {
-    struct CoolTraitMock: {
-        expect_foo("foo");
-        expect_bar("bar");
-        expect_goop("goop") bool => u32;
-        expect_zing("zing") (i32, bool);
-        expect_boop("boop") &'static str;
-        expect_store("store") *const i64;
-        expect_toggle("toggle") *mut bool;
+    impl CoolTrait for CoolTraitMock {
+        expect_foo("foo"):
+        fn foo(&self);
+
+        expect_bar("bar"):
+        fn bar(&mut self);
+
+        expect_goop("goop"):
+        fn goop(&mut self, flag: bool) -> u32;
+
+        expect_zing("zing"):
+        fn zing(&self, first: i32, second: bool);
+
+        expect_boop("boop"):
+        fn boop(&self, name: &'static str);
+
+        expect_store("store"):
+        fn store(&self, val: &i64);
+
+        expect_toggle("toggle"): 
+        fn toggle(&self, bit: &mut bool);
     }
 }
 

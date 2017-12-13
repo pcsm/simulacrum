@@ -33,30 +33,58 @@ macro_rules! create_expect_method {
         create_expect_method!($name($key) () => ());
     };
 }
+    // (@create_expect_methods) => {};
+    // (@create_expect_methods $name:ident($key:expr) $inputs:ty => $output:ty; $($tail:tt)*) => {
+    //     create_expect_method!($name($key) $inputs => $output);
+    //     create_mock!(@create_expect_methods $($tail)*);
+    // };
+    // (@create_expect_methods $name:ident($key:expr) $inputs:ty; $($tail:tt)*) => {
+    //     create_expect_method!($name($key) $inputs);
+    //     create_mock!(@create_expect_methods $($tail)*);
+    // };
+    // (@create_expect_methods $name:ident($key:expr); $($tail:tt)*) => {
+    //     create_expect_method!($name($key));
+    //     create_mock!(@create_expect_methods $($tail)*);
+    // };
 
 #[macro_export]
 macro_rules! create_mock {
+    // tuplefy - create an input tuple from a method signature
+    (@tuplefy $($sig:tt)*) => {
+        ()
+    };
+
+    // create_expect_methods
     (@create_expect_methods) => {};
-    (@create_expect_methods $name:ident($key:expr) $inputs:ty => $output:ty; $($tail:tt)*) => {
-        create_expect_method!($name($key) $inputs => $output);
+    (@create_expect_methods
+        $expect_name:ident($key:expr):
+        fn $method_name:ident($($sig:tt)*);
+        $($tail:tt)*
+    ) => {
+        create_expect_method!($expect_name($key) create_mock!(@tuplefy $($sig:tt)*));
         create_mock!(@create_expect_methods $($tail)*);
     };
-    (@create_expect_methods $name:ident($key:expr) $inputs:ty; $($tail:tt)*) => {
-        create_expect_method!($name($key) $inputs);
+    (@create_expect_methods
+        $expect_name:ident($key:expr):
+        fn $method_name:ident($($sig:tt)*)
+        -> $output:ty;
+        $($tail:tt)*
+    ) => {
+        create_expect_method!($expect_name($key) create_mock!(@tuplefy $($sig:tt)*) => $output);
         create_mock!(@create_expect_methods $($tail)*);
     };
-    (@create_expect_methods $name:ident($key:expr); $($tail:tt)*) => {
-        create_expect_method!($name($key));
-        create_mock!(@create_expect_methods $($tail)*);
-    };
-    (struct $name:ident: {
-        $($methods:tt)*
+
+    // create_stub_methods
+
+    // main
+    (impl $trait_name:ident for $mock_name:ident {
+        $($method_info:tt)*
     }) => {
-        pub struct $name {
+        pub struct $mock_name {
             e: Expectations
         }
 
-        impl $name {
+        impl $mock_name {
             pub fn new() -> Self {
                 Self {
                     e: Expectations::new()
@@ -68,7 +96,11 @@ macro_rules! create_mock {
                 self
             }
 
-            create_mock!(@create_expect_methods $($methods)*);
+            create_mock!(@create_expect_methods $($method_info)*);
         }
+
+        // impl $trait_name for $mock_name {
+        //     create_mock!(@create_stub_methods $($method_info)*);
+        // }
     };
 }
