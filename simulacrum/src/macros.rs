@@ -36,12 +36,12 @@ macro_rules! create_expect_method {
 
 #[macro_export]
 macro_rules! create_stub_method {
-    ($key:expr, $inputs:ty => $output:ty, ($params:expr), $original_sig:tt) => {
+    ($name:ident($key:expr), $inputs:ty => $output:ty, $params:expr, $original_sig:tt) => {
         fn $name $original_sig -> $output {
             self.e.was_called_returning::<$inputs, $output>($key, $params)
         }
     };
-    ($key:expr, $inputs:ty, ($params:expr), $original_sig:tt) => {
+    ($name:ident($key:expr), $inputs:ty, $params:expr, $original_sig:tt) => {
         fn $name $original_sig {
             self.e.was_called::<$inputs, ()>($key, $params)
         }
@@ -156,7 +156,7 @@ macro_rules! create_mock {
         $($tail:tt)*
     ) => {
         create_stub_method!(
-            $key,
+            $method_name($key),
             tuplefy!(kind $sig -> ()), 
             tuplefy!(name $sig -> ()), 
             $sig);
@@ -168,7 +168,7 @@ macro_rules! create_mock {
         $($tail:tt)*
     ) => {
         create_stub_method!(
-            $key,
+            $method_name($key),
             tuplefy!(kind $sig -> ()) => $output,
             tuplefy!(name $sig -> ()),
             $sig);
