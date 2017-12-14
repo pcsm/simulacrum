@@ -49,22 +49,6 @@ macro_rules! was_called {
     };
 }
 
-#[macro_export]
-macro_rules! create_stub_method {
-    ($self_:ident, $name:ident($key:expr), $sig:tt -> $output:ty) => {
-        fn $name $sig -> $output {
-            was_called!($self_, $key, $sig -> $output)
-            // $self_.e.was_called_returning::<$inputs, $output>($key, $params)
-        }
-    };
-    ($self_:ident, $name:ident($key:expr), $sig:tt) => {
-        fn $name $sig {
-            was_called!($self_, $key, $sig)
-            // $self_.e.was_called::<$inputs, ()>($key, $params)
-        }
-    };
-}
-
 // Create an input tuple from a method signature tt.
 // Uses push-down accumulation pattern:
 // see https://danielkeep.github.io/tlborm/book/pat-push-down-accumulation.html
@@ -225,7 +209,9 @@ macro_rules! create_mock {
         fn $method_name:ident $sig:tt;
         $($tail:tt)*
     ) => {
-        create_stub_method!($self_, $method_name($key), $sig);
+        fn $method_name $sig {
+            was_called!($self_, $key, $sig)
+        }
         create_mock!(@create_stub_methods ($self_) $($tail)*);
     };
     (@create_stub_methods ($self_:ident)
@@ -233,7 +219,9 @@ macro_rules! create_mock {
         fn $method_name:ident $sig:tt -> $output:ty;
         $($tail:tt)*
     ) => {
-        create_stub_method!($self_, $method_name($key), $sig -> $output);
+        fn $method_name $sig -> $output {
+            was_called!($self_, $key, $sig -> $output)
+        }
         create_mock!(@create_stub_methods ($self_) $($tail)*);
     };
 
