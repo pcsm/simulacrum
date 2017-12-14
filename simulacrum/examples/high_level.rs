@@ -1,3 +1,11 @@
+// This is the highest-level macro in Simulacrum.
+//
+// It creates a Mock struct and impls a Trait - all you have to do is copy over
+// the trait interface and annotate it.
+//
+// Note that if you want additional control, like not mocking certain parameters,
+// you should use the mid-level macros shown in the `mid_level.rs` example.
+
 #[macro_use]
 extern crate simulacrum;
 
@@ -40,14 +48,19 @@ create_mock! {
         expect_zing("zing"):
         fn zing(&self, first: i32, second: bool);
 
+        // &'static params are a special case - other lifetimes can't be mocked.
         expect_boop("boop"):
         fn boop(&self, name: &'static str);
 
+        // & params are mocked as *const and &mut are mocked as *mut.
         expect_store("store"):
         fn store(&self, val: &i64);
 
         // If we want to modify a &mut param, we need to have `-> ()` on the end
         // to indicate that a return behavior should be specified.
+        //
+        // You can see how we've modified the *mut using the `.returning()` call
+        // in when setting up the expectations below.
         expect_toggle("toggle"): 
         fn toggle(&self, bit: &mut bool) -> ();
     }

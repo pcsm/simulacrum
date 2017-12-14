@@ -1,3 +1,7 @@
+// This is the lowest-level of abstraction API available in Simulacrum. Use this
+// if you would like to customize how your mock objects work in ways that the 
+// higher-level macros can't help with.
+
 #[macro_use]
 extern crate simulacrum;
 

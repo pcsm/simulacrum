@@ -1,3 +1,15 @@
+// Here we'll use the mid-level macros available in Simulacrum.
+//
+// There is one to create the Mock struct itself, and one to facilitate
+// marking methods as called when implementing the trait for the Mock struct.
+//
+// Note that if you want more control over your Mock object, you should look into
+// the low-level API available in the `low_level.rs` example.
+//
+// You can see that & and &mut parameters are mocked as *const and *mut. Also note
+// that the *mut parameter uses `.was_called_returning()` and `.returning()` to 
+// have its behavior specified.
+
 #[macro_use]
 extern crate simulacrum;
 
