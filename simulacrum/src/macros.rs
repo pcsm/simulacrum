@@ -74,6 +74,14 @@ macro_rules! create_mock {
         create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)*) )
     };
 
+    // Accept &'static params.
+    (@tuplefy_loop ($name:ident: &'static $kind:ty) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop () -> ($($result)* &'static $kind) )
+    };
+    (@tuplefy_loop ($name:ident: &'static $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)* &'static $kind,) )
+    };
+
     // Convert & and &mut params to *const and *mut.
     (@tuplefy_loop ($name:ident: & $kind:ty) -> ($($result:tt)*)) => {
         create_mock!( @tuplefy_loop () -> ($($result)* *const $kind) )
