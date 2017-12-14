@@ -128,29 +128,28 @@ macro_rules! simulacrum_tuplefy {
 }
 
 #[macro_export]
-macro_rules! create_mock {
-    // create_expect_methods
+macro_rules! create_mock_struct {
     (@create_expect_methods) => {};
-    (@create_expect_methods
-        $expect_name:ident($key:expr):
-        fn $method_name:ident $sig:tt;
-        $($tail:tt)*
-    ) => {
-        create_expect_method!($expect_name($key) simulacrum_tuplefy!(kind $sig -> ()));
-        create_mock!(@create_expect_methods $($tail)*);
+    (@create_expect_methods $name:ident($key:expr) $inputs:ty => $output:ty; $($tail:tt)*) => {
+        create_expect_method!($name($key) $inputs => $output);
+        create_mock_struct!(@create_expect_methods $($tail)*);
     };
-    (@create_expect_methods
-        $expect_name:ident($key:expr):
-        fn $method_name:ident $sig:tt -> $output:ty;
-        $($tail:tt)*
-    ) => {
-        create_expect_method!($expect_name($key) simulacrum_tuplefy!(kind $sig -> ()) => $output);
-        create_mock!(@create_expect_methods $($tail)*);
+    (@create_expect_methods $name:ident($key:expr) $inputs:ty; $($tail:tt)*) => {
+        create_expect_method!($name($key) $inputs);
+        create_mock_struct!(@create_expect_methods $($tail)*);
     };
+    (@create_expect_methods $name:ident($key:expr); $($tail:tt)*) => {
+        create_expect_method!($name($key));
+        create_mock_struct!(@create_expect_methods $($tail)*);
+    };
+    (struct $name:ident: {
+        $($methods:tt)*
+    }) => {
+        pub struct $name {
+            e: Expectations
+        }
 
-    // create_mock_struct
-    (@create_mock_struct $mock_name:ident, $($method_info:tt)*) => { 
-        impl $mock_name {
+        impl $name {
             pub fn new() -> Self {
                 Self {
                     e: Expectations::new()
@@ -162,8 +161,44 @@ macro_rules! create_mock {
                 self
             }
 
-            create_mock!(@create_expect_methods $($method_info)*);
+            create_mock_struct!(@create_expect_methods $($methods)*);
         }
+    };
+}
+
+#[macro_export]
+macro_rules! create_mock {
+    // create_mock_struct
+    (@create_mock_struct($mock_name:ident, ()) -> ($($result:tt)*)) => {
+        create_mock_struct! {
+            struct $mock_name: {
+                $($result)*
+            }
+        }
+    };
+    (@create_mock_struct
+        ($mock_name:ident, (
+            $expect_name:ident($key:expr):
+            fn $method_name:ident $sig:tt;
+            $($tail:tt)*
+        )) -> ($($result:tt)*)
+    ) => {
+        create_mock!(@create_mock_struct ($mock_name, ($($tail)*)) -> (
+            $($result)* 
+            $expect_name($key) simulacrum_tuplefy!(kind $sig -> ());
+        ));
+    };
+    (@create_mock_struct
+        ($mock_name:ident, (
+            $expect_name:ident($key:expr):
+            fn $method_name:ident $sig:tt -> $output:ty;
+            $($tail:tt)*
+        )) -> ($($result:tt)*)
+    ) => {
+        create_mock!(@create_mock_struct ($mock_name, ($($tail)*)) -> (
+            $($result)* 
+            $expect_name($key) simulacrum_tuplefy!(kind $sig -> ()) => $output;
+        ));
     };
 
     // create_stub_methods
@@ -199,11 +234,7 @@ macro_rules! create_mock {
     (impl $trait_name:ident for $mock_name:ident ($self_:ident) {
         $($method_info:tt)*
     }) => {
-        pub struct $mock_name {
-            e: Expectations
-        }
-
-        create_mock!(@create_mock_struct $mock_name, $($method_info)*);
+        create_mock!(@create_mock_struct ($mock_name, ($($method_info)*)) -> ());
 
         impl $trait_name for $mock_name {
             create_mock!(@create_stub_methods ($self_) $($method_info)*);
