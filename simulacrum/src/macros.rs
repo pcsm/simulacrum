@@ -51,14 +51,16 @@ macro_rules! was_called {
 
 #[macro_export]
 macro_rules! create_stub_method {
-    ($self_:ident, $name:ident($key:expr), $inputs:ty => $output:ty, $params:expr, $original_sig:tt) => {
-        fn $name $original_sig -> $output {
-            $self_.e.was_called_returning::<$inputs, $output>($key, $params)
+    ($self_:ident, $name:ident($key:expr), $sig:tt -> $output:ty) => {
+        fn $name $sig -> $output {
+            was_called!($self_, $key, $sig -> $output)
+            // $self_.e.was_called_returning::<$inputs, $output>($key, $params)
         }
     };
-    ($self_:ident, $name:ident($key:expr), $inputs:ty, $params:expr, $original_sig:tt) => {
-        fn $name $original_sig {
-            $self_.e.was_called::<$inputs, ()>($key, $params)
+    ($self_:ident, $name:ident($key:expr), $sig:tt) => {
+        fn $name $sig {
+            was_called!($self_, $key, $sig)
+            // $self_.e.was_called::<$inputs, ()>($key, $params)
         }
     };
 }
@@ -223,12 +225,7 @@ macro_rules! create_mock {
         fn $method_name:ident $sig:tt;
         $($tail:tt)*
     ) => {
-        create_stub_method!(
-            $self_,
-            $method_name($key),
-            simulacrum_tuplefy!(kind $sig -> ()), 
-            simulacrum_tuplefy!(name $sig -> ()), 
-            $sig);
+        create_stub_method!($self_, $method_name($key), $sig);
         create_mock!(@create_stub_methods ($self_) $($tail)*);
     };
     (@create_stub_methods ($self_:ident)
@@ -236,12 +233,7 @@ macro_rules! create_mock {
         fn $method_name:ident $sig:tt -> $output:ty;
         $($tail:tt)*
     ) => {
-        create_stub_method!(
-            $self_,
-            $method_name($key),
-            simulacrum_tuplefy!(kind $sig -> ()) => $output,
-            simulacrum_tuplefy!(name $sig -> ()),
-            $sig);
+        create_stub_method!($self_, $method_name($key), $sig -> $output);
         create_mock!(@create_stub_methods ($self_) $($tail)*);
     };
 
