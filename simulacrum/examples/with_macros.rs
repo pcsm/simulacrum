@@ -55,7 +55,7 @@ create_mock! {
 
 // Alternately:
 
-// create_mock! {
+// create_mock_struct! {
 //     struct CoolTraitMock: {
 //         expect_foo("foo");
 //         expect_bar("bar");
