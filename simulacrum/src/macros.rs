@@ -148,6 +148,24 @@ macro_rules! create_mock {
         create_mock!(@create_expect_methods $($tail)*);
     };
 
+    // create_mock_struct
+    (@create_mock_struct $mock_name:ident, $($method_info:tt)*) => { 
+        impl $mock_name {
+            pub fn new() -> Self {
+                Self {
+                    e: Expectations::new()
+                }
+            }
+
+            pub fn then(&mut self) -> &mut Self {
+                self.e.then();
+                self
+            }
+
+            create_mock!(@create_expect_methods $($method_info)*);
+        }
+    };
+
     // create_stub_methods
     (@create_stub_methods ($self_:ident)) => {};
     (@create_stub_methods ($self_:ident)
@@ -185,20 +203,7 @@ macro_rules! create_mock {
             e: Expectations
         }
 
-        impl $mock_name {
-            pub fn new() -> Self {
-                Self {
-                    e: Expectations::new()
-                }
-            }
-
-            pub fn then(&mut self) -> &mut Self {
-                self.e.then();
-                self
-            }
-
-            create_mock!(@create_expect_methods $($method_info)*);
-        }
+        create_mock!(@create_mock_struct $mock_name, $($method_info)*);
 
         impl $trait_name for $mock_name {
             create_mock!(@create_stub_methods ($self_) $($method_info)*);
