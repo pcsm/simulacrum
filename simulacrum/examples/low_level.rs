@@ -101,6 +101,8 @@ impl CoolTrait for CoolTraitMock {
     }
 
     fn toggle(&self, bit: &mut bool) {
+        // Note that we call `.was_called_returning()` so that we can modify the
+        // *mut param in our return behavior.
         self.e.was_called_returning::<*mut bool, ()>("toggle", bit)
     }
 }

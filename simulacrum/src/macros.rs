@@ -34,6 +34,21 @@ macro_rules! create_expect_method {
     };
 }
 
+/// Use this macro to do a `self.e.was_called` `self.e.was_called_returning` with
+/// a shorter interface.
+#[macro_export]
+macro_rules! was_called {
+    ($self_:ident, $key:expr, $sig:tt -> $output:ty) => {
+        $self_.e.was_called_returning::<simulacrum_tuplefy!(kind $sig -> ()), $output>($key, simulacrum_tuplefy!(name $sig -> ()))
+    };
+    ($self_:ident, $key:expr, $sig:tt) => {
+        $self_.e.was_called::<simulacrum_tuplefy!(kind $sig -> ()), ()>($key, simulacrum_tuplefy!(name $sig -> ()))
+    };
+    ($self_:ident, $key:expr) => {
+        $self_.e.was_called::<(), ()>($key, ())
+    };
+}
+
 #[macro_export]
 macro_rules! create_stub_method {
     ($self_:ident, $name:ident($key:expr), $inputs:ty => $output:ty, $params:expr, $original_sig:tt) => {

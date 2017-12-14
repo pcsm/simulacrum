@@ -52,31 +52,33 @@ create_mock_struct! {
 
 impl CoolTrait for CoolTraitMock {
     fn foo(&self) {
-        self.e.was_called::<(), ()>("foo", ())
+        was_called!(self, "foo")
     }
 
     fn bar(&mut self) {
-        self.e.was_called::<(), ()>("bar", ())
+        was_called!(self, "bar")
     }
 
     fn goop(&mut self, flag: bool) -> u32 {
-        self.e.was_called_returning::<bool, u32>("goop", flag)
+        was_called!(self, "goop", (flag: bool) -> u32)
     }
 
     fn zing(&self, first: i32, second: bool) {
-        self.e.was_called::<(i32, bool), ()>("zing", (first, second))
+        was_called!(self, "zing", (first: i32, second: bool))
     }
 
     fn boop(&self, name: &'static str) {
-        self.e.was_called::<&'static str, ()>("boop", name)
+        was_called!(self, "boop", (name: &'static str))
     }
 
     fn store(&self, val: &i64) {
-        self.e.was_called::<*const i64, ()>("store", val)
+        was_called!(self, "store", (val: *const i64))
     }
 
     fn toggle(&self, bit: &mut bool) {
-        self.e.was_called_returning::<*mut bool, ()>("toggle", bit)
+        // Note that we specify the () return type so that we can modify the
+        // *mut param in our return behavior.
+        was_called!(self, "toggle", (bit: *mut bool) -> ())
     }
 }
 
