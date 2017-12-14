@@ -52,7 +52,7 @@ macro_rules! create_stub_method {
 // Uses push-down accumulation pattern:
 // see https://danielkeep.github.io/tlborm/book/pat-push-down-accumulation.html
 #[macro_export]
-macro_rules! tuplefy {
+macro_rules! simulacrum_tuplefy {
     // Coerce a capture into a particular kind.
     // See https://danielkeep.github.io/tlborm/book/blk-ast-coercion.html
     (@as_ty $token:ty) => { $token };
@@ -60,70 +60,70 @@ macro_rules! tuplefy {
 
     // main - Strip off parentheses
     ($mode:tt ($($param:tt)*) -> ($($result:tt)*)) => {
-        tuplefy!(@inner $mode ($($param)*) -> ())
+        simulacrum_tuplefy!(@inner $mode ($($param)*) -> ())
     };
 
-    // tuplefy_loop - For each param, get the type. Ignore &self and &mut self.
+    // simulacrum_tuplefy - For each param, get the type. Ignore &self and &mut self.
 
     // If there are no params left, coerce the final result to a type with
     // parentheses around it.
     (@inner kind () -> ($($result:tt)*)) => {
-        tuplefy!(@as_ty ( $($result)* ))
+        simulacrum_tuplefy!(@as_ty ( $($result)* ))
     };
     (@inner name () -> ($($result:tt)*)) => {
-        tuplefy!(@as_expr ( $($result)* ))
+        simulacrum_tuplefy!(@as_expr ( $($result)* ))
     };
     
     // Ignore &self and &mut self.
     (@inner $mode:tt (& self) -> ($($result:tt)*)) => {
-        tuplefy!( @inner $mode () -> ($($result)*) )
+        simulacrum_tuplefy!( @inner $mode () -> ($($result)*) )
     };
     (@inner $mode:tt (& mut self) -> ($($result:tt)*)) => {
-        tuplefy!( @inner $mode () -> ($($result)*) )
+        simulacrum_tuplefy!( @inner $mode () -> ($($result)*) )
     };
     (@inner $mode:tt (& self, $($tail:tt)*) -> ($($result:tt)*)) => {
-        tuplefy!( @inner $mode ($($tail)*) -> ($($result)*) )
+        simulacrum_tuplefy!( @inner $mode ($($tail)*) -> ($($result)*) )
     };
     (@inner $mode:tt (& mut self, $($tail:tt)*) -> ($($result:tt)*)) => {
-        tuplefy!( @inner $mode ($($tail)*) -> ($($result)*) )
+        simulacrum_tuplefy!( @inner $mode ($($tail)*) -> ($($result)*) )
     };
 
     // Accept &'static params.
     (@inner kind ($name:ident: &'static $kind:ty) -> ($($result:tt)*)) => {
-        tuplefy!( @inner kind () -> ($($result)* &'static $kind) )
+        simulacrum_tuplefy!( @inner kind () -> ($($result)* &'static $kind) )
     };
     (@inner kind ($name:ident: &'static $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
-        tuplefy!( @inner kind ($($tail)*) -> ($($result)* &'static $kind,) )
+        simulacrum_tuplefy!( @inner kind ($($tail)*) -> ($($result)* &'static $kind,) )
     };
 
     // Convert & and &mut params to *const and *mut.
     (@inner kind ($name:ident: & $kind:ty) -> ($($result:tt)*)) => {
-        tuplefy!( @inner kind () -> ($($result)* *const $kind) )
+        simulacrum_tuplefy!( @inner kind () -> ($($result)* *const $kind) )
     };
     (@inner kind ($name:ident: & mut $kind:ty) -> ($($result:tt)*)) => {
-        tuplefy!( @inner kind () -> ($($result)* *mut $kind) )
+        simulacrum_tuplefy!( @inner kind () -> ($($result)* *mut $kind) )
     };
     (@inner kind ($name:ident: & $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
-        tuplefy!( @inner kind ($($tail)*) -> ($($result)* *const $kind,) )
+        simulacrum_tuplefy!( @inner kind ($($tail)*) -> ($($result)* *const $kind,) )
     };
     (@inner kind ($name:ident: & mut $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
-        tuplefy!( @inner kind ($($tail)*) -> ($($result)* *mut $kind,) )
+        simulacrum_tuplefy!( @inner kind ($($tail)*) -> ($($result)* *mut $kind,) )
     };
 
     // Get the type of the parameter and move on.
     (@inner kind ($name:ident: $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
-        tuplefy!( @inner kind ($($tail)*) -> ($($result)* $kind,) )
+        simulacrum_tuplefy!( @inner kind ($($tail)*) -> ($($result)* $kind,) )
     };
     (@inner kind ($name:ident: $kind:ty) -> ($($result:tt)*)) => {
-        tuplefy!( @inner kind () -> ($($result)* $kind) )
+        simulacrum_tuplefy!( @inner kind () -> ($($result)* $kind) )
     };
 
     // Get the name of the parameter and move on.
     (@inner name ($name:ident: $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
-        tuplefy!( @inner name ($($tail)*) -> ($($result)* $name,) )
+        simulacrum_tuplefy!( @inner name ($($tail)*) -> ($($result)* $name,) )
     };
     (@inner name ($name:ident: $kind:ty) -> ($($result:tt)*)) => {
-        tuplefy!( @inner name () -> ($($result)* $name) )
+        simulacrum_tuplefy!( @inner name () -> ($($result)* $name) )
     };
 }
 
@@ -136,7 +136,7 @@ macro_rules! create_mock {
         fn $method_name:ident $sig:tt;
         $($tail:tt)*
     ) => {
-        create_expect_method!($expect_name($key) tuplefy!(kind $sig -> ()));
+        create_expect_method!($expect_name($key) simulacrum_tuplefy!(kind $sig -> ()));
         create_mock!(@create_expect_methods $($tail)*);
     };
     (@create_expect_methods
@@ -144,7 +144,7 @@ macro_rules! create_mock {
         fn $method_name:ident $sig:tt -> $output:ty;
         $($tail:tt)*
     ) => {
-        create_expect_method!($expect_name($key) tuplefy!(kind $sig -> ()) => $output);
+        create_expect_method!($expect_name($key) simulacrum_tuplefy!(kind $sig -> ()) => $output);
         create_mock!(@create_expect_methods $($tail)*);
     };
 
@@ -158,8 +158,8 @@ macro_rules! create_mock {
         create_stub_method!(
             $self_,
             $method_name($key),
-            tuplefy!(kind $sig -> ()), 
-            tuplefy!(name $sig -> ()), 
+            simulacrum_tuplefy!(kind $sig -> ()), 
+            simulacrum_tuplefy!(name $sig -> ()), 
             $sig);
         create_mock!(@create_stub_methods ($self_) $($tail)*);
     };
@@ -171,8 +171,8 @@ macro_rules! create_mock {
         create_stub_method!(
             $self_,
             $method_name($key),
-            tuplefy!(kind $sig -> ()) => $output,
-            tuplefy!(name $sig -> ()),
+            simulacrum_tuplefy!(kind $sig -> ()) => $output,
+            simulacrum_tuplefy!(name $sig -> ()),
             $sig);
         create_mock!(@create_stub_methods ($self_) $($tail)*);
     };
