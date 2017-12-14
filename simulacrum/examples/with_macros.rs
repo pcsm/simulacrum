@@ -75,35 +75,35 @@ create_mock! {
     }
 }
 
-impl CoolTrait for CoolTraitMock {
-    fn foo(&self) {
-        self.e.was_called::<(), ()>("foo", ())
-    }
+// impl CoolTrait for CoolTraitMock {
+//     fn foo(&self) {
+//         self.e.was_called::<(), ()>("foo", ())
+//     }
 
-    fn bar(&mut self) {
-        self.e.was_called::<(), ()>("bar", ())
-    }
+//     fn bar(&mut self) {
+//         self.e.was_called::<(), ()>("bar", ())
+//     }
 
-    fn goop(&mut self, flag: bool) -> u32 {
-        self.e.was_called_returning::<bool, u32>("goop", flag)
-    }
+//     fn goop(&mut self, flag: bool) -> u32 {
+//         self.e.was_called_returning::<bool, u32>("goop", flag)
+//     }
 
-    fn zing(&self, first: i32, second: bool) {
-        self.e.was_called::<(i32, bool), ()>("zing", (first, second))
-    }
+//     fn zing(&self, first: i32, second: bool) {
+//         self.e.was_called::<(i32, bool), ()>("zing", (first, second))
+//     }
 
-    fn boop(&self, name: &'static str) {
-        self.e.was_called::<&'static str, ()>("boop", name)
-    }
+//     fn boop(&self, name: &'static str) {
+//         self.e.was_called::<&'static str, ()>("boop", name)
+//     }
 
-    fn store(&self, val: &i64) {
-        self.e.was_called::<*const i64, ()>("store", val)
-    }
+//     fn store(&self, val: &i64) {
+//         self.e.was_called::<*const i64, ()>("store", val)
+//     }
 
-    fn toggle(&self, bit: &mut bool) {
-        self.e.was_called_returning::<*mut bool, ()>("toggle", bit)
-    }
-}
+//     fn toggle(&self, bit: &mut bool) {
+//         self.e.was_called_returning::<*mut bool, ()>("toggle", bit)
+//     }
+// }
 
 fn main() {
     // Set up expectations

@@ -35,12 +35,25 @@ macro_rules! create_expect_method {
 }
 
 #[macro_export]
+macro_rules! create_stub_method {
+    ($key:expr, $inputs:ty => $output:ty, ($params:expr), $original_sig:tt) => {
+        fn $name $original_sig -> $output {
+            self.e.was_called_returning::<$inputs, $output>($key, $params)
+        }
+    };
+    ($key:expr, $inputs:ty, ($params:expr), $original_sig:tt) => {
+        fn $name $original_sig {
+            self.e.was_called::<$inputs, ()>($key, $params)
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! create_mock {
-    // as_ty
-    //
-    // Coerce a capture into a :ty (type) kind.
+    // Coerce a capture into a particular kind.
     // See https://danielkeep.github.io/tlborm/book/blk-ast-coercion.html
     (@as_ty $token:ty) => { $token };
+    (@as_expr $token:expr) => { $token };
 
     // tuplefy
     //
@@ -48,60 +61,71 @@ macro_rules! create_mock {
     // Uses push-down accumulation pattern:
     // see https://danielkeep.github.io/tlborm/book/pat-push-down-accumulation.html
     // tuplefy - Strip off parentheses
-    (@tuplefy ($($param:tt)*) -> ($($result:tt)*)) => {
-        create_mock!(@tuplefy_loop ($($param)*) -> ())
+    (@tuplefy $mode:tt ($($param:tt)*) -> ($($result:tt)*)) => {
+        create_mock!(@tuplefy_loop $mode ($($param)*) -> ())
     };
 
     // tuplefy_loop - For each param, get the type. Ignore &self and &mut self.
 
     // If there are no params left, coerce the final result to a type with
     // parentheses around it.
-    (@tuplefy_loop () -> ($($result:tt)*)) => {
+    (@tuplefy_loop kind () -> ($($result:tt)*)) => {
         create_mock!(@as_ty ( $($result)* ))
+    };
+    (@tuplefy_loop name () -> ($($result:tt)*)) => {
+        create_mock!(@as_expr ( $($result)* ))
     };
     
     // Ignore &self and &mut self.
-    (@tuplefy_loop (& self) -> ($($result:tt)*)) => {
-        create_mock!( @tuplefy_loop () -> ($($result)*) )
+    (@tuplefy_loop $mode:tt (& self) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop $mode () -> ($($result)*) )
     };
-    (@tuplefy_loop (& mut self) -> ($($result:tt)*)) => {
-        create_mock!( @tuplefy_loop () -> ($($result)*) )
+    (@tuplefy_loop $mode:tt (& mut self) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop $mode () -> ($($result)*) )
     };
-    (@tuplefy_loop (& self, $($tail:tt)*) -> ($($result:tt)*)) => {
-        create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)*) )
+    (@tuplefy_loop $mode:tt (& self, $($tail:tt)*) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop $mode ($($tail)*) -> ($($result)*) )
     };
-    (@tuplefy_loop (& mut self, $($tail:tt)*) -> ($($result:tt)*)) => {
-        create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)*) )
+    (@tuplefy_loop $mode:tt (& mut self, $($tail:tt)*) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop $mode ($($tail)*) -> ($($result)*) )
     };
 
     // Accept &'static params.
-    (@tuplefy_loop ($name:ident: &'static $kind:ty) -> ($($result:tt)*)) => {
-        create_mock!( @tuplefy_loop () -> ($($result)* &'static $kind) )
+    (@tuplefy_loop kind ($name:ident: &'static $kind:ty) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop kind () -> ($($result)* &'static $kind) )
     };
-    (@tuplefy_loop ($name:ident: &'static $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
-        create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)* &'static $kind,) )
+    (@tuplefy_loop kind ($name:ident: &'static $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop kind ($($tail)*) -> ($($result)* &'static $kind,) )
     };
 
     // Convert & and &mut params to *const and *mut.
-    (@tuplefy_loop ($name:ident: & $kind:ty) -> ($($result:tt)*)) => {
-        create_mock!( @tuplefy_loop () -> ($($result)* *const $kind) )
+    (@tuplefy_loop kind ($name:ident: & $kind:ty) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop kind () -> ($($result)* *const $kind) )
     };
-    (@tuplefy_loop ($name:ident: & mut $kind:ty) -> ($($result:tt)*)) => {
-        create_mock!( @tuplefy_loop () -> ($($result)* *mut $kind) )
+    (@tuplefy_loop kind ($name:ident: & mut $kind:ty) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop kind () -> ($($result)* *mut $kind) )
     };
-    (@tuplefy_loop ($name:ident: & $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
-        create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)* *const $kind,) )
+    (@tuplefy_loop kind ($name:ident: & $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop kind ($($tail)*) -> ($($result)* *const $kind,) )
     };
-    (@tuplefy_loop ($name:ident: & mut $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
-        create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)* *mut $kind,) )
+    (@tuplefy_loop kind ($name:ident: & mut $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop kind ($($tail)*) -> ($($result)* *mut $kind,) )
     };
 
     // Get the type of the parameter and move on.
-    (@tuplefy_loop ($name:ident: $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
-        create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)* $kind,) )
+    (@tuplefy_loop kind ($name:ident: $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop kind ($($tail)*) -> ($($result)* $kind,) )
     };
-    (@tuplefy_loop ($name:ident: $kind:ty) -> ($($result:tt)*)) => {
-        create_mock!( @tuplefy_loop () -> ($($result)* $kind) )
+    (@tuplefy_loop kind ($name:ident: $kind:ty) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop kind () -> ($($result)* $kind) )
+    };
+
+    // Get the name of the parameter and move on.
+    (@tuplefy_loop name ($name:ident: $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop name ($($tail)*) -> ($($result)* $name,) )
+    };
+    (@tuplefy_loop name ($name:ident: $kind:ty) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop name () -> ($($result)* $name) )
     };
 
     // create_expect_methods
@@ -111,7 +135,7 @@ macro_rules! create_mock {
         fn $method_name:ident $sig:tt;
         $($tail:tt)*
     ) => {
-        create_expect_method!($expect_name($key) create_mock!(@tuplefy $sig -> ()));
+        create_expect_method!($expect_name($key) create_mock!(@tuplefy kind $sig -> ()));
         create_mock!(@create_expect_methods $($tail)*);
     };
     (@create_expect_methods
@@ -119,11 +143,36 @@ macro_rules! create_mock {
         fn $method_name:ident $sig:tt -> $output:ty;
         $($tail:tt)*
     ) => {
-        create_expect_method!($expect_name($key) create_mock!(@tuplefy $sig -> ()) => $output);
+        create_expect_method!($expect_name($key) create_mock!(@tuplefy kind $sig -> ()) => $output);
         create_mock!(@create_expect_methods $($tail)*);
     };
 
     // create_stub_methods
+    (@create_stub_methods) => {};
+    (@create_stub_methods
+        $expect_name:ident($key:expr):
+        fn $method_name:ident $sig:tt;
+        $($tail:tt)*
+    ) => {
+        create_stub_method!(
+            $key,
+            create_mock!(@tuplefy kind $sig -> ()), 
+            create_mock!(@tuplefy name $sig -> ()), 
+            $sig);
+        create_mock!(@create_stub_methods $($tail)*);
+    };
+    (@create_stub_methods
+        $expect_name:ident($key:expr):
+        fn $method_name:ident $sig:tt -> $output:ty;
+        $($tail:tt)*
+    ) => {
+        create_stub_method!(
+            $key,
+            create_mock!(@tuplefy kind $sig -> ()) => $output,
+            create_mock!(@tuplefy name $sig -> ()),
+            $sig);
+        create_mock!(@create_stub_methods $($tail)*);
+    };
 
     // main
     (impl $trait_name:ident for $mock_name:ident {
@@ -148,8 +197,8 @@ macro_rules! create_mock {
             create_mock!(@create_expect_methods $($method_info)*);
         }
 
-        // impl $trait_name for $mock_name {
-        //     create_mock!(@create_stub_methods $($method_info)*);
-        // }
+        impl $trait_name for $mock_name {
+            create_mock!(@create_stub_methods $($method_info)*);
+        }
     };
 }
