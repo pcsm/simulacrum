@@ -36,14 +36,14 @@ macro_rules! create_expect_method {
 
 #[macro_export]
 macro_rules! create_stub_method {
-    ($name:ident($key:expr), $inputs:ty => $output:ty, $params:expr, $original_sig:tt) => {
+    ($self_:ident, $name:ident($key:expr), $inputs:ty => $output:ty, $params:expr, $original_sig:tt) => {
         fn $name $original_sig -> $output {
-            self.e.was_called_returning::<$inputs, $output>($key, $params)
+            $self_.e.was_called_returning::<$inputs, $output>($key, $params)
         }
     };
-    ($name:ident($key:expr), $inputs:ty, $params:expr, $original_sig:tt) => {
+    ($self_:ident, $name:ident($key:expr), $inputs:ty, $params:expr, $original_sig:tt) => {
         fn $name $original_sig {
-            self.e.was_called::<$inputs, ()>($key, $params)
+            $self_.e.was_called::<$inputs, ()>($key, $params)
         }
     };
 }
@@ -149,34 +149,36 @@ macro_rules! create_mock {
     };
 
     // create_stub_methods
-    (@create_stub_methods) => {};
-    (@create_stub_methods
+    (@create_stub_methods ($self_:ident)) => {};
+    (@create_stub_methods ($self_:ident)
         $expect_name:ident($key:expr):
         fn $method_name:ident $sig:tt;
         $($tail:tt)*
     ) => {
         create_stub_method!(
+            $self_,
             $method_name($key),
             tuplefy!(kind $sig -> ()), 
             tuplefy!(name $sig -> ()), 
             $sig);
-        create_mock!(@create_stub_methods $($tail)*);
+        create_mock!(@create_stub_methods ($self_) $($tail)*);
     };
-    (@create_stub_methods
+    (@create_stub_methods ($self_:ident)
         $expect_name:ident($key:expr):
         fn $method_name:ident $sig:tt -> $output:ty;
         $($tail:tt)*
     ) => {
         create_stub_method!(
+            $self_,
             $method_name($key),
             tuplefy!(kind $sig -> ()) => $output,
             tuplefy!(name $sig -> ()),
             $sig);
-        create_mock!(@create_stub_methods $($tail)*);
+        create_mock!(@create_stub_methods ($self_) $($tail)*);
     };
 
     // main
-    (impl $trait_name:ident for $mock_name:ident {
+    (impl $trait_name:ident for $mock_name:ident ($self_:ident) {
         $($method_info:tt)*
     }) => {
         pub struct $mock_name {
@@ -199,7 +201,7 @@ macro_rules! create_mock {
         }
 
         impl $trait_name for $mock_name {
-            create_mock!(@create_stub_methods $($method_info)*);
+            create_mock!(@create_stub_methods ($self_) $($method_info)*);
         }
     };
 }

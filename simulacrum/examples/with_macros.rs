@@ -26,32 +26,8 @@ trait CoolTrait {
     fn toggle(&self, bit: &mut bool);
 }
 
-// create_mock! {
-//     struct CoolTraitMock: {
-//         expect_foo("foo");
-//         expect_bar("bar");
-//         expect_goop("goop") bool => u32;
-//         expect_zing("zing") (i32, bool);
-//         expect_boop("boop") &'static str;
-//         expect_store("store") *const i64;
-//         expect_toggle("toggle") *mut bool;
-//     }
-// }
-
-// impl_mock! {
-//     impl CoolTrait for CoolTraitMock {
-//         fn foo(&self);
-//         fn bar(&mut self);
-//         fn goop(&mut self, flag: bool) -> u32;
-//         fn zing(&self, first: i32, second: bool);
-//         fn boop(&self, name: &'static str);
-//         fn store(&self, val: &i64);
-//         fn toggle(&self, bit: &mut bool);
-//     }
-// }
-
 create_mock! {
-    impl CoolTrait for CoolTraitMock {
+    impl CoolTrait for CoolTraitMock (self) {
         expect_foo("foo"):
         fn foo(&self);
 
@@ -70,40 +46,12 @@ create_mock! {
         expect_store("store"):
         fn store(&self, val: &i64);
 
+        // If we want to modify a &mut param, we need to have `-> ()` on the end
+        // to indicate that a return behavior should be specified.
         expect_toggle("toggle"): 
-        fn toggle(&self, bit: &mut bool);
+        fn toggle(&self, bit: &mut bool) -> ();
     }
 }
-
-// impl CoolTrait for CoolTraitMock {
-//     fn foo(&self) {
-//         self.e.was_called::<(), ()>("foo", ())
-//     }
-
-//     fn bar(&mut self) {
-//         self.e.was_called::<(), ()>("bar", ())
-//     }
-
-//     fn goop(&mut self, flag: bool) -> u32 {
-//         self.e.was_called_returning::<bool, u32>("goop", flag)
-//     }
-
-//     fn zing(&self, first: i32, second: bool) {
-//         self.e.was_called::<(i32, bool), ()>("zing", (first, second))
-//     }
-
-//     fn boop(&self, name: &'static str) {
-//         self.e.was_called::<&'static str, ()>("boop", name)
-//     }
-
-//     fn store(&self, val: &i64) {
-//         self.e.was_called::<*const i64, ()>("store", val)
-//     }
-
-//     fn toggle(&self, bit: &mut bool) {
-//         self.e.was_called_returning::<*mut bool, ()>("toggle", bit)
-//     }
-// }
 
 fn main() {
     // Set up expectations
