@@ -7,8 +7,8 @@
 // the low-level API available in the `low_level.rs` example.
 //
 // You can see that & and &mut parameters are mocked as *const and *mut. Also note
-// that the *mut parameter uses `.was_called_returning()` and `.returning()` to 
-// have its behavior specified.
+// that the *mut parameter uses `was_called!()` with a `()` return type and
+// `.returning()` to have its return behavior specified.
 
 #[macro_use]
 extern crate simulacrum;
