@@ -74,6 +74,20 @@ macro_rules! create_mock {
         create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)*) )
     };
 
+    // Convert & and &mut params to *const and *mut.
+    (@tuplefy_loop ($name:ident: & $kind:ty) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop () -> ($($result)* *const $kind) )
+    };
+    (@tuplefy_loop ($name:ident: & mut $kind:ty) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop () -> ($($result)* *mut $kind) )
+    };
+    (@tuplefy_loop ($name:ident: & $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)* *const $kind,) )
+    };
+    (@tuplefy_loop ($name:ident: & mut $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)* *mut $kind,) )
+    };
+
     // Get the type of the parameter and move on.
     (@tuplefy_loop ($name:ident: $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
         create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)* $kind,) )
