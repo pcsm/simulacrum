@@ -52,26 +52,26 @@ trait CoolTrait {
 
 create_mock! {
     impl CoolTrait for CoolTraitMock {
-        // expect_foo("foo"):
-        // fn foo(&self);
+        expect_foo("foo"):
+        fn foo(&self);
 
-        // expect_bar("bar"):
-        // fn bar(&mut self);
+        expect_bar("bar"):
+        fn bar(&mut self);
 
-        // expect_goop("goop"):
-        // fn goop(&mut self, flag: bool) -> u32;
+        expect_goop("goop"):
+        fn goop(&mut self, flag: bool) -> u32;
 
         expect_zing("zing"):
         fn zing(&self, first: i32, second: bool);
 
-        // expect_boop("boop"):
-        // fn boop(&self, name: &'static str);
+        expect_boop("boop"):
+        fn boop(&self, name: &'static str);
 
-        // expect_store("store"):
-        // fn store(&self, val: &i64);
+        expect_store("store"):
+        fn store(&self, val: &i64);
 
-        // expect_toggle("toggle"): 
-        // fn toggle(&self, bit: &mut bool);
+        expect_toggle("toggle"): 
+        fn toggle(&self, bit: &mut bool);
     }
 }
 

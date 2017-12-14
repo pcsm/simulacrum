@@ -36,34 +36,50 @@ macro_rules! create_expect_method {
 
 #[macro_export]
 macro_rules! create_mock {
-    // tuplefy - create an input tuple from a method signature tt
-    (@tuplefy ($($param:tt)*):tt) => {
-        create_mock!(@tuplefy_strip $($param)*)
+    // as_ty
+    //
+    // Coerce a capture into a :ty (type) kind.
+    // See https://danielkeep.github.io/tlborm/book/blk-ast-coercion.html
+    (@as_ty $token:ty) => { $token };
+
+    // tuplefy
+    //
+    // Create an input tuple from a method signature tt.
+    // Uses push-down accumulation pattern:
+    // see https://danielkeep.github.io/tlborm/book/pat-push-down-accumulation.html
+    // tuplefy - Strip off parentheses
+    (@tuplefy ($($param:tt)*) -> ($($result:tt)*)) => {
+        create_mock!(@tuplefy_loop ($($param)*) -> ())
     };
-    (@tuplefy_strip) => {
-        ()
+
+    // tuplefy_loop - For each param, get the type. Ignore &self and &mut self.
+
+    // If there are no params left, coerce the final result to a type with
+    // parentheses around it.
+    (@tuplefy_loop () -> ($($result:tt)*)) => {
+        create_mock!(@as_ty ( $($result)* ))
     };
-    (@tuplefy_strip & self) => {
-        ()
+    
+    // Ignore &self and &mut self.
+    (@tuplefy_loop (& self) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop () -> ($($result)*) )
     };
-    (@tuplefy_strip & mut self) => {
-        ()
+    (@tuplefy_loop (& mut self) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop () -> ($($result)*) )
     };
-    (@tuplefy_strip & self, $($tail:tt)*) => {
-        ( create_mock!(@tuplefy_loop $($tail)*) )
+    (@tuplefy_loop (& self, $($tail:tt)*) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)*) )
     };
-    (@tuplefy_strip & mut self, $($tail:tt)*) => {
-        ( create_mock!(@tuplefy_loop $($tail)*) )
+    (@tuplefy_loop (& mut self, $($tail:tt)*) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)*) )
     };
-    (@tuplefy_loop) => {
-        ()
+
+    // Get the type of the parameter and move on.
+    (@tuplefy_loop ($name:ident: $kind:ty, $($tail:tt)*) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop ($($tail)*) -> ($($result)* $kind,) )
     };
-    (@tuplefy_loop $name:ident: $kind:ty, $($tail:tt)*) => {
-        $kind,
-        create_mock!(@tuplefy_loop $($tail)*);
-    };
-    (@tuplefy_loop $name:ident: $kind:ty) => {
-        $kind
+    (@tuplefy_loop ($name:ident: $kind:ty) -> ($($result:tt)*)) => {
+        create_mock!( @tuplefy_loop () -> ($($result)* $kind) )
     };
 
     // create_expect_methods
@@ -73,7 +89,7 @@ macro_rules! create_mock {
         fn $method_name:ident $sig:tt;
         $($tail:tt)*
     ) => {
-        create_expect_method!($expect_name($key) create_mock!(@tuplefy $sig:tt));
+        create_expect_method!($expect_name($key) create_mock!(@tuplefy $sig -> ()));
         create_mock!(@create_expect_methods $($tail)*);
     };
     (@create_expect_methods
@@ -81,7 +97,7 @@ macro_rules! create_mock {
         fn $method_name:ident $sig:tt -> $output:ty;
         $($tail:tt)*
     ) => {
-        create_expect_method!($expect_name($key) create_mock!(@tuplefy $sig:tt) => $output);
+        create_expect_method!($expect_name($key) create_mock!(@tuplefy $sig -> ()) => $output);
         create_mock!(@create_expect_methods $($tail)*);
     };
 
