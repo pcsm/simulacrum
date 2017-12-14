@@ -33,26 +33,32 @@ macro_rules! create_expect_method {
         create_expect_method!($name($key) () => ());
     };
 }
-    // (@create_expect_methods) => {};
-    // (@create_expect_methods $name:ident($key:expr) $inputs:ty => $output:ty; $($tail:tt)*) => {
-    //     create_expect_method!($name($key) $inputs => $output);
-    //     create_mock!(@create_expect_methods $($tail)*);
-    // };
-    // (@create_expect_methods $name:ident($key:expr) $inputs:ty; $($tail:tt)*) => {
-    //     create_expect_method!($name($key) $inputs);
-    //     create_mock!(@create_expect_methods $($tail)*);
-    // };
-    // (@create_expect_methods $name:ident($key:expr); $($tail:tt)*) => {
-    //     create_expect_method!($name($key));
-    //     create_mock!(@create_expect_methods $($tail)*);
-    // };
 
 #[macro_export]
 macro_rules! create_mock {
     // tuplefy - create an input tuple from a method signature
-    (@tuplefy $($sig:tt)*) => {
+    (@tuplefy) => {
         ()
     };
+    // (@tuplefy $($tail:tt)*) => {
+    //     ()
+    // };
+    (@tuplefy & self) => {
+        ()
+    };
+    // (@tuplefy & self $($tail:tt)*) => {
+    //     ()
+    // };
+    // (@tuplefy &self, $($tail:tt)*) => {
+    //     ()
+    // };
+    // (@tuplefy $name:ident: $kind:ty) => {
+    //     $kind
+    // };
+    // (@tuplefy_loop $name:ident: $kind:ty, $($tail:tt)*) => {
+    //     $kind,
+    //     create_mock!(@tuplefy_loop $($tail)*);
+    // };
 
     // create_expect_methods
     (@create_expect_methods) => {};
