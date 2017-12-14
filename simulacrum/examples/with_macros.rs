@@ -52,8 +52,8 @@ trait CoolTrait {
 
 create_mock! {
     impl CoolTrait for CoolTraitMock {
-        expect_foo("foo"):
-        fn foo(&self);
+        // expect_foo("foo"):
+        // fn foo(&self);
 
         // expect_bar("bar"):
         // fn bar(&mut self);
@@ -61,8 +61,8 @@ create_mock! {
         // expect_goop("goop"):
         // fn goop(&mut self, flag: bool) -> u32;
 
-        // expect_zing("zing"):
-        // fn zing(&self, first: i32, second: bool);
+        expect_zing("zing"):
+        fn zing(&self, first: i32, second: bool);
 
         // expect_boop("boop"):
         // fn boop(&self, name: &'static str);
