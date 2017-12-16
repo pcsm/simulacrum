@@ -5,6 +5,7 @@ authors = ["Jason Grlicky <jason@paracosm.us>"]
 description = "A small library for creating mock objects by hand in Stable Rust."
 keywords = ["mock", "mocking", "test", "testing", "unit-test", "TDD"]
 categories = ["development-tools::testing"]
+license = "MIT"
 
 [badges]
 maintenance = { status = "actively-developed" }
