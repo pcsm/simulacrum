@@ -131,7 +131,7 @@ impl ExpectationStore {
     /// (For testing) Get the number of total Expectations in the store.
     #[allow(dead_code)]
     fn exp_count(&self) -> usize {
-        self.0.lock().unwrap().expectations.internal_map().len()
+        self.0.lock().unwrap().expectations.map.len()
     }
 
     /// (For testing) Get the number of total Eras in the store.

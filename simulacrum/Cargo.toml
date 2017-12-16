@@ -2,7 +2,7 @@
 name = "simulacrum"
 version = "0.1.0"
 authors = ["Jason Grlicky <jason@paracosm.us>"]
-description = "A small library for creating mock objects by hand in Stable Rust."
+description = "A small library for creating mock objects in Stable Rust."
 keywords = ["mock", "mocking", "test", "testing", "unit-test", "TDD"]
 categories = ["development-tools::testing"]
 license = "MIT"
@@ -12,4 +12,4 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 debugit = "0.1"
-handlebox = { git = "ssh://bitbucket.org/paracosm/handlebox.git"}
+handlebox = "0.3"
