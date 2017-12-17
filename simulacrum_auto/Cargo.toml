@@ -6,8 +6,8 @@ description = "Procedural macro to automatically create mock objects from traits
 keywords = ["mock", "mocking", "test", "testing", "unit-test", "TDD"]
 categories = ["development-tools::testing"]
 readme = "README.md"
-documentation = "https://docs.rs/simulacrum_proc_macro"
-repository = "https://github.com/pcsm/simulacrum_proc_macro"
+documentation = "https://docs.rs/simulacrum_auto"
+repository = "https://github.com/pcsm/simulacrum/simulacrum_auto"
 license = "MIT"
 
 [badges]
