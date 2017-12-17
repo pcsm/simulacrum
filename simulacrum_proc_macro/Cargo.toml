@@ -1,0 +1,19 @@
+[package]
+name = "simulacrum_proc_macro"
+version = "0.1.0"
+authors = ["Jason Grlicky <jason@paracosm.us>"]
+description = "Procedural macro to automatically create mock objects from traits"
+keywords = ["mock", "mocking", "test", "testing", "unit-test", "TDD"]
+categories = ["development-tools::testing"]
+license = "MIT"
+
+[badges]
+maintenance = { status = "experimental" }
+
+[dependencies]
+quote = "0.3"
+simulacrum = { path = "../simulacrum" }
+syn = { version = "0.11.11", features = ["full"] }
+
+[lib]
+proc-macro = true
