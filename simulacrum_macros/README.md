@@ -1,9 +1,9 @@
 Simulacrum Macros
 ==================================================================
 
-These macros ease the creation of mock objects using `simulacrum`. The objects 
+These macros ease the creation of mock objects using [`simulacrum`](https://github.com/pcsm/simulacrum/simulacrum). The objects 
 created using these macros can be used just like objects created manually with
-the `simulacrum` API.
+the [`simulacrum`](https://github.com/pcsm/simulacrum/simulacrum) API.
 
 To install, add this line to your Cargo.toml:
 
@@ -50,6 +50,8 @@ create_mock! {
 }
 ```
 
+See [`high_level.rs`](https://github.com/pcsm/simulacrum/simulacrum_macros/blob/master/examples/high_level.rs) for more examples of how to mock out different types of methods with `create_mock!`.
+
 ### Mid-Level Macros
 
 If you need more control than the high-level macro offers, you can use the 
@@ -84,3 +86,5 @@ impl CoolTrait for CoolTraitMock {
 }
 
 ```
+
+See [`mid_level.rs`](https://github.com/pcsm/simulacrum/simulacrum_macros/blob/master/examples/mid_level.rs) for more examples of how to mock out different types of methods with the Mid-Level Macros.
