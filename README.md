@@ -10,6 +10,6 @@ It consists of two crates:
 
 This repository also includes one in-progress crate that should not be used yet:
 
-- [`simulacrum_auto`](https://github.com/pcsm/simulacrum/tree/master/simulacrum_auto) - A procedural macro that lets you automatically create mock objects (nightly Rust only).
+- [`simulacrum_auto`](https://github.com/pcsm/simulacrum/tree/master/simulacrum_auto) - A work-in-progress procedural macro that lets you automatically create mock objects (nightly Rust only).
 
 Note that none of these crates have reached version 1.0 yet, so their APIs may change drastically between releases.
