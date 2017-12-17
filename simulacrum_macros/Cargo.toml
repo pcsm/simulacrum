@@ -14,4 +14,4 @@ license = "MIT"
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-simulacrum = { path = "../simulacrum" }
+simulacrum = "0.1"
