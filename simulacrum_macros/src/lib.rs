@@ -1,6 +1,5 @@
 extern crate simulacrum;
 
-#[macro_use]
 pub use simulacrum::*;
 
 /// Use this macro to create an `.expect_METHOD_NAME()` method.
