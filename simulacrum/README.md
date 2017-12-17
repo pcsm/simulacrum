@@ -18,7 +18,7 @@ You can use Simulacrum to create your mocks by hand for ultimate control. For a
 detailed example of the API, see the [`everything.rs`](https://github.com/pcsm/simulacrum/simulacrum/blob/master/examples/everything.rs) example.
 
 If you'd like a mocking experience with less typing, you can use the macros in
-[`simulacrum_macros`](https://github.com/pcsm/simulacrum/simulacrum_macros).
+[`simulacrum_macros`](https://github.com/pcsm/simulacrum/tree/master/simulacrum_macros).
 
 ```rust
 extern crate simulacrum;

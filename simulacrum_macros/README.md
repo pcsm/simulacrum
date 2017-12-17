@@ -1,9 +1,9 @@
 Simulacrum Macros
 ==================================================================
 
-These macros ease the creation of mock objects using [`simulacrum`](https://github.com/pcsm/simulacrum/simulacrum). The objects 
+These macros ease the creation of mock objects using [`simulacrum`](https://github.com/pcsm/simulacrum/tree/master/simulacrum). The objects 
 created using these macros can be used just like objects created manually with
-the [`simulacrum`](https://github.com/pcsm/simulacrum/simulacrum) API.
+the [`simulacrum`](https://github.com/pcsm/simulacrum/tree/master/simulacrum) API.
 
 To install, add this line to your Cargo.toml:
 
