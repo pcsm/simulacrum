@@ -11,7 +11,7 @@ repository = "https://github.com/pcsm/simulacrum/simulacrum_macros"
 license = "MIT"
 
 [badges]
-maintenance = { status = "actively-maintained" }
+maintenance = { status = "actively-developed" }
 
 [dependencies]
 simulacrum = { path = "../simulacrum" }
