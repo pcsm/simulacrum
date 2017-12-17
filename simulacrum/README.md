@@ -14,10 +14,10 @@ Note that this crate has not yet reached version 1.0, so the API may change dras
 
 ## Example
 
-You can use Simulacrum to create your mocks by hand for ultimate control. For a
+You can use this crate to create your mock objects manually for ultimate control. For a
 detailed example of the API, see the [`everything.rs`](https://github.com/pcsm/simulacrum/blob/master/simulacrum/examples/everything.rs) example.
 
-If you'd like a mocking experience with less typing, you can use the macros in
+If you'd like a to do the same mocking with less typing, you can use the macros in
 [`simulacrum_macros`](https://github.com/pcsm/simulacrum/tree/master/simulacrum_macros).
 
 ```rust
