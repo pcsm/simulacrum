@@ -1,5 +1,6 @@
 [workspace]
 members = [
 	"simulacrum",
+	"simulacrum_macros",
 	"simulacrum_proc_macro"
 ]

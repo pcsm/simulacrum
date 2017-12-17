@@ -4,16 +4,15 @@
 // marking methods as called when implementing the trait for the Mock struct.
 //
 // Note that if you want more control over your Mock object, you should look into
-// the low-level API available in the `low_level.rs` example.
+// the low-level API available in the `simulacrum` crate.
 //
 // You can see that & and &mut parameters are mocked as *const and *mut. Also note
 // that the *mut parameter uses `was_called!()` with a `()` return type and
 // `.returning()` to have its return behavior specified.
 
-#[macro_use]
-extern crate simulacrum;
+extern crate simulacrum_macros;
 
-use simulacrum::*;
+use simulacrum_macros::*;
 
 trait CoolTrait {
     // Shared self

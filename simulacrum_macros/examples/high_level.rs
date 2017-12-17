@@ -4,12 +4,12 @@
 // the trait interface and annotate it.
 //
 // Note that if you want additional control, like not mocking certain parameters,
-// you should use the mid-level macros shown in the `mid_level.rs` example.
+// you should use the mid-level macros shown in the `mid_level.rs` example. For
+// even more control, you can use the `simulacrum` crate directly.
 
-#[macro_use]
-extern crate simulacrum;
+extern crate simulacrum_macros;
 
-use simulacrum::*;
+use simulacrum_macros::*;
 
 trait CoolTrait {
     // Shared self

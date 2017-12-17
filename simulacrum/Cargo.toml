@@ -2,7 +2,7 @@
 name = "simulacrum"
 version = "0.1.0"
 authors = ["Jason Grlicky <jason@paracosm.us>"]
-description = "A small library for creating mock objects using stable Rust."
+description = "A small library for creating mock objects by hand using stable Rust."
 keywords = ["mock", "mocking", "test", "testing", "unit-test", "TDD"]
 categories = ["development-tools::testing"]
 readme = "README.md"
