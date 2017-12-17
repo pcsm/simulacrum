@@ -50,7 +50,7 @@ create_mock! {
 }
 ```
 
-See [`high_level.rs`](https://github.com/pcsm/simulacrum/simulacrum_macros/blob/master/examples/high_level.rs) for more examples of how to mock out different types of methods with `create_mock!`.
+See [`high_level.rs`](https://github.com/pcsm/simulacrum/blob/master/simulacrum_macros/examples/high_level.rs) for more examples of how to mock out different types of methods with `create_mock!`.
 
 ### Mid-Level Macros
 
@@ -87,4 +87,4 @@ impl CoolTrait for CoolTraitMock {
 
 ```
 
-See [`mid_level.rs`](https://github.com/pcsm/simulacrum/simulacrum_macros/blob/master/examples/mid_level.rs) for more examples of how to mock out different types of methods with the Mid-Level Macros.
+See [`mid_level.rs`](https://github.com/pcsm/simulacrum/blob/master/simulacrum_macros/examples/mid_level.rs) for more examples of how to mock out different types of methods with the Mid-Level Macros.
