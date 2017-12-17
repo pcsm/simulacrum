@@ -11,7 +11,7 @@ repository = "https://github.com/pcsm/simulacrum/simulacrum"
 license = "MIT"
 
 [badges]
-maintenance = { status = "actively-developed" }
+maintenance = { status = "actively-maintained" }
 
 [dependencies]
 debugit = "0.1"

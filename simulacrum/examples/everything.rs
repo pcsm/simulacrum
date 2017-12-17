@@ -1,6 +1,5 @@
 // This example demonstrates everything that can be done with Simulacrum.
 
-#[macro_use]
 extern crate simulacrum;
 
 use simulacrum::*;
