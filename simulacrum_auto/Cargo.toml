@@ -7,7 +7,7 @@ keywords = ["mock", "mocking", "test", "testing", "TDD"]
 categories = ["development-tools::testing"]
 readme = "README.md"
 documentation = "https://docs.rs/simulacrum_auto"
-repository = "https://github.com/pcsm/simulacrum/simulacrum_auto"
+repository = "https://github.com/pcsm/simulacrum/tree/master/simulacrum_auto"
 license = "MIT"
 
 [badges]
