@@ -32,6 +32,9 @@ trait CoolTrait {
 
     // Mutable reference
     fn toggle(&self, bit: &mut bool);
+
+    // Unsafe
+    unsafe fn ohno(&self);
 }
 
 create_mock! {
@@ -63,6 +66,9 @@ create_mock! {
         // in when setting up the expectations below.
         expect_toggle("toggle"): 
         fn toggle(&self, bit: &mut bool) -> ();
+
+        expect_ohno("ohno"):
+        unsafe fn ohno(&self);
     }
 }
 
@@ -77,6 +83,7 @@ fn main() {
     m.expect_store().called_once().with(deref(777));
     m.expect_toggle().called_once().with(deref(true))
                                    .returning(|&arg| { unsafe { *arg.as_mut().unwrap() = false } });
+    m.expect_ohno().called_once();
 
     // Execute test code
     m.foo();
@@ -88,6 +95,9 @@ fn main() {
     let mut b = true;
     m.toggle(&mut b);
     assert_eq!(b, false);
+    unsafe {
+        m.ohno();
+    }
 
     // When the Expectations struct is dropped, each of its expectations will be evaluated
 }

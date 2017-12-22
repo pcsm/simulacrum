@@ -185,6 +185,30 @@ macro_rules! create_mock {
             $expect_name($key) simulacrum_tuplefy!(kind $sig -> ()) => $output;
         ));
     };
+    (@create_mock_struct
+        ($mock_name:ident, (
+            $expect_name:ident($key:expr):
+            unsafe fn $method_name:ident $sig:tt;
+            $($tail:tt)*
+        )) -> ($($result:tt)*)
+    ) => {
+        create_mock!(@create_mock_struct ($mock_name, ($($tail)*)) -> (
+            $($result)* 
+            $expect_name($key) simulacrum_tuplefy!(kind $sig -> ());
+        ));
+    };
+    (@create_mock_struct
+        ($mock_name:ident, (
+            $expect_name:ident($key:expr):
+            unsafe fn $method_name:ident $sig:tt -> $output:ty;
+            $($tail:tt)*
+        )) -> ($($result:tt)*)
+    ) => {
+        create_mock!(@create_mock_struct ($mock_name, ($($tail)*)) -> (
+            $($result)* 
+            $expect_name($key) simulacrum_tuplefy!(kind $sig -> ()) => $output;
+        ));
+    };
 
     // create_stub_methods
     (@create_stub_methods ($self_:ident)) => {};
@@ -204,6 +228,26 @@ macro_rules! create_mock {
         $($tail:tt)*
     ) => {
         fn $method_name $sig -> $output {
+            was_called!($self_, $key, $sig -> $output)
+        }
+        create_mock!(@create_stub_methods ($self_) $($tail)*);
+    };
+    (@create_stub_methods ($self_:ident)
+        $expect_name:ident($key:expr):
+        unsafe fn $method_name:ident $sig:tt;
+        $($tail:tt)*
+    ) => {
+        unsafe fn $method_name $sig {
+            was_called!($self_, $key, $sig)
+        }
+        create_mock!(@create_stub_methods ($self_) $($tail)*);
+    };
+    (@create_stub_methods ($self_:ident)
+        $expect_name:ident($key:expr):
+        unsafe fn $method_name:ident $sig:tt -> $output:ty;
+        $($tail:tt)*
+    ) => {
+        unsafe fn $method_name $sig -> $output {
             was_called!($self_, $key, $sig -> $output)
         }
         create_mock!(@create_stub_methods ($self_) $($tail)*);
