@@ -1,5 +1,5 @@
 [package]
-name = "simulacrum_proc_macro"
+name = "simulacrum_auto"
 version = "0.1.0"
 authors = ["Jason Grlicky <jason@paracosm.us>"]
 description = "Procedural macro to automatically create mock objects from traits."

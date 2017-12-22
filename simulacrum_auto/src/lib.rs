@@ -342,7 +342,7 @@ mod tests {
                 fn goop(&mut self, flag: bool) -> u32;
 
                 // Multiple parameters
-                fn zing(&self, first: i32, second: bool);
+                fn zing(&self, first: i32, second: &mut bool);
 
                 // Note: It doesn't work with references yet!
                 // fn boop(&self, name: &'static str)
@@ -354,7 +354,7 @@ mod tests {
                 fn foo(&self);
                 fn bar(&mut self);
                 fn goop(&mut self, flag: bool) -> u32;
-                fn zing(&self, first: i32, second: bool);
+                fn zing(&self, first: i32, second: &mut bool);
             }
 
             create_mock! {
@@ -369,7 +369,7 @@ mod tests {
                     fn goop(&mut self, flag: bool) -> u32;
 
                     expect_zing("zing"):
-                    fn zing(&self, first: i32, second: bool);
+                    fn zing(&self, first: i32, second: &mut bool) -> ();
                 }
             }
         };
