@@ -6,6 +6,7 @@ pub use simulacrum::*;
 #[macro_export]
 macro_rules! create_expect_method {
     ($name:ident($key:expr) $inputs:ty => $output:ty) => {
+        #[allow(non_snake_case)]
         pub fn $name(&mut self) -> Method<$inputs, $output> {
             self.e.expect::<$inputs, $output>($key)
         }
@@ -130,10 +131,12 @@ macro_rules! create_mock_struct {
     (struct $name:ident: {
         $($methods:tt)*
     }) => {
+        #[allow(non_snake_case)]
         pub struct $name {
             e: Expectations
         }
 
+        #[allow(non_snake_case)]
         impl $name {
             pub fn new() -> Self {
                 Self {
@@ -217,6 +220,7 @@ macro_rules! create_mock {
         fn $method_name:ident $sig:tt;
         $($tail:tt)*
     ) => {
+        #[allow(warnings)]
         fn $method_name $sig {
             was_called!($self_, $key, $sig)
         }
@@ -227,6 +231,7 @@ macro_rules! create_mock {
         fn $method_name:ident $sig:tt -> $output:ty;
         $($tail:tt)*
     ) => {
+        #[allow(warnings)]
         fn $method_name $sig -> $output {
             was_called!($self_, $key, $sig -> $output)
         }
@@ -237,6 +242,7 @@ macro_rules! create_mock {
         unsafe fn $method_name:ident $sig:tt;
         $($tail:tt)*
     ) => {
+        #[allow(warnings)]
         unsafe fn $method_name $sig {
             was_called!($self_, $key, $sig)
         }
@@ -247,6 +253,7 @@ macro_rules! create_mock {
         unsafe fn $method_name:ident $sig:tt -> $output:ty;
         $($tail:tt)*
     ) => {
+        #[allow(warnings)]
         unsafe fn $method_name $sig -> $output {
             was_called!($self_, $key, $sig -> $output)
         }
