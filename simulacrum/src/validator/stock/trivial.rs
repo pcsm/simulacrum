@@ -18,9 +18,9 @@ impl<I> Validator<I> for Trivial {
 
      fn print(&self) -> String {
         if self.0 {
-            "Always Passes".to_owned()
+            "<Always Passes>".to_owned()
         } else {
-            "Always Fails".to_owned()
+            "<Always Fails>".to_owned()
         }
     }
 }

@@ -83,7 +83,7 @@ mod tests {
         let r = <Constraint<()>>::verify(&c);
 
         assert!(r.is_err(), "Constraint should fail");
-        assert_eq!(r.unwrap_err(), ConstraintError::MismatchedParams("Always Fails".to_owned(), "()".to_owned()), "Constraint should return the correct error");
+        assert_eq!(r.unwrap_err(), ConstraintError::MismatchedParams("<Always Fails>".to_owned(), "()".to_owned()), "Constraint should return the correct error");
     }
 
     #[test]

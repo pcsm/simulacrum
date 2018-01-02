@@ -16,7 +16,7 @@ impl<I> Validator<I> for Check<I> {
     }
 
      fn print(&self) -> String {
-        "Passes Closure".to_owned()
+        "<Passes Closure>".to_owned()
     }
 }
 
