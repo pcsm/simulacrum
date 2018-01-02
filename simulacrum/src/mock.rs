@@ -58,7 +58,7 @@ impl Expectations {
 
     fn verify(&self) {
         if let Err(e) = self.store.verify() {
-            panic!(e);
+            panic!("{}", e);
         }
     }
 }

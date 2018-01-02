@@ -32,7 +32,7 @@ impl fmt::Display for ConstraintError {
                 write!(f, "{}", msg)
             },
             &ConstraintError::MismatchedParams(ref expected_msg, ref received_msg) => {
-                write!(f, "Called with unexpected parameters: Expected {}, Got {}.", expected_msg, received_msg)
+                write!(f, "Called with unexpected parameters:\n  Expected: {}\n  Received: {}", expected_msg, received_msg)
             },
         }
     }

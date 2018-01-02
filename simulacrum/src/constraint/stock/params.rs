@@ -39,7 +39,7 @@ impl<I> Constraint<I> for Params<I> {
         if self.is_valid {
             Ok(())
         } else {
-            let expected_msg = format!("{:?}", self.validator);
+            let expected_msg = self.validator.print();
             let received_msg = self.received_param_msg.clone();
             Err(ConstraintError::MismatchedParams(expected_msg, received_msg))
         }

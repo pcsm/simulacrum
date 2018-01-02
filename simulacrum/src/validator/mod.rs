@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use debugit::DebugIt;
 
 pub mod stock;
 
@@ -6,18 +6,27 @@ pub mod stock;
 ///
 /// To use these, you typically pass them to the `.with()` method for use with
 /// the `Params` Constraint.
-pub trait Validator<I> : Debug {
+pub trait Validator<I> {
     /// This object has been called with the given parameters. Return `true`
     /// if they are acceptable, and `false` if they are not.
     fn validate(&mut self, param: &I) -> bool;
+
+    // Method to create a string representing the pass condition of this Validator.
+    // We do this so that types that implement `PartialEq` (and are therefore 
+    // `Validator`s), but do not implement Debug can still be printed using `DebugIt`.
+    fn print(&self) -> String;
 }
 
 
-/// `Validator` is automatically implemented for types that implement `Debug` and `PartialEq`.
-impl<I: Debug + PartialEq> Validator<I> for I {
+/// `Validator` is automatically implemented for types that implement `PartialEq`.
+impl<I: PartialEq> Validator<I> for I {
     fn validate(&mut self, param: &I) -> bool {
         &*param == self
     }
+
+     fn print(&self) -> String {
+         format!("{:?}", DebugIt(self)).to_owned()
+     }
 }
 
 #[cfg(test)]
