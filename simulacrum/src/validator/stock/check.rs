@@ -1,3 +1,5 @@
+use std::fmt;
+
 use super::super::Validator;
 
 /// A closure that will be called with the parameters to validate that they 
@@ -13,6 +15,12 @@ pub fn passes<I, F>(closure: F) -> Check<I> where
 impl<I> Validator<I> for Check<I> {
     fn validate(&mut self, param: &I) -> bool {
         (self.0)(param)
+    }
+}
+
+impl<I> fmt::Debug for Check<I> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Passes Closure")
     }
 }
 

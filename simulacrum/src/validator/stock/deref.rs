@@ -1,3 +1,4 @@
+use std::fmt;
 use std::marker::PhantomData;
 
 use super::super::Validator;
@@ -28,6 +29,14 @@ impl<I, V> Validator<*const I> for Deref<I, V> where
         unsafe {
             self.0.validate(&*param.as_ref().unwrap())
         }
+    }
+}
+
+impl<I, V> fmt::Debug for Deref<I, V> where
+    V: Validator<I>
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Deref({:?})", self.0)
     }
 }
 

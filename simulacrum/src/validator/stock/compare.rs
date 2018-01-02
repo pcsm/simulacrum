@@ -1,3 +1,7 @@
+use debugit::DebugIt;
+
+use std::fmt;
+
 use super::super::Validator;
 
 pub struct GreaterThan<I: PartialOrd>(I);
@@ -13,6 +17,12 @@ impl<I: PartialOrd> Validator<I> for GreaterThan<I> {
     }
 }
 
+impl<I: PartialOrd> fmt::Debug for GreaterThan<I> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "> {:?}", DebugIt(&self.0))
+    }
+}
+
 pub struct LessThan<I: PartialOrd>(I);
 
 /// Parameter(s) must be < the provided value.
@@ -23,6 +33,12 @@ pub fn lt<I: PartialOrd>(other: I) -> LessThan<I> {
 impl<I: PartialOrd> Validator<I> for LessThan<I> {
     fn validate(&mut self, param: &I) -> bool {
         *param < self.0
+    }
+}
+
+impl<I: PartialOrd> fmt::Debug for LessThan<I> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "< {:?}", DebugIt(&self.0))
     }
 }
 

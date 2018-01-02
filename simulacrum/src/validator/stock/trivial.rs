@@ -1,3 +1,5 @@
+use std::fmt;
+
 use super::super::Validator;
 
 /// A `Validator` that either always passes or fails.
@@ -15,6 +17,16 @@ pub fn any() -> Trivial {
 
 pub fn none() -> Trivial {
     Trivial(false)
+}
+
+impl fmt::Debug for Trivial {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.0 {
+            write!(f, "Always Passes")
+        } else {
+            write!(f, "Always Fails")
+        }
+    }
 }
 
 #[cfg(test)]

@@ -7,7 +7,7 @@ use validator::Validator;
 pub struct Params<I> {
     /// Should be `true` if the method has been called with valid parameters every time.
     is_valid: bool,
-    invalid_param_msg: String,
+    received_param_msg: String,
     /// A closure that will be called with the parameters to validate that they 
     /// conform to the requirements.
     validator: Box<Validator<I>>
@@ -19,7 +19,7 @@ impl<I> Params<I> {
     {
         Params {
             is_valid: true,
-            invalid_param_msg: "".to_owned(),
+            received_param_msg: "".to_owned(),
             validator: Box::new(validator)
         }
     }
@@ -30,7 +30,7 @@ impl<I> Constraint<I> for Params<I> {
         if self.is_valid {
             self.is_valid = self.validator.validate(params);
             if !self.is_valid {
-                self.invalid_param_msg = format!("{:?}", DebugIt(params));
+                self.received_param_msg = format!("{:?}", DebugIt(params));
             }
         }
     }
@@ -39,7 +39,9 @@ impl<I> Constraint<I> for Params<I> {
         if self.is_valid {
             Ok(())
         } else {
-            Err(ConstraintError::MismatchedParams(self.invalid_param_msg.clone()))
+            let expected_msg = format!("{:?}", self.validator);
+            let received_msg = self.received_param_msg.clone();
+            Err(ConstraintError::MismatchedParams(expected_msg, received_msg))
         }
     }
 }
@@ -81,7 +83,7 @@ mod tests {
         let r = <Constraint<()>>::verify(&c);
 
         assert!(r.is_err(), "Constraint should fail");
-        assert_eq!(r.unwrap_err(), ConstraintError::MismatchedParams("()".to_owned()), "Constraint should return the correct error");
+        assert_eq!(r.unwrap_err(), ConstraintError::MismatchedParams("Always Fails".to_owned(), "()".to_owned()), "Constraint should return the correct error");
     }
 
     #[test]

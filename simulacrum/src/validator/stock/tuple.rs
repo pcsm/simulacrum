@@ -1,4 +1,5 @@
 //! A family of `Validators` that splits tuples into their own validators.
+use std::fmt;
 
 use super::super::Validator;
 
@@ -12,6 +13,16 @@ macro_rules! create_tuple_validator {
             fn validate(&mut self, param: &($($generic),*)) -> bool {
                 $(self.$index.validate(&param.$index) &&)*
                 true
+            }
+        }
+
+        impl<$($generic),*> fmt::Debug for $name<$($generic),*> {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                write!(f, "(")?;
+                $(
+                    write!(f, "{:?}, ", self.$index)?;
+                )*
+                write!(f, ")")
             }
         }
     };
