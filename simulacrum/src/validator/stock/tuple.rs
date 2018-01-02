@@ -14,12 +14,12 @@ macro_rules! create_tuple_validator {
             }
 
             fn print(&self) -> String {
-                ["(",
+                let inner = [
                     $(
-                        &self.$index.print(),
-                        ", ",
+                        self.$index.print(),
                     )*
-                ")"].join("")
+                ].join(", ");
+                format!("({})", inner)
             }
         }
     };
