@@ -21,7 +21,7 @@ impl<I, V> Validator<*mut I> for Deref<I, V> where
     }
 
      fn print(&self) -> String {
-        format!("Deref({})", self.0.print()).to_owned()
+        format!("&mut {}", self.0.print()).to_owned()
     }
 }
 
@@ -35,7 +35,7 @@ impl<I, V> Validator<*const I> for Deref<I, V> where
     }
 
     fn print(&self) -> String {
-        format!("Deref({})", self.0.print()).to_owned()
+        format!("& {}", self.0.print()).to_owned()
     }
 }
 
