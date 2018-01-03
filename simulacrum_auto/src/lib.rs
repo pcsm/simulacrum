@@ -182,16 +182,20 @@ fn expectify_method_name(ident: &syn::Ident) -> syn::Ident {
 fn gather_original_methods(methods: &Vec<Method>) -> Vec<quote::Tokens> {
     let mut result = Vec::new();
     for method in methods {
-        let to_output = &method.original_item;
-
+        let mut tokens;
         if method_needs_side_effect_added(&method.sig) {
-            unimplemented!()
+            let to_output = &add_side_effect_to_method(&method.original_item);
+            tokens = quote! {
+                #to_output
+            };
+        } else {
+            let to_output = &method.original_item;
+            tokens = quote! {
+                #to_output
+            };
         }
 
         // Push the tokens onto our result Vec
-        let tokens = quote! {
-            #to_output
-        };
         result.push(tokens);
     }
     result
@@ -215,7 +219,7 @@ fn method_needs_side_effect_added(sig: &syn::MethodSig) -> bool {
                             return true;
                         }
                     },
-                    otherwise @ _ => { }
+                    _ => { }
                 }
             },
             _ => { }
@@ -224,6 +228,11 @@ fn method_needs_side_effect_added(sig: &syn::MethodSig) -> bool {
 
     // Otherwise, no side-effect needs to be added.
     false
+}
+
+fn add_side_effect_to_method(original_item: &syn::TraitItem) -> syn::TraitItem {
+    let result = original_item.clone();
+    result
 }
 
 // fn generate_stubs(methods: &Vec<Method>) -> quote::Tokens {
