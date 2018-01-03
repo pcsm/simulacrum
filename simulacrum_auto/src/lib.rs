@@ -231,8 +231,21 @@ fn method_needs_side_effect_added(sig: &syn::MethodSig) -> bool {
 }
 
 fn add_side_effect_to_method(original_item: &syn::TraitItem) -> syn::TraitItem {
-    let result = original_item.clone();
-    result
+    let mut result = original_item.clone();
+    match result.node {
+        syn::TraitItemKind::Method(ref mut sig, _) => {
+            match sig.decl.output {
+                syn::FunctionRetTy::Default => { 
+                    // Add a unit-tuple return type "()"
+                    let ty = syn::Ty::Tup(vec![]);
+                    sig.decl.output = syn::FunctionRetTy::Ty(ty);
+                },
+                _ => { }
+            }
+        },
+        _ => { }
+    }
+    return result;
 }
 
 // fn generate_stubs(methods: &Vec<Method>) -> quote::Tokens {
