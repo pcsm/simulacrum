@@ -202,28 +202,20 @@ fn method_needs_side_effect_added(sig: &syn::MethodSig) -> bool {
     // have a side-effect added to this method in order to modify those params.
     let args = &sig.decl.inputs;
     for arg in args {
-        println!("Evaluating arg...");
         match arg {
             &syn::FnArg::Captured(_, ref ty) => {
-                println!("  Captured!");
                 match ty {
                     &syn::Ty::Ptr(ref mut_ty) => {
-                        println!("    Raw Pointer!");
                         if mut_ty.mutability == syn::Mutability::Mutable {
-                            println!("      Mutable!");
                             return true;
                         }
                     },
                     &syn::Ty::Rptr(_, ref mut_ty) => {
-                        println!("    Reference!");
                         if mut_ty.mutability == syn::Mutability::Mutable {
-                            println!("      Mutable!");
                             return true;
                         }
                     },
-                    otherwise @ _ => {
-                        println!("  Nothing: {:?}", otherwise);
-                    }
+                    otherwise @ _ => { }
                 }
             },
             _ => { }
