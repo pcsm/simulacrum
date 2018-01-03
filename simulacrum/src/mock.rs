@@ -282,12 +282,37 @@ mod tests {
     }
 
     #[test]
-    fn test_leading_empty_era() {
+    fn test_empty_era_leading() {
         let mut e = Expectations::new();
 
         // Createa an empty era at the start
         e.then();
         e.expect::<(), ()>("eh").called_once();
+
+        e.was_called::<(), ()>("eh", ()); // Completes first and second eras
+    }
+
+    #[test]
+    fn test_empty_era_middle() {
+        let mut e = Expectations::new();
+
+        // Createa an empty era in the middle
+        e.expect::<(), ()>("eh").called_once();
+        e.then();
+        e.then();
+        e.expect::<(), ()>("eh").called_once();
+
+        e.was_called::<(), ()>("eh", ()); // Completes first and second eras
+        e.was_called::<(), ()>("eh", ()); // Completes third era
+    }
+
+    #[test]
+    fn test_empty_era_end() {
+        let mut e = Expectations::new();
+
+        e.expect::<(), ()>("eh").called_once();
+        // Createa an empty era at the end
+        e.then();
 
         e.was_called::<(), ()>("eh", ()); // Completes first and second eras
     }
