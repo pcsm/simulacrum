@@ -182,13 +182,56 @@ fn expectify_method_name(ident: &syn::Ident) -> syn::Ident {
 fn gather_original_methods(methods: &Vec<Method>) -> Vec<quote::Tokens> {
     let mut result = Vec::new();
     for method in methods {
-        let original_item = &method.original_item;
+        let to_output = &method.original_item;
+
+        if method_needs_side_effect_added(&method.sig) {
+            unimplemented!()
+        }
+
+        // Push the tokens onto our result Vec
         let tokens = quote! {
-            #original_item
+            #to_output
         };
         result.push(tokens);
     }
     result
+}
+
+fn method_needs_side_effect_added(sig: &syn::MethodSig) -> bool {
+    // If any of the parameters are &mut (excluding &mut self), then we need to
+    // have a side-effect added to this method in order to modify those params.
+    let args = &sig.decl.inputs;
+    for arg in args {
+        println!("Evaluating arg...");
+        match arg {
+            &syn::FnArg::Captured(_, ref ty) => {
+                println!("  Captured!");
+                match ty {
+                    &syn::Ty::Ptr(ref mut_ty) => {
+                        println!("    Raw Pointer!");
+                        if mut_ty.mutability == syn::Mutability::Mutable {
+                            println!("      Mutable!");
+                            return true;
+                        }
+                    },
+                    &syn::Ty::Rptr(_, ref mut_ty) => {
+                        println!("    Reference!");
+                        if mut_ty.mutability == syn::Mutability::Mutable {
+                            println!("      Mutable!");
+                            return true;
+                        }
+                    },
+                    otherwise @ _ => {
+                        println!("  Nothing: {:?}", otherwise);
+                    }
+                }
+            },
+            _ => { }
+        }
+    }
+
+    // Otherwise, no side-effect needs to be added.
+    false
 }
 
 // fn generate_stubs(methods: &Vec<Method>) -> quote::Tokens {
