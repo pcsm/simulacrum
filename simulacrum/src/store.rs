@@ -45,6 +45,9 @@ impl ExpectationStore {
             _types: MethodTypes::new()
         };
 
+        // If the current era is complete, move on to the next incomplete one.
+        self.advance_era();
+
         // Lock our inner mutex
         let inner = self.0.lock().unwrap();
 
@@ -68,6 +71,13 @@ impl ExpectationStore {
                 store: &self
             }
         }
+    }
+
+    // If the current era is complete, move on to the next incomplete one
+    #[allow(unused_must_use)]
+    pub fn advance_era(&self) {
+        // We don't care about the result, we're just doing it to advance the era if necessary
+        self.verify();
     }
 
     // Add a new Expectation under the current Era and return its id.
@@ -190,9 +200,6 @@ impl<'a, I, O> ExpectationMatcher<'a, I, O> where
     pub fn was_called(self, params: I) -> Self {
         for id in self.ids.iter() {
             self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().handle_call(&params);
-            
-            // We don't care about the result, we're just doing it to advance the era if necessary
-            self.store.verify();
         }
         self
     }
@@ -209,10 +216,6 @@ impl<'a, I, O> ExpectationMatcher<'a, I, O> where
         if let Some(id) = self.ids.pop() {
             self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().handle_call(&params);
             let result = self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().return_value_for(&params);
-
-            // We don't care about the result, we're just doing it to advance the era if necessary
-            self.store.verify();
-
             result
         } else {
             panic!("Can't return a value for method `{}` with no matching expectations.", self.sig.name);
