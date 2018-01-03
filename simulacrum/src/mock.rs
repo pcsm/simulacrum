@@ -280,4 +280,15 @@ mod tests {
         e.was_called::<(), ()>("eh", ());
         e.was_called::<(), ()>("mer", ()); // Completes third era
     }
+
+    #[test]
+    fn test_leading_empty_era() {
+        let mut e = Expectations::new();
+
+        // Createa an empty era at the start
+        e.then();
+        e.expect::<(), ()>("eh").called_once();
+
+        e.was_called::<(), ()>("eh", ()); // Completes first and second eras
+    }
 }
