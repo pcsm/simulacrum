@@ -169,6 +169,12 @@ impl<'a, I, O> ExpectationEditor<'a, I, O> where
         self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().constrain(constraint);
     }
 
+    pub(crate) fn set_modification<F>(&mut self, modification_behavior: F) where
+        F: 'static + FnMut(&mut I)
+    {
+        self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().set_modification(modification_behavior);
+    }
+
     pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
         F: 'static + FnMut(&I) -> O
     {

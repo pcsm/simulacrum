@@ -1,6 +1,6 @@
 use std::any::Any;
 use std::cell::RefCell;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 
 use super::MethodName;
 
@@ -16,6 +16,7 @@ pub struct Expectation<I, O> where
 {
     name: MethodName,
     constraints: Vec<Box<Constraint<I>>>,
+    modification_fn: Option<Box<FnMut(&mut I)>>,
     return_fn: Option<Box<FnMut(&I) -> O>>
 }
 
@@ -27,14 +28,27 @@ impl<I, O> Expectation<I, O> where
         Expectation {
             name,
             constraints: Vec::new(),
+            modification_fn: None,
             return_fn: None
         }
     }
 
     pub fn handle_call(&mut self, params_cell: &RefCell<I>) {
+        self.constraints_handle_call(params_cell);
+        self.run_modification_behavior(params_cell);
+    }
+
+    fn constraints_handle_call(&mut self, params_cell: &RefCell<I>) {
         for constraint in self.constraints.iter_mut() {
             let params = params_cell.borrow();
             constraint.handle_call(params.deref());
+        }
+    }
+
+    fn run_modification_behavior(&mut self, params_cell: &RefCell<I>) {
+        if self.modification_fn.is_some() {
+            let mut params = params_cell.borrow_mut();
+            (self.modification_fn.as_mut().unwrap())(params.deref_mut())
         }
     }
 
@@ -51,6 +65,12 @@ impl<I, O> Expectation<I, O> where
         C: Constraint<I> + 'static
     {
         self.constraints.push(Box::new(constraint));
+    }
+
+    pub(crate) fn set_modification<F>(&mut self, modification_behavior: F) where
+        F: 'static + FnMut(&mut I)
+    {
+        self.modification_fn = Some(Box::new(modification_behavior));
     }
 
     pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
@@ -105,7 +125,8 @@ mod tests {
 
         assert_eq!(e.name, "foo", "Name of Constraint should be `foo`");
         assert_eq!(e.constraints.len(), 0, "Number of Constraints should be 0");
-        assert!(e.return_fn.is_none(), "Return Closure Should Not Exist");
+        assert!(e.return_fn.is_none(), "Return Behavior Should Not Exist");
+        assert!(e.modification_fn.is_none(), "Modification Behavior Should Not Exist");
     }
 
     #[test]
@@ -137,6 +158,15 @@ mod tests {
 
         assert!(e.return_fn.is_some(), "Return Closure Should Exist");
         assert_eq!(e.return_value_for(&RefCell::new(())), 5, "Return Closure Should return 5");
+    }
+
+    #[test]
+    fn test_set_modification() {
+        let mut e: Expectation<(), ()> = Expectation::new("bing");
+
+        e.set_modification(|_| ());
+
+        assert!(e.modification_fn.is_some(), "Modification Closure Should Exist");
     }
 
     #[test]

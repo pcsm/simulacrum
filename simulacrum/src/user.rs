@@ -122,6 +122,16 @@ impl<'a, I, O> TrackedMethod<'a, I, O> where
         self
     }
 
+    /// Specify a behavior to be executed as a side-effect when the method is called.
+    ///
+    /// The primary use for this is to modify parameters passed as mutable references.
+    pub fn modifying<F>(self, modification_behavior: F) -> Self where
+        F: 'static + FnMut(&mut I)
+    {
+        self.method.store.get_mut::<I, O>(self.id).set_modification(modification_behavior);
+        self
+    }
+
     pub fn returning<F>(self, result_behavior: F) -> Self where
         F: 'static + FnMut(&I) -> O
     {

@@ -190,6 +190,23 @@ mod tests {
     }
 
     #[test]
+    fn test_modifications() {
+        let mut e = Expectations::new();
+        e.expect::<*mut i32, ()>("dawg")
+         .called_any()
+         .modifying(|&mut arg| {
+            unsafe {
+                *arg.as_mut().unwrap() = 3;
+            } 
+         });
+
+        let mut i = 2;
+        e.was_called::<*mut i32, ()>("dawg", &mut i);
+
+        assert_eq!(i, 3);
+    }
+
+    #[test]
     fn test_then() {
         let mut e = Expectations::new();
         e.expect::<i32, ()>("fren").called_once().with(gt(5));
