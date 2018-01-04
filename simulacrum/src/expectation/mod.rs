@@ -1,4 +1,6 @@
 use std::any::Any;
+use std::cell::RefCell;
+use std::ops::Deref;
 
 use super::MethodName;
 
@@ -29,15 +31,17 @@ impl<I, O> Expectation<I, O> where
         }
     }
 
-    pub fn handle_call(&mut self, params: &I) {
+    pub fn handle_call(&mut self, params_cell: &RefCell<I>) {
         for constraint in self.constraints.iter_mut() {
-            constraint.handle_call(params);
+            let params = params_cell.borrow();
+            constraint.handle_call(params.deref());
         }
     }
 
-    pub fn return_value_for(&mut self, params: &I) -> O {
+    pub fn return_value_for(&mut self, params_cell: &RefCell<I>) -> O {
         if self.return_fn.is_some() {
-            (self.return_fn.as_mut().unwrap())(params)
+            let params = params_cell.borrow();
+            (self.return_fn.as_mut().unwrap())(params.deref())
         } else {
             panic!("No return closure specified for `{}`, which should return.", self.name);
         }
@@ -111,7 +115,7 @@ mod tests {
         m.expect_handle_call();
         e.constrain(m);
 
-        e.handle_call(&());
+        e.handle_call(&RefCell::new(()));
 
         // ConstraintMock verifies on Drop
     }
@@ -132,7 +136,7 @@ mod tests {
         e.set_return(|_| 5);
 
         assert!(e.return_fn.is_some(), "Return Closure Should Exist");
-        assert_eq!(e.return_value_for(&()), 5, "Return Closure Should return 5");
+        assert_eq!(e.return_value_for(&RefCell::new(())), 5, "Return Closure Should return 5");
     }
 
     #[test]
@@ -143,7 +147,7 @@ mod tests {
         // Did not set the return here
 
         // Panic: .returning() was not called, so we don't know what to return
-        e.return_value_for(&());
+        e.return_value_for(&RefCell::new(()));
     }
 
     #[test]
