@@ -1,4 +1,6 @@
 use std::any::Any;
+use std::cell::RefCell;
+use std::ops::{Deref, DerefMut};
 
 use super::MethodName;
 
@@ -14,6 +16,7 @@ pub struct Expectation<I, O> where
 {
     name: MethodName,
     constraints: Vec<Box<Constraint<I>>>,
+    modification_fn: Option<Box<FnMut(&mut I)>>,
     return_fn: Option<Box<FnMut(&I) -> O>>
 }
 
@@ -25,19 +28,34 @@ impl<I, O> Expectation<I, O> where
         Expectation {
             name,
             constraints: Vec::new(),
+            modification_fn: None,
             return_fn: None
         }
     }
 
-    pub fn handle_call(&mut self, params: &I) {
+    pub fn handle_call(&mut self, params_cell: &RefCell<I>) {
+        self.constraints_handle_call(params_cell);
+        self.run_modification_behavior(params_cell);
+    }
+
+    fn constraints_handle_call(&mut self, params_cell: &RefCell<I>) {
         for constraint in self.constraints.iter_mut() {
-            constraint.handle_call(params);
+            let params = params_cell.borrow();
+            constraint.handle_call(params.deref());
         }
     }
 
-    pub fn return_value_for(&mut self, params: &I) -> O {
+    fn run_modification_behavior(&mut self, params_cell: &RefCell<I>) {
+        if self.modification_fn.is_some() {
+            let mut params = params_cell.borrow_mut();
+            (self.modification_fn.as_mut().unwrap())(params.deref_mut())
+        }
+    }
+
+    pub fn return_value_for(&mut self, params_cell: &RefCell<I>) -> O {
         if self.return_fn.is_some() {
-            (self.return_fn.as_mut().unwrap())(params)
+            let params = params_cell.borrow();
+            (self.return_fn.as_mut().unwrap())(params.deref())
         } else {
             panic!("No return closure specified for `{}`, which should return.", self.name);
         }
@@ -47,6 +65,12 @@ impl<I, O> Expectation<I, O> where
         C: Constraint<I> + 'static
     {
         self.constraints.push(Box::new(constraint));
+    }
+
+    pub(crate) fn set_modification<F>(&mut self, modification_behavior: F) where
+        F: 'static + FnMut(&mut I)
+    {
+        self.modification_fn = Some(Box::new(modification_behavior));
     }
 
     pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
@@ -101,7 +125,8 @@ mod tests {
 
         assert_eq!(e.name, "foo", "Name of Constraint should be `foo`");
         assert_eq!(e.constraints.len(), 0, "Number of Constraints should be 0");
-        assert!(e.return_fn.is_none(), "Return Closure Should Not Exist");
+        assert!(e.return_fn.is_none(), "Return Behavior Should Not Exist");
+        assert!(e.modification_fn.is_none(), "Modification Behavior Should Not Exist");
     }
 
     #[test]
@@ -111,7 +136,7 @@ mod tests {
         m.expect_handle_call();
         e.constrain(m);
 
-        e.handle_call(&());
+        e.handle_call(&RefCell::new(()));
 
         // ConstraintMock verifies on Drop
     }
@@ -132,7 +157,16 @@ mod tests {
         e.set_return(|_| 5);
 
         assert!(e.return_fn.is_some(), "Return Closure Should Exist");
-        assert_eq!(e.return_value_for(&()), 5, "Return Closure Should return 5");
+        assert_eq!(e.return_value_for(&RefCell::new(())), 5, "Return Closure Should return 5");
+    }
+
+    #[test]
+    fn test_set_modification() {
+        let mut e: Expectation<(), ()> = Expectation::new("bing");
+
+        e.set_modification(|_| ());
+
+        assert!(e.modification_fn.is_some(), "Modification Closure Should Exist");
     }
 
     #[test]
@@ -143,7 +177,7 @@ mod tests {
         // Did not set the return here
 
         // Panic: .returning() was not called, so we don't know what to return
-        e.return_value_for(&());
+        e.return_value_for(&RefCell::new(()));
     }
 
     #[test]
