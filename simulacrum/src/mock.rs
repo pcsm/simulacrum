@@ -78,6 +78,8 @@ impl Drop for Expectations {
 
 #[cfg(test)]
 mod tests {
+    use std::panic;
+
     use super::*;
     use validator::stock::compare::*;
 
@@ -315,5 +317,18 @@ mod tests {
         e.then();
 
         e.was_called::<(), ()>("eh", ()); // Completes first and second eras
+    }
+
+    #[test]
+    fn test_one_expectation_per_era() {
+        let mut e = Expectations::new();
+
+        e.expect::<(), ()>("eh").called_never();
+        let result = panic::catch_unwind(
+            panic::AssertUnwindSafe(|| {
+                e.expect::<(), ()>("eh").called_never(); // Panic: only one expectation should be registered for "eh" in a given era
+            })
+        );
+        assert!(result.is_err());
     }
 }
