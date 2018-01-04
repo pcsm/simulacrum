@@ -198,7 +198,7 @@ mod tests {
          .called_any()
          .modifying(|&mut arg| {
             unsafe {
-                *arg.as_mut().unwrap() = 3;
+                *arg = 3;
             } 
          });
 
