@@ -44,6 +44,11 @@ impl<'a, I, O> Method<'a, I, O> where
     O: 'static
 {
     pub(crate) fn new(store: &'a mut ExpectationStore, name: MethodName) -> Self {
+        // Bail if there's already an expectation for a method with this name in the current era
+        if store.has_expectation_for_method_in_current_era(name) {
+            panic!("Only one expectation can be set for method '{}' per era - use .then() to create a new era before adding another expectation.", name);
+        }
+
         let types = MethodTypes {
             input: PhantomData,
             output: PhantomData

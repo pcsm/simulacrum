@@ -37,6 +37,10 @@ impl ExpectationStore {
         }
     }
 
+    pub(crate) fn has_expectation_for_method_in_current_era(&self, name: MethodName) -> bool {
+        true
+    }
+
     pub fn matcher_for<I, O>(&self, name: MethodName) -> ExpectationMatcher<I, O> where
         I: 'static,
         O: 'static
