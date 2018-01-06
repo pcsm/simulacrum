@@ -38,7 +38,20 @@ impl ExpectationStore {
     }
 
     pub(crate) fn has_expectation_for_method_in_current_era(&self, name: MethodName) -> bool {
-        true
+        // If the current era is complete, move on to the next incomplete one.
+        self.advance_era();
+
+        // Lock our inner mutex
+        let inner = self.0.lock().unwrap();
+
+        // Get the current era and see if there's an expectation with this name in it 
+        for id in inner.eras.last().unwrap() {
+            if inner.expectations.get(&id).unwrap().name() == name {
+                true
+            }
+        }
+
+        false
     }
 
     pub fn matcher_for<I, O>(&self, name: MethodName) -> ExpectationMatcher<I, O> where
