@@ -47,7 +47,7 @@ impl ExpectationStore {
         // Get the current era and see if there's an expectation with this name in it 
         for id in inner.eras.last().unwrap() {
             if inner.expectations.get(&id).unwrap().name() == name {
-                true
+                return true;
             }
         }
 
