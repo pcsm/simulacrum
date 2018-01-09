@@ -9,7 +9,7 @@ To install, add this line to your Cargo.toml:
 
 ```toml
 [dependencies]
-simulacrum_macros = "0.1.0"
+simulacrum_macros = "0.2"
 ```
 
 Note that this crate has not yet reached version 1.0, so the API may change drastically between releases.
@@ -80,7 +80,7 @@ impl CoolTrait for CoolTraitMock {
     }
 
     fn store(&self, val: &i64) {
-        // Again note the use of *const
+        // Again note the use of *const instead of & for shared references.
         was_called!(self, "store", (val: *const i64))
     }
 }
