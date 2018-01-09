@@ -7,7 +7,7 @@ To install, add this line to your Cargo.toml:
 
 ```toml
 [dependencies]
-simulacrum = "0.1.0"
+simulacrum = "0.2"
 ```
 
 Note that this crate has not yet reached version 1.0, so the API may change drastically between releases.
