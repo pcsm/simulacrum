@@ -59,13 +59,8 @@ create_mock! {
         expect_store("store"):
         fn store(&self, val: &i64);
 
-        // If we want to modify a &mut param, we need to have `-> ()` on the end
-        // to indicate that a return behavior should be specified.
-        //
-        // You can see how we've modified the *mut using the `.returning()` call
-        // in when setting up the expectations below.
         expect_toggle("toggle"): 
-        fn toggle(&self, bit: &mut bool) -> ();
+        fn toggle(&self, bit: &mut bool);
 
         expect_ohno("ohno"):
         unsafe fn ohno(&self);
@@ -82,7 +77,7 @@ fn main() {
     m.expect_boop().called_times(2);
     m.expect_store().called_once().with(deref(777));
     m.expect_toggle().called_once().with(deref(true))
-                                   .returning(|&arg| { unsafe { *arg.as_mut().unwrap() = false } });
+                                   .modifying(|&mut arg| { unsafe { *arg = false } });
     m.expect_ohno().called_once();
 
     // Execute test code

@@ -75,9 +75,7 @@ impl CoolTrait for CoolTraitMock {
     }
 
     fn toggle(&self, bit: &mut bool) {
-        // Note that we specify the () return type so that we can modify the
-        // *mut param in our return behavior.
-        was_called!(self, "toggle", (bit: *mut bool) -> ())
+        was_called!(self, "toggle", (bit: *mut bool))
     }
 }
 
@@ -91,7 +89,7 @@ fn main() {
     m.expect_boop().called_times(2);
     m.expect_store().called_once().with(deref(777));
     m.expect_toggle().called_once().with(deref(true))
-                                   .returning(|&arg| { unsafe { *arg.as_mut().unwrap() = false } });
+                                   .modifying(|&mut arg| { unsafe { *arg = false } });
 
     // Execute test code
     m.foo();

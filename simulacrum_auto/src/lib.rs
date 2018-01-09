@@ -182,70 +182,15 @@ fn expectify_method_name(ident: &syn::Ident) -> syn::Ident {
 fn gather_original_methods(methods: &Vec<Method>) -> Vec<quote::Tokens> {
     let mut result = Vec::new();
     for method in methods {
-        let mut tokens;
-        if method_needs_side_effect_added(&method.sig) {
-            let to_output = &add_side_effect_to_method(&method.original_item);
-            tokens = quote! {
-                #to_output
-            };
-        } else {
-            let to_output = &method.original_item;
-            tokens = quote! {
-                #to_output
-            };
-        }
+        let to_output = &method.original_item;
+        let tokens = quote! {
+            #to_output
+        };
 
         // Push the tokens onto our result Vec
         result.push(tokens);
     }
     result
-}
-
-fn method_needs_side_effect_added(sig: &syn::MethodSig) -> bool {
-    // If any of the parameters are &mut (excluding &mut self), then we need to
-    // have a side-effect added to this method in order to modify those params.
-    let args = &sig.decl.inputs;
-    for arg in args {
-        match arg {
-            &syn::FnArg::Captured(_, ref ty) => {
-                match ty {
-                    &syn::Ty::Ptr(ref mut_ty) => {
-                        if mut_ty.mutability == syn::Mutability::Mutable {
-                            return true;
-                        }
-                    },
-                    &syn::Ty::Rptr(_, ref mut_ty) => {
-                        if mut_ty.mutability == syn::Mutability::Mutable {
-                            return true;
-                        }
-                    },
-                    _ => { }
-                }
-            },
-            _ => { }
-        }
-    }
-
-    // Otherwise, no side-effect needs to be added.
-    false
-}
-
-fn add_side_effect_to_method(original_item: &syn::TraitItem) -> syn::TraitItem {
-    let mut result = original_item.clone();
-    match result.node {
-        syn::TraitItemKind::Method(ref mut sig, _) => {
-            match sig.decl.output {
-                syn::FunctionRetTy::Default => { 
-                    // Add a unit-tuple return type "()"
-                    let ty = syn::Ty::Tup(vec![]);
-                    sig.decl.output = syn::FunctionRetTy::Ty(ty);
-                },
-                _ => { }
-            }
-        },
-        _ => { }
-    }
-    return result;
 }
 
 // fn generate_stubs(methods: &Vec<Method>) -> quote::Tokens {
@@ -426,7 +371,7 @@ mod tests {
                     fn goop(&mut self, flag: bool) -> u32;
 
                     expect_zing("zing"):
-                    fn zing(&self, first: i32, second: &mut bool) -> ();
+                    fn zing(&self, first: i32, second: &mut bool);
                 }
             }
         };
