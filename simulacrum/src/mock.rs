@@ -1,5 +1,4 @@
-//! Mock object internals. Used by the macros to create Mocks for you, or you can
-//! use this API to construct your own Mocks manually if you'd like!
+//! Mock object internals. You can use this API to construct mock objects manually.
 
 use std::thread;
 
@@ -12,15 +11,15 @@ pub struct Expectations {
 }
 
 impl Expectations {
-    /// Create a new `Expectations` instance. Call this when your mock object is created,
-    /// and store the `ExpectaionStore` object in it.
+    /// Create a new `Expectations` instance. Call this when your mock object is created.
     pub fn new() -> Self {
         Expectations {
             store: ExpectationStore::new()
         }
     }
 
-    /// Returns a `Method` struct which you can use to add expectations for the method with the given name.
+    /// Returns a `Method` struct which you can use to add expectations for the 
+    /// method with the given name.
     pub fn expect<I, O>(&mut self, name: MethodName) -> Method<I, O> where
         I: 'static,
         O: 'static
@@ -28,6 +27,8 @@ impl Expectations {
         Method::new(&mut self.store, name)
     }
 
+    /// Begin a new Era. Expectations in one Era must be met before expectations 
+    /// in future eras will be evaluated.
     pub fn then(&mut self) -> &mut Self {
         self.store.new_era();
         self
@@ -36,7 +37,7 @@ impl Expectations {
     /// When a tracked method is called on the mock object, call this with the method's name
     /// in order to tell the `Expectations` that the method was called.
     ///
-    /// Does not return a value.
+    /// Unlike `was_called_returning`, this method does not return a value.
     pub fn was_called<I, O>(&self, name: MethodName, params: I) where
         I: 'static,
         O: 'static
@@ -46,7 +47,7 @@ impl Expectations {
             .was_called(params);
     }
 
-    /// Same as `was_called()`, but also returns the result.
+    /// Same as the `was_called` method, but also returns the result.
     pub fn was_called_returning<I, O>(&self, name: MethodName, params: I) -> O where
         I: 'static,
         O: 'static
@@ -98,7 +99,7 @@ mod tests {
     fn test_called_once_fail() {
         let mut e = Expectations::new();
 
-        // Panic: "poo" should have been called once, but was never called
+        // Panic: "spoo" should have been called once, but was never called
         e.expect::<(), ()>("spoo").called_once();
     }
 
