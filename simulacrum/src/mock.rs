@@ -29,6 +29,12 @@ impl Expectations {
 
     /// Begin a new Era. Expectations in one Era must be met before expectations 
     /// in future eras will be evaluated.
+    /// 
+    /// Note that Eras are evaluated eagerly. This means that Eras may advance more
+    /// quickly than you'd intuitively expect in certain situations. For example, 
+    /// `called_any()` is marked as complete after the first call is received.
+    /// This menas that, for the purposes of telling if an Era should be advanced or
+    /// not, `called_any()` and `called_once()` are the same.
     pub fn then(&mut self) -> &mut Self {
         self.store.new_era();
         self
@@ -348,5 +354,19 @@ mod tests {
             })
         );
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_eras_complete_eagerly() {
+        let mut e = Expectations::new();
+
+        // Expectations
+        e.expect::<(), ()>("c").called_any();
+        e.then();
+        e.expect::<(), ()>("d").called_once();
+        
+        // Calls
+        e.was_called::<(), ()>("c", ()); // Completes first era
+        e.was_called::<(), ()>("d", ()); // Completes second era
     }
 }
