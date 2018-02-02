@@ -127,15 +127,15 @@ impl ExpectationStore {
         // Lock our inner mutex
         let mut inner = self.0.lock().unwrap();
 
-        // If all of our Eras are verfied, we're good to go!
-        if inner.current_unverified_era >= inner.eras.len() {
-            return Ok(());
-        }
-
         let mut current_unverified_era = inner.current_unverified_era;
         let mut status = Ok(());
 
-        'eras: for era_index in inner.current_unverified_era .. inner.eras.len() {
+        // If all of our Eras are verfied, we're good to go!
+        if current_unverified_era >= inner.eras.len() {
+            return status;
+        }
+
+        'eras: for era_index in current_unverified_era .. inner.eras.len() {
             let era = &inner.eras[era_index];
             for id in era.iter() {
                 let expectation = inner.expectations.get(id).unwrap();
