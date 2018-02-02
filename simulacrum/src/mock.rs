@@ -369,4 +369,17 @@ mod tests {
         e.was_called::<(), ()>("c", ()); // Completes first era
         e.was_called::<(), ()>("d", ()); // Completes second era
     }
+
+    #[test]
+    fn test_calls_ignored_after_final_era_completes() {
+        let mut e = Expectations::new();
+
+        // Expectations
+        e.expect::<(), ()>("c").called_once();
+        e.then();
+        
+        // Calls
+        e.was_called::<(), ()>("c", ()); // Completes first era
+        e.was_called::<(), ()>("c", ()); // Doesn't matter, all eras are complete already
+    }
 }
