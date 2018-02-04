@@ -124,25 +124,24 @@ impl ExpectationStore {
 
     /// Verify all expectations in this store.
     pub fn verify(&self) -> ExpectationResult {
+        let mut status = Ok(());
+
         // Lock our inner mutex
         let mut inner = self.0.lock().unwrap();
 
-        let mut current_unverified_era = inner.current_unverified_era;
-        let mut status = Ok(());
+        let original_unverified_era = inner.current_unverified_era;
 
-        // If all of our Eras are verfied, we're good to go!
-        if current_unverified_era >= inner.eras.len() {
-            return status;
-        }
+        'eras: for era_index in original_unverified_era .. inner.eras.len() {
+            // Update our current unverified era to be the current Era index
+            inner.current_unverified_era = era_index;
 
-        'eras: for era_index in current_unverified_era .. inner.eras.len() {
+            // If we have any not-yet-verified Expectations in this Era, do not
+            // mark it as complete
             let era = &inner.eras[era_index];
             for id in era.iter() {
                 let expectation = inner.expectations.get(id).unwrap();
                 let r = expectation.verify();
                 if r.is_err() {
-                    // Note the current Era index
-                    current_unverified_era = era_index;
                     // Note the error in this Era
                     status = r;
                     // Stop processing Eras since this one is still incomplete
@@ -150,8 +149,6 @@ impl ExpectationStore {
                 }
             }
         }
-
-        inner.current_unverified_era = current_unverified_era;
 
         status
     }
@@ -345,7 +342,7 @@ mod store_tests {
     fn test_match_current_era() {
         let s = ExpectationStore::new();
         let mut e: Expectation<(), ()> = Expectation::new("frob");
-        e.constrain(AlwaysPass);
+        e.constrain(AlwaysFail);
         s.add(e);
 
         s.new_era();
@@ -353,10 +350,10 @@ mod store_tests {
         // Add the same method twice! It doesn't make sense in practice, but we want
         // to only return one Id, signifying that the first Era was matched against.
         let mut e: Expectation<(), ()> = Expectation::new("frob");
-        e.constrain(AlwaysPass);
+        e.constrain(AlwaysFail);
         s.add(e);
         let mut e: Expectation<(), ()> = Expectation::new("frob");
-        e.constrain(AlwaysPass);
+        e.constrain(AlwaysFail);
         s.add(e);
 
         let m = s.matcher_for::<(), ()>("frob");
