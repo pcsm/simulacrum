@@ -24,12 +24,15 @@ macro_rules! create_expect_method {
 #[macro_export]
 macro_rules! was_called {
     ($self_:ident, $key:expr, $sig:tt -> $output:ty) => {
+        #[allow(unused_parens)]
         $self_.e.was_called_returning::<simulacrum_tuplefy!(kind $sig -> ()), $output>($key, simulacrum_tuplefy!(name $sig -> ()))
     };
     ($self_:ident, $key:expr, $sig:tt) => {
+        #[allow(unused_parens)]
         $self_.e.was_called::<simulacrum_tuplefy!(kind $sig -> ()), ()>($key, simulacrum_tuplefy!(name $sig -> ()))
     };
     ($self_:ident, $key:expr) => {
+        #[allow(unused_parens)]
         $self_.e.was_called::<(), ()>($key, ())
     };
 }
