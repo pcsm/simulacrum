@@ -1,4 +1,4 @@
-Simulacrum
+Simulacrum [![Docs](https://docs.rs/simulacrum/badge.svg)](https://docs.rs/simulacrum) [![Crates.io](https://img.shields.io/crates/v/simulacrum.svg)](https://crates.io/crates/simulacrum)
 ==================================================================
 
 Simulacrum is a small library for creating mock objects in Rust.
