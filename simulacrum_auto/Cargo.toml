@@ -15,7 +15,7 @@ maintenance = { status = "experimental" }
 
 [dependencies]
 quote = "0.3"
-simulacrum_macros = "0.2"
+simulacrum_macros = "0.2.1"
 syn = { version = "0.11.11", features = ["full"] }
 
 [lib]
