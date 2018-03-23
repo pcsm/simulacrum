@@ -7,7 +7,7 @@ pub use simulacrum::*;
 macro_rules! create_expect_method {
     ($name:ident($key:expr) $inputs:ty => $output:ty) => {
         #[allow(non_snake_case)]
-        pub fn $name(&mut self) -> simulacrum_macros::Method<$inputs, $output> {
+        pub fn $name(&mut self) -> Method<$inputs, $output> {
             self.e.expect::<$inputs, $output>($key)
         }
     };
@@ -136,14 +136,14 @@ macro_rules! create_mock_struct {
     }) => {
         #[allow(non_snake_case)]
         pub struct $name {
-            e: simulacrum_macros::Expectations
+            e: Expectations
         }
 
         #[allow(non_snake_case)]
         impl $name {
             pub fn new() -> Self {
                 Self {
-                    e: simulacrum_macros::Expectations::new()
+                    e: Expectations::new()
                 }
             }
 
