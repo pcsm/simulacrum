@@ -1,6 +1,6 @@
 [package]
 name = "simulacrum"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Jason Grlicky <jason@paracosm.us>"]
 description = "A small library for creating mock objects by hand using stable Rust."
 keywords = ["mock", "mocking", "test", "testing", "TDD"]
@@ -14,5 +14,5 @@ license = "MIT"
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-debugit = "0.1"
-handlebox = "0.3"
+debugit = "^0.1"
+handlebox = "^0.3"
