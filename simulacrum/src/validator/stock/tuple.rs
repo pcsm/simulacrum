@@ -30,6 +30,9 @@ create_tuple_validator!(Tuple3: (0, A), (1, B), (2, C));
 create_tuple_validator!(Tuple4: (0, A), (1, B), (2, C), (3, D));
 create_tuple_validator!(Tuple5: (0, A), (1, B), (2, C), (3, D), (4, E));
 create_tuple_validator!(Tuple6: (0, A), (1, B), (2, C), (3, D), (4, E), (5, F));
+create_tuple_validator!(Tuple7: (0, A), (1, B), (2, C), (3, D), (4, E), (5, F), (6, G));
+create_tuple_validator!(Tuple8: (0, A), (1, B), (2, C), (3, D), (4, E), (5, F), (6, G),  (7, H));
+create_tuple_validator!(Tuple9: (0, A), (1, B), (2, C), (3, D), (4, E), (5, F), (6, G),  (7, H), (8, I));
 
 #[cfg(test)]
 mod tests {
