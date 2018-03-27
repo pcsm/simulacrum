@@ -1,6 +1,6 @@
-extern crate simulacrum;
+extern crate simulacrum_mock;
 
-pub use simulacrum::*;
+pub use simulacrum_mock::*;
 
 /// Use this macro to create an `.expect_METHOD_NAME()` method.
 #[macro_export]

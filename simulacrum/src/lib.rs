@@ -1,20 +1,13 @@
-extern crate debugit;
-extern crate handlebox;
+//! Minimal library for creating mock objects by hand using stable Rust. 
+//! 
+//! This crate is just a facade that re-exports any crates necessary to both
+//! create and use mock objects in Simulacrum.
 
-#[macro_use]
-pub mod macros;
+extern crate simulacrum_macros;
+extern crate simulacrum_mock;
+extern crate simulacrum_user;
 
-pub mod constraint;
-pub mod expectation;
-pub mod user;
-pub mod mock;
-pub mod validator;
-mod store;
-
-pub type MethodName = &'static str;
-
-pub use handlebox::Handle as ExpectationId;
-
-pub use self::mock::Expectations;
-pub use self::user::Method;
-pub use self::validator::stock::*;
+// Re-exports macros since Rust 1.15
+pub use simulacrum_macros::*;
+pub use simulacrum_mock::*;
+pub use simulacrum_user::*;

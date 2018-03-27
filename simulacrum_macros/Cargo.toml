@@ -1,6 +1,6 @@
 [package]
 name = "simulacrum_macros"
-version = "0.2.2"
+version = "0.3.0"
 authors = ["Jason Grlicky <jason@paracosm.us>"]
 description = "Macros to simplify creating mock objects with Simulacrum."
 keywords = ["mock", "mocking", "test", "testing", "TDD"]
@@ -14,4 +14,4 @@ license = "MIT"
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-simulacrum = "^0.2"
+simulacrum_mock = "0.1.0"

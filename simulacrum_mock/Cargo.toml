@@ -1,0 +1,22 @@
+[package]
+name = "simulacrum_mock"
+version = "0.1.0"
+authors = ["Jason Grlicky <jason@paracosm.us>"]
+description = "Core functionality for creating mock objects with Simulacrum."
+keywords = ["mock", "mocking", "test", "testing", "TDD"]
+categories = ["development-tools::testing"]
+readme = "README.md"
+documentation = "https://docs.rs/simulacrum_mock"
+repository = "https://github.com/pcsm/simulacrum/tree/master/simulacrum_mock"
+license = "MIT"
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[dependencies]
+debugit = "0.1.0"
+handlebox = "0.3.0"
+simulacrum_shared = "0.1.0"
+
+[dev-dependencies]
+simulacrum_user = "0.1.0"

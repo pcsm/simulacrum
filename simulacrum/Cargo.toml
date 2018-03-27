@@ -1,8 +1,8 @@
 [package]
 name = "simulacrum"
-version = "0.2.2"
+version = "0.3.0"
 authors = ["Jason Grlicky <jason@paracosm.us>"]
-description = "A small library for creating mock objects by hand using stable Rust."
+description = "Minimal library for creating mock objects by hand using stable Rust."
 keywords = ["mock", "mocking", "test", "testing", "TDD"]
 categories = ["development-tools::testing"]
 readme = "README.md"
@@ -14,5 +14,6 @@ license = "MIT"
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-debugit = "^0.1"
-handlebox = "^0.3"
+simulacrum_macros = "0.3.0"
+simulacrum_mock = "0.1.0"
+simulacrum_user = "0.1.0"

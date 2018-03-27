@@ -10,9 +10,9 @@
 // that the *mut parameter uses `was_called!()` with a `()` return type and
 // `.returning()` to have its return behavior specified.
 
-extern crate simulacrum_macros;
+extern crate simulacrum;
 
-use simulacrum_macros::*;
+use simulacrum::*;
 
 trait CoolTrait {
     // Shared self
@@ -80,8 +80,10 @@ impl CoolTrait for CoolTraitMock {
 }
 
 fn main() {
-    // Set up expectations
+    // Create a mock object
     let mut m = CoolTraitMock::new();
+
+    // Set up expectations for it
     m.expect_bar().called_never();
     m.expect_foo().called_once();
     m.then().expect_goop().called_once().with(true).returning(|_| 5);
@@ -102,5 +104,5 @@ fn main() {
     m.toggle(&mut b);
     assert_eq!(b, false);
 
-    // When the Expectations struct is dropped, each of its expectations will be evaluated
+    // When the mock object is dropped, its expectations will be evaluated
 }

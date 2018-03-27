@@ -1,15 +1,15 @@
-// This is the highest-level macro in Simulacrum.
+// This is the highest-level macro available in stable Simulacrum.
 //
 // It creates a Mock struct and impls a Trait - all you have to do is copy over
 // the trait interface and annotate it.
 //
 // Note that if you want additional control, like not mocking certain parameters,
-// you should use the mid-level macros shown in the `mid_level.rs` example. For
+// you should use the mid-level macros shown in the `macros_mid.rs` example. For
 // even more control, you can use the `simulacrum` crate directly.
 
-extern crate simulacrum_macros;
+extern crate simulacrum;
 
-use simulacrum_macros::*;
+use simulacrum::*;
 
 trait CoolTrait {
     // Shared self
@@ -68,8 +68,10 @@ create_mock! {
 }
 
 fn main() {
-    // Set up expectations
+    // Create a mock object
     let mut m = CoolTraitMock::new();
+
+    // Set up expectations for it
     m.expect_bar().called_never();
     m.expect_foo().called_once();
     m.then().expect_goop().called_once().with(true).returning(|_| 5);
@@ -94,5 +96,5 @@ fn main() {
         m.ohno();
     }
 
-    // When the Expectations struct is dropped, each of its expectations will be evaluated
+    // When the mock object is dropped, its expectations will be evaluated
 }

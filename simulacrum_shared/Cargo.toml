@@ -1,0 +1,17 @@
+[package]
+name = "simulacrum_shared"
+version = "0.1.0"
+authors = ["Jason Grlicky <jason@paracosm.us>"]
+description = "Types used when both creating and using mock objects with Simulacrum."
+keywords = ["mock", "mocking", "test", "testing", "TDD"]
+categories = ["development-tools::testing"]
+readme = "README.md"
+documentation = "https://docs.rs/simulacrum_shared"
+repository = "https://github.com/pcsm/simulacrum/tree/master/simulacrum_shared"
+license = "MIT"
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[dependencies]
+debugit = "0.1.0"
