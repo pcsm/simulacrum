@@ -1,4 +1,4 @@
-/// Use this macro to create a `Validator` that works for methods with 2-6 parameters.
+/// Use this macro to create a `Validator` that works for methods with 2-9 parameters.
 #[macro_export]
 macro_rules! params {
     ($a:expr, $b:expr, $c:expr, $d:expr, $e: expr, $f: expr, $g: expr, $h: expr, $i: expr) => {
