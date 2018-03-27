@@ -1,13 +1,13 @@
 extern crate simulacrum_mock;
 
-pub use simulacrum_mock::*;
+pub use simulacrum_mock::{Expectations, Method};
 
 /// Use this macro to create an `.expect_METHOD_NAME()` method.
 #[macro_export]
 macro_rules! create_expect_method {
     ($name:ident($key:expr) $inputs:ty => $output:ty) => {
         #[allow(non_snake_case)]
-        pub fn $name(&mut self) -> Method<$inputs, $output> {
+        pub fn $name(&mut self) -> $crate::Method<$inputs, $output> {
             self.e.expect::<$inputs, $output>($key)
         }
     };
@@ -136,14 +136,14 @@ macro_rules! create_mock_struct {
     }) => {
         #[allow(non_snake_case)]
         pub struct $name {
-            e: Expectations
+            e: $crate::Expectations
         }
 
         #[allow(non_snake_case)]
         impl $name {
             pub fn new() -> Self {
                 Self {
-                    e: Expectations::new()
+                    e: $crate::Expectations::new()
                 }
             }
 
