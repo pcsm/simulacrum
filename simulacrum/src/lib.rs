@@ -1,6 +1,6 @@
 //! Minimal library for creating mock objects by hand using stable Rust. 
 //! 
-//! This crate is just a facade that re-exports any crates necessary to both
+//! This crate is a facade that just re-exports any crates necessary to both
 //! create and use mock objects in Simulacrum.
 
 extern crate simulacrum_macros;
