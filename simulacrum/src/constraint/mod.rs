@@ -5,7 +5,7 @@ pub use self::result::*;
 
 /// A `Constraint` is a type that can be added to an `Expectation`.
 ///
-/// All `Constraint`s added th to an `Expectation` must all pass in order for the
+/// All `Constraint`s added to an `Expectation` must all pass in order for the
 /// `Expectation` to pass.
 pub trait Constraint<I> {
     /// This constraint has been called with the given parameters. Update the
