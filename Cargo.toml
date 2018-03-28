@@ -9,7 +9,7 @@ members = [
 ]
 
 # [patch.crates-io]
-# simulacrum_auto = { path = 'simulacrum_auto' }
+# simulacrum = { path = 'simulacrum' }
 # simulacrum_macros = { path = 'simulacrum_macros' }
 # simulacrum_mock = { path = 'simulacrum_mock' }
 # simulacrum_shared = { path = 'simulacrum_shared' }

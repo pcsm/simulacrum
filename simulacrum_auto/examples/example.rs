@@ -1,9 +1,9 @@
 #![feature(proc_macro)]
 
+extern crate simulacrum;
 extern crate simulacrum_auto;
-extern crate simulacrum_macros;
 
-use simulacrum_macros::*;
+use simulacrum::*;
 use simulacrum_auto::simulacrum;
 
 #[simulacrum]
