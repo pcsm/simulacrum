@@ -5,6 +5,11 @@ extern crate simulacrum_shared;
 
 #[macro_use]
 pub mod macros;
+
+/// Validators for checking method parameters
 pub mod validators;
 
-pub use self::validators::*;
+/// `use simulacrum_user::prelude::*` to import everything in the crate except for macros
+pub mod prelude {
+    pub use validators::*;
+}

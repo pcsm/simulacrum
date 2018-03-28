@@ -59,9 +59,8 @@ Note that the macro API only supports creating mocks from a trait, while the man
 The `create_mock!` macro creates a mock object from a trait. Just copy over the trait's interface and annotate it:
 
 ```rust
+#[macro_use]
 extern crate simulacrum;
-
-use simulacrum::*;
 
 create_mock! {
     impl CoolTrait for CoolTraitMock (self) {
@@ -85,9 +84,8 @@ See [`macros_high.rs`](https://github.com/pcsm/simulacrum/blob/master/simulacrum
 If you need more control than the high-level macro offers, you can use the `create_mock_struct!` and `was_called!` macros. This is useful if you'd like to create mock objects with features that the high-level macro doesn't support, like generic methods. Note that you can mix-and-match these macros with the manual interface as well.
 
 ```rust
+#[macro_use]
 extern crate simulacrum;
-
-use simulacrum::*;
 
 create_mock_struct! {
     struct CoolTraitMock: {
@@ -124,7 +122,7 @@ Create your mock objects manually for ultimate control. With this API, you can e
 ```rust
 extern crate simulacrum;
 
-use simulacrum::*;
+use simulacrum::mock::*;
 
 trait CoolTrait {
     fn foo(&self);

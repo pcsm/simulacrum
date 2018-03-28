@@ -10,11 +10,12 @@
 // that the *mut parameter uses `was_called!()` with a `()` return type and
 // `.returning()` to have its return behavior specified.
 
+#[macro_use]
 extern crate simulacrum;
 
-use simulacrum::*;
+use simulacrum::user::*;
 
-trait CoolTrait {
+pub trait CoolTrait {
     // Shared self
     fn foo(&self);
 

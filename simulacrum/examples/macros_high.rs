@@ -7,9 +7,10 @@
 // you should use the mid-level macros shown in the `macros_mid.rs` example. For
 // even more control, you can use the `simulacrum` crate directly.
 
+#[macro_use]
 extern crate simulacrum;
 
-use simulacrum::*;
+use simulacrum::user::*;
 
 trait CoolTrait {
     // Shared self

@@ -1,9 +1,11 @@
 // This example demonstrates everything that can be done with Simulacrum at the
 // at the lowest level API.
 
+#[macro_use]
 extern crate simulacrum;
 
-use simulacrum::*;
+use simulacrum::mock::*;
+use simulacrum::user::*;
 
 trait CoolTrait {
     // Shared self
