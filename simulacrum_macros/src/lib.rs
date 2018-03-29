@@ -139,6 +139,7 @@ macro_rules! create_mock_struct {
             e: $crate::Expectations
         }
 
+        #[allow(dead_code)]
         #[allow(non_snake_case)]
         impl $name {
             pub fn new() -> Self {
