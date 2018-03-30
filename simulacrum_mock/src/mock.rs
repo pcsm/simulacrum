@@ -383,4 +383,43 @@ mod tests {
         e.was_called::<(), ()>("c", ()); // Completes first era
         e.was_called::<(), ()>("c", ()); // Doesn't matter, all eras are complete already
     }
+
+    // Note: this test is a WIP
+    // Test for a bug where in the first era, if a param mismatch occurs, the
+    // second era isn't evaluated.
+    // #[test]
+    // fn test_bug_multi_era_param_mismatch() {
+    //    let result = panic::catch_unwind(|| {
+    //         // Expectations
+    //         let mut e = Expectations::new();
+    //         e.expect::<(), ()>("b")
+    //             .called_once();
+    //         e.expect::<i32, ()>("a")
+    //             .called_once()
+    //             .with(5);
+    //         e.then();
+    //         e.expect::<(), ()>("b")
+    //             .called_once();
+    //         e.expect::<i32, ()>("a")
+    //             .called_once()
+    //             .with(6);
+            
+    //         // Calls
+    //         e.was_called::<(), ()>("b", ());
+    //         e.was_called::<i32, ()>("a", 3);
+    //         // Should panic with mismatched parameters
+    //     });
+
+    //     let expected_panic = "blah";
+    //     match result {
+    //         Ok(_) => panic!("Mock did not panic when it should have"),
+    //         Err(e) => {
+    //             if let Some(e) = e.downcast_ref::<&'static str>() {
+    //                 assert_eq!(e, &expected_panic, "Mismatched parameters should have been caught");
+    //             } else {
+    //                 panic!("Mock panicked with an unknown error")
+    //             }
+    //         }
+    //     }
+    // }
 }
