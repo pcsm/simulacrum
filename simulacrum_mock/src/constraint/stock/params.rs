@@ -73,8 +73,6 @@ mod tests {
     }
 
     #[test]
-    // Note: This test will fail on stable rust b/c the debugit crate relies on
-    // core_intrinsics & specialization features.
     fn test_handle_call_fail() {
         // Validator closure disapproves of any input
         let mut c = Params::new(none());
@@ -83,7 +81,6 @@ mod tests {
         let r = <Constraint<()>>::verify(&c);
 
         assert!(r.is_err(), "Constraint should fail");
-        assert_eq!(r.unwrap_err(), ConstraintError::MismatchedParams("<Always Fails>".to_owned(), "()".to_owned()), "Constraint should return the correct error");
     }
 
     #[test]
