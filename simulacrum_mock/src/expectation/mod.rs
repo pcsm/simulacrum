@@ -17,7 +17,7 @@ pub struct Expectation<I, O> where
     name: MethodName,
     constraints: Vec<Box<Constraint<I>>>,
     modification_fn: Option<Box<FnMut(&mut I)>>,
-    return_fn: Option<Box<FnMut(&I) -> O>>
+    return_fn: Option<Box<FnMut(I) -> O>>
 }
 
 impl<I, O> Expectation<I, O> where
@@ -52,10 +52,9 @@ impl<I, O> Expectation<I, O> where
         }
     }
 
-    pub fn return_value_for(&mut self, params_cell: &RefCell<I>) -> O {
+    pub fn return_value_for(&mut self, params_cell: RefCell<I>) -> O {
         if self.return_fn.is_some() {
-            let params = params_cell.borrow();
-            (self.return_fn.as_mut().unwrap())(params.deref())
+            (self.return_fn.as_mut().unwrap())(params_cell.into_inner())
         } else {
             panic!("No return closure specified for `{}`, which should return.", self.name);
         }
@@ -74,7 +73,7 @@ impl<I, O> Expectation<I, O> where
     }
 
     pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
-        F: 'static + FnMut(&I) -> O
+        F: 'static + FnMut(I) -> O
     {
         self.return_fn = Some(Box::new(return_behavior));
     }
@@ -118,6 +117,7 @@ mod tests {
     use super::*;
     use constraint::{ConstraintError, ConstraintMock};
     use constraint::stock::always::{AlwaysFail, AlwaysPass};
+    use std::{sync::Arc, cell::RefCell};
 
     #[test]
     fn test_new() {
@@ -157,7 +157,25 @@ mod tests {
         e.set_return(|_| 5);
 
         assert!(e.return_fn.is_some(), "Return Closure Should Exist");
-        assert_eq!(e.return_value_for(&RefCell::new(())), 5, "Return Closure Should return 5");
+        assert_eq!(e.return_value_for(RefCell::new(())), 5, "Return Closure Should return 5");
+    }
+
+    #[test]
+    fn test_return_consuming() {
+        // Does not implement Clone or Copy
+        struct UniquelyOwned(u32);
+
+        let mut e: Expectation<UniquelyOwned, ()> = Expectation::new("foo");
+
+        let dest: Arc<RefCell<Option<UniquelyOwned>>> =
+            Arc::new(RefCell::new(None));
+        let dest2 = dest.clone();
+        e.set_return(move |x| {
+            dest2.replace(Some(x));
+        });
+        e.return_value_for(RefCell::new(UniquelyOwned(42)));
+
+        assert!(dest.borrow().is_some());
     }
 
     #[test]
@@ -177,7 +195,7 @@ mod tests {
         // Did not set the return here
 
         // Panic: .returning() was not called, so we don't know what to return
-        e.return_value_for(&RefCell::new(()));
+        e.return_value_for(RefCell::new(()));
     }
 
     #[test]

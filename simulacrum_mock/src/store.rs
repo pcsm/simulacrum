@@ -190,7 +190,7 @@ impl<'a, I, O> ExpectationEditor<'a, I, O> where
     }
 
     pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
-        F: 'static + FnMut(&I) -> O
+        F: 'static + FnMut(I) -> O
     {
         self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().set_return(return_behavior);
     }
@@ -238,7 +238,7 @@ impl<'a, I, O> ExpectationMatcher<'a, I, O> where
         let cell = RefCell::new(params);
         if let Some(id) = self.ids.pop() {
             self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().handle_call(&cell);
-            let result = self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().return_value_for(&cell);
+            let result = self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().return_value_for(cell);
             result
         } else {
             panic!("Can't return a value for method `{}` with no matching expectations.", self.sig.name);

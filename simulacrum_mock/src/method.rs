@@ -139,7 +139,7 @@ impl<'a, I, O> TrackedMethod<'a, I, O> where
     }
 
     pub fn returning<F>(self, result_behavior: F) -> Self where
-        F: 'static + FnMut(&I) -> O
+        F: 'static + FnMut(I) -> O
     {
         self.method.store.get_mut::<I, O>(self.id).set_return(result_behavior);
         self
