@@ -24,9 +24,9 @@ impl<I, O> Expectation<I, O> where
     I: 'static,
     O: 'static
 {
-    pub fn new(name: MethodName) -> Self {
+    pub fn new<S: ToString>(name: S) -> Self {
         Expectation {
-            name,
+            name: name.to_string(),
             constraints: Vec::new(),
             modification_fn: None,
             return_fn: None
@@ -84,7 +84,7 @@ pub trait ExpectationT {
 
     fn verify(&self) -> ExpectationResult;
 
-    fn name(&self) -> MethodName;
+    fn name(&self) -> &MethodName;
 }
 
 impl<I, O> ExpectationT for Expectation<I, O> where
@@ -100,15 +100,15 @@ impl<I, O> ExpectationT for Expectation<I, O> where
             if let Err(constraint_err) = constraint.verify() {
                 return Err(ExpectationError {
                     constraint_err,
-                    method_name: self.name
+                    method_name: self.name.clone()
                 })
             }
         }
         Ok(())
     }
 
-    fn name(&self) -> MethodName {
-        self.name
+    fn name(&self) -> &MethodName {
+        &self.name
     }
 }
 

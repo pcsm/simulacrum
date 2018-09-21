@@ -44,9 +44,10 @@ impl<'a, I, O> Method<'a, I, O> where
     I: 'static,
     O: 'static
 {
-    pub(crate) fn new(store: &'a mut ExpectationStore, name: MethodName) -> Self {
+    pub(crate) fn new<S: ToString>(store: &'a mut ExpectationStore, name: S) -> Self {
+        let name = name.to_string();
         // Bail if there's already an expectation for a method with this name in the current era
-        if store.has_expectation_for_method_in_current_era(name) {
+        if store.has_expectation_for_method_in_current_era(&name) {
             panic!("Only one expectation can be set for method '{}' per era - use .then() to create a new era before adding another expectation.", name);
         }
 
@@ -77,7 +78,7 @@ impl<'a, I, O> Method<'a, I, O> where
     /// You expect this method to be called `calls` number of times. 
     pub fn called_times(self, calls: i64) -> TrackedMethod<'a, I, O> {
         // Create an expectation that counts a certain number of calls.
-        let mut exp: Expectation<I, O> = Expectation::new(self.sig.name);
+        let mut exp: Expectation<I, O> = Expectation::new(&self.sig.name);
         exp.constrain(Times::new(calls));
 
         // Add the expectation to the store.
@@ -92,7 +93,7 @@ impl<'a, I, O> Method<'a, I, O> where
     /// This method can be called any number of times, including zero.
     pub fn called_any(self) -> TrackedMethod<'a, I, O> {
         // Create an empty expectation
-        let exp: Expectation<I, O> = Expectation::new(self.sig.name);
+        let exp: Expectation<I, O> = Expectation::new(&self.sig.name);
 
         // Add the expectation to the store.
         let id = self.store.add(exp);

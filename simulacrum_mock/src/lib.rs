@@ -13,7 +13,7 @@ pub mod method;
 pub mod mock;
 mod store;
 
-pub type MethodName = &'static str;
+pub type MethodName = String;
 
 pub use handlebox::Handle as ExpectationId;
 

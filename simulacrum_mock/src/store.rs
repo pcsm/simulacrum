@@ -37,7 +37,7 @@ impl ExpectationStore {
         }
     }
 
-    pub(crate) fn has_expectation_for_method_in_current_era(&self, name: MethodName) -> bool {
+    pub(crate) fn has_expectation_for_method_in_current_era(&self, name: &MethodName) -> bool {
         // If the current era is complete, move on to the next incomplete one.
         self.advance_era();
 
@@ -54,12 +54,14 @@ impl ExpectationStore {
         false
     }
 
-    pub fn matcher_for<I, O>(&self, name: MethodName) -> ExpectationMatcher<I, O> where
+    pub fn matcher_for<I, O, S>(&self, name: S) -> ExpectationMatcher<I, O> where
         I: 'static,
-        O: 'static
+        O: 'static,
+        S: ToString
     {
+        let name = name.to_string();
         let sig = MethodSig {
-            name,
+            name: name.clone(),
             _types: MethodTypes::new()
         };
 
@@ -74,7 +76,7 @@ impl ExpectationStore {
             // Gather up ids for expectations that match this one in the current Era
             let mut ids = inner.eras.get(inner.current_unverified_era).unwrap().clone();
             ids.retain(|&id| {
-                inner.expectations.get(&id).unwrap().name() == name
+                inner.expectations.get(&id).unwrap().name() == &name
             });
 
             ExpectationMatcher {
