@@ -2,7 +2,6 @@
 
 use std::thread;
 
-use super::MethodName;
 use super::method::Method;
 use super::store::ExpectationStore;
 
@@ -20,7 +19,7 @@ impl Expectations {
 
     /// Returns a `Method` struct which you can use to add expectations for the 
     /// method with the given name.
-    pub fn expect<I, O>(&mut self, name: MethodName) -> Method<I, O> where
+    pub fn expect<I, O>(&mut self, name: &str) -> Method<I, O> where
         I: 'static,
         O: 'static
     {
@@ -44,24 +43,22 @@ impl Expectations {
     /// in order to tell the `Expectations` that the method was called.
     ///
     /// Unlike `was_called_returning`, this method does not return a value.
-    pub fn was_called<I, O, S>(&self, name: S, params: I) where
+    pub fn was_called<I, O>(&self, name: &str, params: I) where
         I: 'static,
-        O: 'static,
-        S: ToString
+        O: 'static
     {
         self.store
-            .matcher_for::<I, O, S>(name)
+            .matcher_for::<I, O>(name)
             .was_called(params);
     }
 
     /// Same as the `was_called` method, but also returns the result.
-    pub fn was_called_returning<I, O, S>(&self, name: S, params: I) -> O where
+    pub fn was_called_returning<I, O>(&self, name: &str, params: I) -> O where
         I: 'static,
-        O: 'static,
-        S: ToString
+        O: 'static
     {
         self.store
-            .matcher_for::<I, O, S>(name)
+            .matcher_for::<I, O>(name)
             .was_called_returning(params)
     }
 
