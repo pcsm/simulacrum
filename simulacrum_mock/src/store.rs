@@ -166,6 +166,12 @@ impl ExpectationStore {
     }
 }
 
+impl Default for ExpectationStore {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 // Used internally to mutably access an `ExpectationStore`.
 pub struct ExpectationEditor<'a, I, O> {
     id: ExpectationId,

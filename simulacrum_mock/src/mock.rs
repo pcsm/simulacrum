@@ -5,6 +5,7 @@ use std::thread;
 use super::method::Method;
 use super::store::ExpectationStore;
 
+#[derive(Default)]
 pub struct Expectations {
     store: ExpectationStore
 }
