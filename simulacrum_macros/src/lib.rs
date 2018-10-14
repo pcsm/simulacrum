@@ -155,6 +155,12 @@ macro_rules! create_mock_struct {
 
             create_mock_struct!(@create_expect_methods $($methods)*);
         }
+
+        impl Default for $name {
+            fn default() -> Self {
+                Self::new()
+            }
+        }
     };
 }
 
