@@ -62,7 +62,7 @@ macro_rules! simulacrum_tuplefy {
     (@inner name () -> ($($result:tt)*)) => {
         simulacrum_tuplefy!(@as_expr ( $($result)* ))
     };
-    
+
     // Ignore &self and &mut self.
     (@inner $mode:tt (& self) -> ($($result:tt)*)) => {
         simulacrum_tuplefy!( @inner $mode () -> ($($result)*) )
@@ -182,7 +182,7 @@ macro_rules! create_mock {
         )) -> ($($result:tt)*)
     ) => {
         create_mock!(@create_mock_struct ($mock_name, ($($tail)*)) -> (
-            $($result)* 
+            $($result)*
             $expect_name($key) simulacrum_tuplefy!(kind $sig -> ());
         ));
     };
@@ -194,7 +194,7 @@ macro_rules! create_mock {
         )) -> ($($result:tt)*)
     ) => {
         create_mock!(@create_mock_struct ($mock_name, ($($tail)*)) -> (
-            $($result)* 
+            $($result)*
             $expect_name($key) simulacrum_tuplefy!(kind $sig -> ()) => $output;
         ));
     };
@@ -206,7 +206,7 @@ macro_rules! create_mock {
         )) -> ($($result:tt)*)
     ) => {
         create_mock!(@create_mock_struct ($mock_name, ($($tail)*)) -> (
-            $($result)* 
+            $($result)*
             $expect_name($key) simulacrum_tuplefy!(kind $sig -> ());
         ));
     };
@@ -218,7 +218,7 @@ macro_rules! create_mock {
         )) -> ($($result:tt)*)
     ) => {
         create_mock!(@create_mock_struct ($mock_name, ($($tail)*)) -> (
-            $($result)* 
+            $($result)*
             $expect_name($key) simulacrum_tuplefy!(kind $sig -> ()) => $output;
         ));
     };

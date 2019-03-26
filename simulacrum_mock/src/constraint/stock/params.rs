@@ -8,19 +8,20 @@ pub struct Params<I> {
     /// Should be `true` if the method has been called with valid parameters every time.
     is_valid: bool,
     received_param_msg: String,
-    /// A closure that will be called with the parameters to validate that they 
+    /// A closure that will be called with the parameters to validate that they
     /// conform to the requirements.
-    validator: Box<Validator<I>>
+    validator: Box<Validator<I>>,
 }
 
 impl<I> Params<I> {
-    pub fn new<V>(validator: V) -> Self where
-        V: Validator<I> + 'static
+    pub fn new<V>(validator: V) -> Self
+    where
+        V: Validator<I> + 'static,
     {
         Params {
             is_valid: true,
             received_param_msg: "".to_owned(),
-            validator: Box::new(validator)
+            validator: Box::new(validator),
         }
     }
 }
@@ -41,7 +42,10 @@ impl<I> Constraint<I> for Params<I> {
         } else {
             let expected_msg = self.validator.print();
             let received_msg = self.received_param_msg.clone();
-            Err(ConstraintError::MismatchedParams(expected_msg, received_msg))
+            Err(ConstraintError::MismatchedParams(
+                expected_msg,
+                received_msg,
+            ))
         }
     }
 }

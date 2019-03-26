@@ -13,7 +13,7 @@ pub trait Constraint<I> {
     /// Constraint state so that when `verify()` is called, it will return the
     /// correct result.
     #[allow(unused_variables)]
-    fn handle_call(&mut self, params: &I) { }
+    fn handle_call(&mut self, params: &I) {}
 
     /// At the end of the test, see if the Constraint passed or failed.
     fn verify(&self) -> ConstraintResult;
@@ -22,14 +22,14 @@ pub trait Constraint<I> {
 // lol, it would be handy to have simulacrum here
 pub struct ConstraintMock {
     handle_call_expected: bool,
-    handle_call_called: bool
+    handle_call_called: bool,
 }
 
 impl ConstraintMock {
     pub fn new() -> Self {
         Self {
             handle_call_expected: false,
-            handle_call_called: false
+            handle_call_called: false,
         }
     }
 

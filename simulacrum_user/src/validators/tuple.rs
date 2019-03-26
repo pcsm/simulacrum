@@ -36,8 +36,8 @@ create_tuple_validator!(Tuple9: (0, A), (1, B), (2, C), (3, D), (4, E), (5, F), 
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::trivial::*;
+    use super::*;
 
     #[test]
     fn test_2_both() {

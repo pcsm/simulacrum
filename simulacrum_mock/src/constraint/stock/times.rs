@@ -18,7 +18,7 @@ impl<I> Constraint<I> for Times {
         match self.0 {
             x if x < 0 => Err(ConstraintError::CalledTooManyTimes(x.abs())),
             x if x > 0 => Err(ConstraintError::CalledTooFewTimes(x)),
-            _ => Ok(())
+            _ => Ok(()),
         }
     }
 }
@@ -43,7 +43,11 @@ mod tests {
         let r = <Constraint<()>>::verify(&c);
 
         assert!(r.is_err(), "Constraint should fail");
-        assert_eq!(r.unwrap_err(), ConstraintError::CalledTooFewTimes(1), "Constraint should return the correct error");
+        assert_eq!(
+            r.unwrap_err(),
+            ConstraintError::CalledTooFewTimes(1),
+            "Constraint should return the correct error"
+        );
     }
 
     #[test]
@@ -53,7 +57,11 @@ mod tests {
         let r = <Constraint<()>>::verify(&c);
 
         assert!(r.is_err(), "Constraint should fail");
-        assert_eq!(r.unwrap_err(), ConstraintError::CalledTooManyTimes(1), "Constraint should return the correct error");
+        assert_eq!(
+            r.unwrap_err(),
+            ConstraintError::CalledTooManyTimes(1),
+            "Constraint should return the correct error"
+        );
     }
 
     #[test]

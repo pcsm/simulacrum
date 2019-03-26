@@ -1,14 +1,14 @@
 use std::fmt;
 
-use MethodName;
 use constraint::ConstraintError;
+use MethodName;
 
 pub type ExpectationResult = Result<(), ExpectationError>;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ExpectationError {
     pub constraint_err: ConstraintError,
-    pub method_name: MethodName
+    pub method_name: MethodName,
 }
 
 impl fmt::Display for ExpectationError {
