@@ -7,31 +7,32 @@ use super::store::ExpectationStore;
 
 #[derive(Default)]
 pub struct Expectations {
-    store: ExpectationStore
+    store: ExpectationStore,
 }
 
 impl Expectations {
     /// Create a new `Expectations` instance. Call this when your mock object is created.
     pub fn new() -> Self {
         Expectations {
-            store: ExpectationStore::new()
+            store: ExpectationStore::new(),
         }
     }
 
-    /// Returns a `Method` struct which you can use to add expectations for the 
+    /// Returns a `Method` struct which you can use to add expectations for the
     /// method with the given name.
-    pub fn expect<I, O>(&mut self, name: &str) -> Method<I, O> where
+    pub fn expect<I, O>(&mut self, name: &str) -> Method<I, O>
+    where
         I: 'static,
-        O: 'static
+        O: 'static,
     {
         Method::new(&mut self.store, name)
     }
 
-    /// Begin a new Era. Expectations in one Era must be met before expectations 
+    /// Begin a new Era. Expectations in one Era must be met before expectations
     /// in future eras will be evaluated.
-    /// 
+    ///
     /// Note that Eras are evaluated eagerly. This means that Eras may advance more
-    /// quickly than you'd intuitively expect in certain situations. For example, 
+    /// quickly than you'd intuitively expect in certain situations. For example,
     /// `called_any()` is marked as complete after the first call is received.
     /// This menas that, for the purposes of telling if an Era should be advanced or
     /// not, `called_any()` and `called_once()` are the same.
@@ -44,19 +45,19 @@ impl Expectations {
     /// in order to tell the `Expectations` that the method was called.
     ///
     /// Unlike `was_called_returning`, this method does not return a value.
-    pub fn was_called<I, O>(&self, name: &str, params: I) where
+    pub fn was_called<I, O>(&self, name: &str, params: I)
+    where
         I: 'static,
-        O: 'static
+        O: 'static,
     {
-        self.store
-            .matcher_for::<I, O>(name)
-            .was_called(params);
+        self.store.matcher_for::<I, O>(name).was_called(params);
     }
 
     /// Same as the `was_called` method, but also returns the result.
-    pub fn was_called_returning<I, O>(&self, name: &str, params: I) -> O where
+    pub fn was_called_returning<I, O>(&self, name: &str, params: I) -> O
+    where
         I: 'static,
-        O: 'static
+        O: 'static,
     {
         self.store
             .matcher_for::<I, O>(name)
@@ -71,7 +72,7 @@ impl Expectations {
 }
 
 impl Drop for Expectations {
-    /// All expectations will be verified when the mock object is dropped, 
+    /// All expectations will be verified when the mock object is dropped,
     /// panicking if any of them are unmet.
     ///
     /// In the case where the Expectations object is being dropped because the
@@ -95,7 +96,7 @@ mod tests {
     fn test_called_once() {
         let mut e = Expectations::new();
         e.expect::<(), ()>("spoo").called_once();
-        
+
         e.was_called::<(), ()>("spoo", ());
 
         // Verified on drop
@@ -114,7 +115,7 @@ mod tests {
     fn test_called_twice() {
         let mut e = Expectations::new();
         e.expect::<(), ()>("nom").called_times(2);
-        
+
         e.was_called::<(), ()>("nom", ());
         e.was_called::<(), ()>("nom", ());
     }
@@ -124,7 +125,7 @@ mod tests {
     fn test_called_twice_fail() {
         let mut e = Expectations::new();
         e.expect::<(), ()>("nom").called_times(2);
-        
+
         // Panic: "nom" should have been called twice, but was only called once
         e.was_called::<(), ()>("nom", ());
     }
@@ -140,7 +141,7 @@ mod tests {
     fn test_called_never_fail() {
         let mut e = Expectations::new();
         e.expect::<(), ()>("blitz").called_never();
-        
+
         // Panic: "blitz" should have never been called
         e.was_called::<(), ()>("blitz", ());
     }
@@ -164,7 +165,7 @@ mod tests {
     fn test_param() {
         let mut e = Expectations::new();
         e.expect::<i32, ()>("doog").called_once().with(gt(5));
-        
+
         e.was_called::<i32, ()>("doog", 10);
     }
 
@@ -173,7 +174,7 @@ mod tests {
     fn test_param_fail() {
         let mut e = Expectations::new();
         e.expect::<i32, ()>("doog").called_once().with(gt(5));
-        
+
         // Panic: "doog"'s parameter was not > 5
         e.was_called::<i32, ()>("doog", 1);
     }
@@ -203,12 +204,10 @@ mod tests {
     fn test_modifications() {
         let mut e = Expectations::new();
         e.expect::<*mut i32, ()>("dawg")
-         .called_any()
-         .modifying(|&mut arg| {
-            unsafe {
+            .called_any()
+            .modifying(|&mut arg| unsafe {
                 *arg = 3;
-            } 
-         });
+            });
 
         let mut i = 2;
         e.was_called::<*mut i32, ()>("dawg", &mut i);
@@ -221,7 +220,7 @@ mod tests {
         let mut e = Expectations::new();
         e.expect::<i32, ()>("fren").called_once().with(gt(5));
         e.then().expect::<i32, ()>("fren").called_once().with(lt(3));
-        
+
         e.was_called::<i32, ()>("fren", 10); // Matches first era, completing it
         e.was_called::<i32, ()>("fren", 1); // Matches second era, completing it
     }
@@ -233,7 +232,7 @@ mod tests {
         e.expect::<(), ()>("bruh").called_never();
         e.expect::<(), ()>("fren").called_once();
         e.then().expect::<(), ()>("bruh").called_once();
-        
+
         e.was_called::<(), ()>("fren", ()); // Matches first era, completing it
         e.was_called::<(), ()>("bruh", ()); // Matches second era, completing it
     }
@@ -243,8 +242,11 @@ mod tests {
     fn test_then_partial_fail() {
         let mut e = Expectations::new();
         e.expect::<i32, ()>("fren").called_once().with(gt(5));
-        e.then().expect::<i32, ()>("fren").called_times(2).with(lt(3));
-        
+        e.then()
+            .expect::<i32, ()>("fren")
+            .called_times(2)
+            .with(lt(3));
+
         e.was_called::<i32, ()>("fren", 10); // Matches first era, completing it
         e.was_called::<i32, ()>("fren", 1); // Matches second era, but still incomplete
 
@@ -257,12 +259,12 @@ mod tests {
 
         // These expectations can be called in any order
         e.expect::<(), ()>("eh").called_once();
-        e.expect::<(), ()>("donk").called_times(2); 
+        e.expect::<(), ()>("donk").called_times(2);
 
         // These expectations are called afterwards in any order
         e.then().expect::<(), ()>("calxx").called_times(3);
         e.expect::<(), ()>("mer").called_once();
-        
+
         e.was_called::<(), ()>("donk", ());
         e.was_called::<(), ()>("eh", ());
         e.was_called::<(), ()>("donk", ()); // Completes first era
@@ -284,10 +286,10 @@ mod tests {
         // These expectations are called afterwards in any order
         e.then().expect::<(), ()>("calxx").called_once();
         e.expect::<(), ()>("mer").called_once();
-        
+
         e.was_called::<(), ()>("mer", ()); // No matching expectations
         e.was_called::<(), ()>("calxx", ()); // No matching expectations
-        e.was_called::<(), ()>("donk", ()); 
+        e.was_called::<(), ()>("donk", ());
         e.was_called::<(), ()>("eh", ()); // Completes first era
 
         // Panic: Second era was never completed
@@ -349,11 +351,9 @@ mod tests {
         let mut e = Expectations::new();
 
         e.expect::<(), ()>("eh").called_never();
-        let result = panic::catch_unwind(
-            panic::AssertUnwindSafe(|| {
-                e.expect::<(), ()>("eh").called_never(); // Panic: only one expectation should be registered for "eh" in a given era
-            })
-        );
+        let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+            e.expect::<(), ()>("eh").called_never(); // Panic: only one expectation should be registered for "eh" in a given era
+        }));
         assert!(result.is_err());
     }
 
@@ -365,7 +365,7 @@ mod tests {
         e.expect::<(), ()>("c").called_any();
         e.then();
         e.expect::<(), ()>("d").called_once();
-        
+
         // Calls
         e.was_called::<(), ()>("c", ()); // Completes first era
         e.was_called::<(), ()>("d", ()); // Completes second era
@@ -378,7 +378,7 @@ mod tests {
         // Expectations
         e.expect::<(), ()>("c").called_once();
         e.then();
-        
+
         // Calls
         e.was_called::<(), ()>("c", ()); // Completes first era
         e.was_called::<(), ()>("c", ()); // Doesn't matter, all eras are complete already
@@ -403,7 +403,7 @@ mod tests {
     //         e.expect::<i32, ()>("a")
     //             .called_once()
     //             .with(6);
-            
+
     //         // Calls
     //         e.was_called::<(), ()>("b", ());
     //         e.was_called::<i32, ()>("a", 3);

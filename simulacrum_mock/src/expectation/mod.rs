@@ -6,30 +6,32 @@ use super::MethodName;
 
 pub mod result;
 
-pub use super::constraint::Constraint;
 pub use self::result::{ExpectationError, ExpectationResult};
+pub use super::constraint::Constraint;
 
 /// An expectation that a method must be called. Also includes an optional
 /// closure to produce return values, if necessary.
-pub struct Expectation<I, O> where
-    I: 'static
+pub struct Expectation<I, O>
+where
+    I: 'static,
 {
     name: MethodName,
     constraints: Vec<Box<Constraint<I>>>,
     modification_fn: Option<Box<FnMut(&mut I)>>,
-    return_fn: Option<Box<FnMut(I) -> O>>
+    return_fn: Option<Box<FnMut(I) -> O>>,
 }
 
-impl<I, O> Expectation<I, O> where
+impl<I, O> Expectation<I, O>
+where
     I: 'static,
-    O: 'static
+    O: 'static,
 {
     pub fn new<S: ToString>(name: S) -> Self {
         Expectation {
             name: name.to_string(),
             constraints: Vec::new(),
             modification_fn: None,
-            return_fn: None
+            return_fn: None,
         }
     }
 
@@ -56,24 +58,30 @@ impl<I, O> Expectation<I, O> where
         if self.return_fn.is_some() {
             (self.return_fn.as_mut().unwrap())(params_cell.into_inner())
         } else {
-            panic!("No return closure specified for `{}`, which should return.", self.name);
+            panic!(
+                "No return closure specified for `{}`, which should return.",
+                self.name
+            );
         }
     }
 
-    pub(crate) fn constrain<C>(&mut self, constraint: C) where
-        C: Constraint<I> + 'static
+    pub(crate) fn constrain<C>(&mut self, constraint: C)
+    where
+        C: Constraint<I> + 'static,
     {
         self.constraints.push(Box::new(constraint));
     }
 
-    pub(crate) fn set_modification<F>(&mut self, modification_behavior: F) where
-        F: 'static + FnMut(&mut I)
+    pub(crate) fn set_modification<F>(&mut self, modification_behavior: F)
+    where
+        F: 'static + FnMut(&mut I),
     {
         self.modification_fn = Some(Box::new(modification_behavior));
     }
 
-    pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
-        F: 'static + FnMut(I) -> O
+    pub(crate) fn set_return<F>(&mut self, return_behavior: F)
+    where
+        F: 'static + FnMut(I) -> O,
     {
         self.return_fn = Some(Box::new(return_behavior));
     }
@@ -87,9 +95,10 @@ pub trait ExpectationT {
     fn name(&self) -> &MethodName;
 }
 
-impl<I, O> ExpectationT for Expectation<I, O> where
+impl<I, O> ExpectationT for Expectation<I, O>
+where
     I: 'static,
-    O: 'static
+    O: 'static,
 {
     fn as_any(&mut self) -> &mut Any {
         self
@@ -100,8 +109,8 @@ impl<I, O> ExpectationT for Expectation<I, O> where
             if let Err(constraint_err) = constraint.verify() {
                 return Err(ExpectationError {
                     constraint_err,
-                    method_name: self.name.clone()
-                })
+                    method_name: self.name.clone(),
+                });
             }
         }
         Ok(())
@@ -115,9 +124,9 @@ impl<I, O> ExpectationT for Expectation<I, O> where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use constraint::{ConstraintError, ConstraintMock};
     use constraint::stock::always::{AlwaysFail, AlwaysPass};
-    use std::{sync::Arc, cell::RefCell};
+    use constraint::{ConstraintError, ConstraintMock};
+    use std::{cell::RefCell, sync::Arc};
 
     #[test]
     fn test_new() {
@@ -126,7 +135,10 @@ mod tests {
         assert_eq!(e.name, "foo", "Name of Constraint should be `foo`");
         assert_eq!(e.constraints.len(), 0, "Number of Constraints should be 0");
         assert!(e.return_fn.is_none(), "Return Behavior Should Not Exist");
-        assert!(e.modification_fn.is_none(), "Modification Behavior Should Not Exist");
+        assert!(
+            e.modification_fn.is_none(),
+            "Modification Behavior Should Not Exist"
+        );
     }
 
     #[test]
@@ -157,7 +169,11 @@ mod tests {
         e.set_return(|_| 5);
 
         assert!(e.return_fn.is_some(), "Return Closure Should Exist");
-        assert_eq!(e.return_value_for(RefCell::new(())), 5, "Return Closure Should return 5");
+        assert_eq!(
+            e.return_value_for(RefCell::new(())),
+            5,
+            "Return Closure Should return 5"
+        );
     }
 
     #[test]
@@ -167,8 +183,7 @@ mod tests {
 
         let mut e: Expectation<UniquelyOwned, ()> = Expectation::new("foo");
 
-        let dest: Arc<RefCell<Option<UniquelyOwned>>> =
-            Arc::new(RefCell::new(None));
+        let dest: Arc<RefCell<Option<UniquelyOwned>>> = Arc::new(RefCell::new(None));
         let dest2 = dest.clone();
         e.set_return(move |x| {
             dest2.replace(Some(x));
@@ -184,7 +199,10 @@ mod tests {
 
         e.set_modification(|_| ());
 
-        assert!(e.modification_fn.is_some(), "Modification Closure Should Exist");
+        assert!(
+            e.modification_fn.is_some(),
+            "Modification Closure Should Exist"
+        );
     }
 
     #[test]
@@ -219,7 +237,14 @@ mod tests {
 
         assert!(r.is_err(), "Expectation should fail");
         let r = r.unwrap_err();
-        assert_eq!(r.method_name, "boop", "Expectation error should have the correct method name");
-        assert_eq!(r.constraint_err, ConstraintError::AlwaysFail, "Expectation error should contain the correct Constraint error");
+        assert_eq!(
+            r.method_name, "boop",
+            "Expectation error should have the correct method name"
+        );
+        assert_eq!(
+            r.constraint_err,
+            ConstraintError::AlwaysFail,
+            "Expectation error should contain the correct Constraint error"
+        );
     }
 }

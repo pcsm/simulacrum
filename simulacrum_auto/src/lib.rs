@@ -1,10 +1,11 @@
 #![feature(proc_macro)]
-#![recursion_limit="128"]
+#![recursion_limit = "128"]
 
-             extern crate proc_macro;
-#[macro_use] extern crate quote;
-             extern crate simulacrum;
-             extern crate syn;
+extern crate proc_macro;
+#[macro_use]
+extern crate quote;
+extern crate simulacrum;
+extern crate syn;
 
 use proc_macro::TokenStream;
 use quote::ToTokens;
@@ -14,7 +15,7 @@ use std::str::FromStr;
 struct Method {
     ident: syn::Ident,
     original_item: syn::TraitItem,
-    sig: syn::MethodSig
+    sig: syn::MethodSig,
 }
 
 #[proc_macro_attribute]
@@ -69,8 +70,8 @@ fn get_trait_items(item: &syn::Item) -> Vec<syn::TraitItem> {
     match item.node {
         syn::ItemKind::Trait(_unsafety, ref _generics, ref _ty_param_bound, ref items) => {
             items.clone()
-        },
-        _ => vec![].clone()
+        }
+        _ => vec![].clone(),
     }
 }
 
@@ -82,11 +83,11 @@ fn gather_trait_methods(trait_items: &Vec<syn::TraitItem>) -> Vec<Method> {
                 let m = Method {
                     ident: item.ident.clone(),
                     original_item: item.clone(),
-                    sig: sig.clone()
+                    sig: sig.clone(),
                 };
                 result.push(m);
-            },
-            _ => { }
+            }
+            _ => {}
         }
     }
     result
@@ -96,7 +97,7 @@ fn generate_annotations(methods: &Vec<Method>) -> Vec<quote::Tokens> {
     let mut result = Vec::new();
     for method in methods {
         let ident = &method.ident;
-        let ident_tokens = quote!{ #ident };
+        let ident_tokens = quote! { #ident };
         let ident_str = ident_tokens.as_str();
         let name = expectify_method_name(ident);
         // let otype = generate_output_type(&method.sig.decl.output);
@@ -202,9 +203,9 @@ fn gather_original_methods(methods: &Vec<Method>) -> Vec<quote::Tokens> {
 //         let otype = generate_output_type(&method.sig.decl.output);
 //         let ituple = generate_input_tuple(&method.sig.decl.inputs);
 //         let itypes = generate_input_types(&method.sig.decl.inputs);
-//         // TODO: generate method sig tokens 
+//         // TODO: generate method sig tokens
 //         let mut method_sig_tokens = quote::Tokens::new();
-//         // TODO: generate method sig tokens 
+//         // TODO: generate method sig tokens
 //         let mut body_tokens = quote::Tokens::new();
 //         let stub_method = quote! {
 //             #method_sig_tokens {

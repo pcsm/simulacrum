@@ -30,7 +30,7 @@ impl<I: PartialOrd> Validator<I> for LessThan<I> {
         *param < self.0
     }
 
-     fn print(&self) -> String {
+    fn print(&self) -> String {
         format!("< {:?}", DebugIt(&self.0)).to_owned()
     }
 }

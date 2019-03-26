@@ -3,9 +3,9 @@ use handlebox::HandleBox;
 use std::cell::RefCell;
 use std::sync::Mutex;
 
-use super::{ExpectationId, MethodName};
-use super::expectation::{Constraint, Expectation, ExpectationT, ExpectationResult};
+use super::expectation::{Constraint, Expectation, ExpectationResult, ExpectationT};
 use super::method::{MethodSig, MethodTypes};
+use super::{ExpectationId, MethodName};
 
 // A thread-safe store for `Box<ExpectationT>`s, including the order that they should be
 // evaluated in (Eras).
@@ -14,7 +14,7 @@ pub(crate) struct ExpectationStore(Mutex<Inner>);
 struct Inner {
     current_unverified_era: usize,
     eras: Vec<Era>,
-    expectations: HandleBox<Box<ExpectationT>>
+    expectations: HandleBox<Box<ExpectationT>>,
 }
 
 type Era = Vec<ExpectationId>;
@@ -25,7 +25,7 @@ impl ExpectationStore {
         ExpectationStore(Mutex::new(Inner {
             current_unverified_era: 0,
             eras,
-            expectations: HandleBox::new()
+            expectations: HandleBox::new(),
         }))
     }
 
@@ -33,7 +33,7 @@ impl ExpectationStore {
         ExpectationEditor {
             id,
             store: &self,
-            _types: MethodTypes::new()
+            _types: MethodTypes::new(),
         }
     }
 
@@ -44,7 +44,7 @@ impl ExpectationStore {
         // Lock our inner mutex
         let inner = self.0.lock().unwrap();
 
-        // Get the current era and see if there's an expectation with this name in it 
+        // Get the current era and see if there's an expectation with this name in it
         for id in inner.eras.last().unwrap() {
             if inner.expectations.get(&id).unwrap().name() == name {
                 return true;
@@ -54,13 +54,14 @@ impl ExpectationStore {
         false
     }
 
-    pub fn matcher_for<I, O>(&self, name: &str) -> ExpectationMatcher<I, O> where
+    pub fn matcher_for<I, O>(&self, name: &str) -> ExpectationMatcher<I, O>
+    where
         I: 'static,
-        O: 'static
+        O: 'static,
     {
         let sig = MethodSig {
             name: name.to_string(),
-            _types: MethodTypes::new()
+            _types: MethodTypes::new(),
         };
 
         // If the current era is complete, move on to the next incomplete one.
@@ -72,21 +73,23 @@ impl ExpectationStore {
         // Only return ids if we have unverified Eras remaining
         if inner.current_unverified_era < inner.eras.len() {
             // Gather up ids for expectations that match this one in the current Era
-            let mut ids = inner.eras.get(inner.current_unverified_era).unwrap().clone();
-            ids.retain(|&id| {
-                inner.expectations.get(&id).unwrap().name() == name
-            });
+            let mut ids = inner
+                .eras
+                .get(inner.current_unverified_era)
+                .unwrap()
+                .clone();
+            ids.retain(|&id| inner.expectations.get(&id).unwrap().name() == name);
 
             ExpectationMatcher {
                 ids,
                 sig,
-                store: &self
+                store: &self,
             }
         } else {
             ExpectationMatcher {
                 ids: Vec::new(),
                 sig,
-                store: &self
+                store: &self,
             }
         }
     }
@@ -99,12 +102,13 @@ impl ExpectationStore {
     }
 
     // Add a new Expectation under the current Era and return its id.
-    pub fn add<E>(&self, expectation: E) -> ExpectationId where
-        E: ExpectationT + 'static
+    pub fn add<E>(&self, expectation: E) -> ExpectationId
+    where
+        E: ExpectationT + 'static,
     {
         // Lock our inner mutex
         let mut inner = self.0.lock().unwrap();
-        
+
         // Add a new expectation
         let id = inner.expectations.add(Box::new(expectation));
 
@@ -131,7 +135,7 @@ impl ExpectationStore {
 
         let original_unverified_era = inner.current_unverified_era;
 
-        'eras: for era_index in original_unverified_era .. inner.eras.len() {
+        'eras: for era_index in original_unverified_era..inner.eras.len() {
             // Update our current unverified era to be the current Era index
             inner.current_unverified_era = era_index;
 
@@ -176,34 +180,75 @@ impl Default for ExpectationStore {
 pub struct ExpectationEditor<'a, I, O> {
     id: ExpectationId,
     store: &'a ExpectationStore,
-    _types: MethodTypes<I, O>
+    _types: MethodTypes<I, O>,
 }
 
-impl<'a, I, O> ExpectationEditor<'a, I, O> where
+impl<'a, I, O> ExpectationEditor<'a, I, O>
+where
     I: 'static,
-    O: 'static
+    O: 'static,
 {
-    pub(crate) fn constrain<C>(&self, constraint: C) where
-        C: Constraint<I> + 'static
+    pub(crate) fn constrain<C>(&self, constraint: C)
+    where
+        C: Constraint<I> + 'static,
     {
-        self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().constrain(constraint);
+        self.store
+            .0
+            .lock()
+            .unwrap()
+            .expectations
+            .get_mut(&self.id)
+            .unwrap()
+            .as_any()
+            .downcast_mut::<Expectation<I, O>>()
+            .unwrap()
+            .constrain(constraint);
     }
 
-    pub(crate) fn set_modification<F>(&mut self, modification_behavior: F) where
-        F: 'static + FnMut(&mut I)
+    pub(crate) fn set_modification<F>(&mut self, modification_behavior: F)
+    where
+        F: 'static + FnMut(&mut I),
     {
-        self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().set_modification(modification_behavior);
+        self.store
+            .0
+            .lock()
+            .unwrap()
+            .expectations
+            .get_mut(&self.id)
+            .unwrap()
+            .as_any()
+            .downcast_mut::<Expectation<I, O>>()
+            .unwrap()
+            .set_modification(modification_behavior);
     }
 
-    pub(crate) fn set_return<F>(&mut self, return_behavior: F) where
-        F: 'static + FnMut(I) -> O
+    pub(crate) fn set_return<F>(&mut self, return_behavior: F)
+    where
+        F: 'static + FnMut(I) -> O,
     {
-        self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().set_return(return_behavior);
+        self.store
+            .0
+            .lock()
+            .unwrap()
+            .expectations
+            .get_mut(&self.id)
+            .unwrap()
+            .as_any()
+            .downcast_mut::<Expectation<I, O>>()
+            .unwrap()
+            .set_return(return_behavior);
     }
 
     #[allow(dead_code)]
     fn verify(&self) -> ExpectationResult {
-        self.store.0.lock().unwrap().expectations.get_mut(&self.id).unwrap().verify()
+        self.store
+            .0
+            .lock()
+            .unwrap()
+            .expectations
+            .get_mut(&self.id)
+            .unwrap()
+            .verify()
     }
 }
 
@@ -215,19 +260,30 @@ impl<'a, I, O> ExpectationEditor<'a, I, O> where
 pub(crate) struct ExpectationMatcher<'a, I, O> {
     ids: Vec<ExpectationId>,
     sig: MethodSig<I, O>,
-    store: &'a ExpectationStore
+    store: &'a ExpectationStore,
 }
 
-impl<'a, I, O> ExpectationMatcher<'a, I, O> where
+impl<'a, I, O> ExpectationMatcher<'a, I, O>
+where
     I: 'static,
-    O: 'static
+    O: 'static,
 {
     /// Tell each matched Expectation that this method was called.
     #[allow(unused_must_use)]
     pub fn was_called(self, params: I) -> Self {
         let cell = RefCell::new(params);
         for id in self.ids.iter() {
-            self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().handle_call(&cell);
+            self.store
+                .0
+                .lock()
+                .unwrap()
+                .expectations
+                .get_mut(&id)
+                .unwrap()
+                .as_any()
+                .downcast_mut::<Expectation<I, O>>()
+                .unwrap()
+                .handle_call(&cell);
         }
         self
     }
@@ -243,11 +299,35 @@ impl<'a, I, O> ExpectationMatcher<'a, I, O> where
     pub fn was_called_returning(mut self, params: I) -> O {
         let cell = RefCell::new(params);
         if let Some(id) = self.ids.pop() {
-            self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().handle_call(&cell);
-            let result = self.store.0.lock().unwrap().expectations.get_mut(&id).unwrap().as_any().downcast_mut::<Expectation<I, O>>().unwrap().return_value_for(cell);
+            self.store
+                .0
+                .lock()
+                .unwrap()
+                .expectations
+                .get_mut(&id)
+                .unwrap()
+                .as_any()
+                .downcast_mut::<Expectation<I, O>>()
+                .unwrap()
+                .handle_call(&cell);
+            let result = self
+                .store
+                .0
+                .lock()
+                .unwrap()
+                .expectations
+                .get_mut(&id)
+                .unwrap()
+                .as_any()
+                .downcast_mut::<Expectation<I, O>>()
+                .unwrap()
+                .return_value_for(cell);
             result
         } else {
-            panic!("Can't return a value for method `{}` with no matching expectations.", self.sig.name);
+            panic!(
+                "Can't return a value for method `{}` with no matching expectations.",
+                self.sig.name
+            );
         }
     }
 
@@ -261,8 +341,8 @@ impl<'a, I, O> ExpectationMatcher<'a, I, O> where
 #[cfg(test)]
 mod store_tests {
     use super::*;
-    use constraint::ConstraintError;
     use constraint::stock::always::{AlwaysFail, AlwaysPass};
+    use constraint::ConstraintError;
 
     #[test]
     fn test_new() {
@@ -270,7 +350,11 @@ mod store_tests {
 
         assert!(s.verify().is_ok(), "Store should be Ok after creation");
         assert_eq!(s.era_count(), 1, "Store should have one Era after creation");
-        assert_eq!(s.exp_count(), 0, "Store should have no Expectations after creation");
+        assert_eq!(
+            s.exp_count(),
+            0,
+            "Store should have no Expectations after creation"
+        );
     }
 
     #[test]
@@ -287,7 +371,7 @@ mod store_tests {
     #[test]
     fn test_new_era() {
         let s = ExpectationStore::new();
-        
+
         s.new_era();
 
         assert_eq!(s.era_count(), 2, "Number of Eras after creating a new one");
@@ -325,8 +409,15 @@ mod store_tests {
 
         assert!(r.is_err(), "Store should fail");
         let r = r.unwrap_err();
-        assert_eq!(r.method_name, "zooks", "Store error should have the correct method name");
-        assert_eq!(r.constraint_err, ConstraintError::AlwaysFail, "Store error should contain the correct Constraint error");
+        assert_eq!(
+            r.method_name, "zooks",
+            "Store error should have the correct method name"
+        );
+        assert_eq!(
+            r.constraint_err,
+            ConstraintError::AlwaysFail,
+            "Store error should contain the correct Constraint error"
+        );
     }
 
     #[test]
@@ -375,7 +466,7 @@ mod store_tests {
         s.add(e);
 
         // Cheat and bump up the current unverified era to the end
-        s.0.lock().unwrap().current_unverified_era = 1; 
+        s.0.lock().unwrap().current_unverified_era = 1;
 
         let m = s.matcher_for::<(), ()>("buzz");
 

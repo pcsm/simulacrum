@@ -40,6 +40,10 @@ mod tests {
         let r = <Constraint<()>>::verify(&c);
 
         assert!(r.is_err(), "Constraint should always fail");
-        assert_eq!(r.unwrap_err(), ConstraintError::AlwaysFail, "Constraint should return the correct error");
+        assert_eq!(
+            r.unwrap_err(),
+            ConstraintError::AlwaysFail,
+            "Constraint should return the correct error"
+        );
     }
 }

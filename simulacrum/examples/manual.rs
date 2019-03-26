@@ -29,13 +29,13 @@ trait CoolTrait {
 }
 
 pub struct CoolTraitMock {
-    e: Expectations
+    e: Expectations,
 }
 
 impl CoolTraitMock {
     pub fn new() -> Self {
         Self {
-            e: Expectations::new()
+            e: Expectations::new(),
         }
     }
 
@@ -87,7 +87,8 @@ impl CoolTrait for CoolTraitMock {
     }
 
     fn zing(&self, first: i32, second: bool) {
-        self.e.was_called::<(i32, bool), ()>("zing", (first, second))
+        self.e
+            .was_called::<(i32, bool), ()>("zing", (first, second))
     }
 
     fn boop(&self, name: &'static str) {
@@ -110,12 +111,21 @@ fn main() {
     // Set up expectations for it
     m.expect_bar().called_never();
     m.expect_foo().called_once();
-    m.then().expect_goop().called_once().with(true).returning(|_| 5);
-    m.then().expect_zing().called_once().with(params!(13, false));
+    m.then()
+        .expect_goop()
+        .called_once()
+        .with(true)
+        .returning(|_| 5);
+    m.then()
+        .expect_zing()
+        .called_once()
+        .with(params!(13, false));
     m.expect_boop().called_times(2);
     m.expect_store().called_once().with(deref(777));
-    m.expect_toggle().called_once().with(deref(true))
-                                   .modifying(|&mut arg| { unsafe { *arg = false } });
+    m.expect_toggle()
+        .called_once()
+        .with(deref(true))
+        .modifying(|&mut arg| unsafe { *arg = false });
 
     // Execute test code
     m.foo();

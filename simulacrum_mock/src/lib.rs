@@ -17,5 +17,5 @@ pub type MethodName = String;
 
 pub use handlebox::Handle as ExpectationId;
 
-pub use self::mock::Expectations;
 pub use self::method::Method;
+pub use self::mock::Expectations;

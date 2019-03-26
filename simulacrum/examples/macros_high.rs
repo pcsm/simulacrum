@@ -59,7 +59,7 @@ create_mock! {
         expect_store("store"):
         fn store(&self, val: &i64);
 
-        expect_toggle("toggle"): 
+        expect_toggle("toggle"):
         fn toggle(&self, bit: &mut bool);
 
         expect_ohno("ohno"):
@@ -74,12 +74,21 @@ fn main() {
     // Set up expectations for it
     m.expect_bar().called_never();
     m.expect_foo().called_once();
-    m.then().expect_goop().called_once().with(true).returning(|_| 5);
-    m.then().expect_zing().called_once().with(params!(13, false));
+    m.then()
+        .expect_goop()
+        .called_once()
+        .with(true)
+        .returning(|_| 5);
+    m.then()
+        .expect_zing()
+        .called_once()
+        .with(params!(13, false));
     m.expect_boop().called_times(2);
     m.expect_store().called_once().with(deref(777));
-    m.expect_toggle().called_once().with(deref(true))
-                                   .modifying(|&mut arg| { unsafe { *arg = false } });
+    m.expect_toggle()
+        .called_once()
+        .with(deref(true))
+        .modifying(|&mut arg| unsafe { *arg = false });
     m.expect_ohno().called_once();
 
     // Execute test code

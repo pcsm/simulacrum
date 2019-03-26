@@ -19,9 +19,9 @@ impl<I: PartialEq> Validator<I> for I {
         &*param == self
     }
 
-     fn print(&self) -> String {
-         format!("{:?}", DebugIt(self)).to_owned()
-     }
+    fn print(&self) -> String {
+        format!("{:?}", DebugIt(self)).to_owned()
+    }
 }
 
 #[cfg(test)]

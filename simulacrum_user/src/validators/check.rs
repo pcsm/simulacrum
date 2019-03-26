@@ -1,11 +1,12 @@
 use simulacrum_shared::Validator;
 
-/// A closure that will be called with the parameters to validate that they 
+/// A closure that will be called with the parameters to validate that they
 /// conform to the requirements.
 pub struct Check<I>(Box<FnMut(&I) -> bool>);
 
-pub fn passes<I, F>(closure: F) -> Check<I> where
-    F: FnMut(&I) -> bool + 'static
+pub fn passes<I, F>(closure: F) -> Check<I>
+where
+    F: FnMut(&I) -> bool + 'static,
 {
     Check(Box::new(closure))
 }
@@ -15,7 +16,7 @@ impl<I> Validator<I> for Check<I> {
         (self.0)(param)
     }
 
-     fn print(&self) -> String {
+    fn print(&self) -> String {
         "<Passes Closure>".to_owned()
     }
 }

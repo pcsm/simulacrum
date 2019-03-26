@@ -16,7 +16,7 @@ impl<I> Validator<I> for Trivial {
         self.0
     }
 
-     fn print(&self) -> String {
+    fn print(&self) -> String {
         if self.0 {
             "<Always Passes>".to_owned()
         } else {
