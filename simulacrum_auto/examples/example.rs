@@ -1,5 +1,3 @@
-#![feature(proc_macro)]
-
 extern crate simulacrum;
 extern crate simulacrum_auto;
 
