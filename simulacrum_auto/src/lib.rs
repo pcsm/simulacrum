@@ -333,7 +333,7 @@ mod tests {
     fn it_works() {
         let input = quote! {
             pub trait CoolTrait {
-                /// Shared self - Also, Doc comments
+                // /// Shared self - Also, Doc comments
                 fn foo(&self);
 
                 // Mutable self
@@ -352,7 +352,7 @@ mod tests {
 
         let expected = quote! {
             pub trait CoolTrait {
-                /// Shared self - Also, Doc comments
+                // /// Shared self - Also, Doc comments
                 fn foo(&self);
                 fn bar(&mut self);
                 fn goop(&mut self, flag: bool) -> u32;

@@ -6,7 +6,7 @@ use simulacrum_auto::simulacrum;
 
 #[simulacrum]
 trait CoolTrait {
-    /// Shared self - Also demonstrates doc comments
+    // /// Shared self - Also demonstrates doc comments
     fn foo(&self);
 
     // Mutable self
