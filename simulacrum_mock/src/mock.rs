@@ -384,6 +384,19 @@ mod tests {
         e.was_called::<(), ()>("c", ()); // Doesn't matter, all eras are complete already
     }
 
+    // If this test compiles, it means that the `Expectations` type can be sent between threads
+    #[test]
+    fn test_can_mock_send() {
+        use std::thread;
+
+        let mut e = Expectations::new();
+        e.expect::<(), ()>("ok").called_once();
+
+        thread::spawn(move || {
+            e.was_called::<(), ()>("ok", ());
+        });        
+    }
+
     // Note: this test is a WIP
     // Test for a bug where in the first era, if a param mismatch occurs, the
     // second era isn't evaluated.
