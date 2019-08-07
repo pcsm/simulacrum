@@ -397,6 +397,23 @@ mod tests {
         });        
     }
 
+    // If this test compiles, it means that the `Expectations` type can still mock methods that
+    // take non-send types.
+    //
+    // This test was added along with test_can_mock_send(), since we want to make sure
+    // that we don't accidentally regress on this.
+    #[test]
+    fn test_can_accept_non_send() {
+        use std::rc::Rc;
+
+        let mut e = Expectations::new();
+        e.expect::<Rc<i32>, ()>("ok").called_once();
+
+        let test_rc = Rc::new(777);
+
+        e.was_called::<Rc<i32>, ()>("ok", test_rc);
+    }
+
     // Note: this test is a WIP
     // Test for a bug where in the first era, if a param mismatch occurs, the
     // second era isn't evaluated.
