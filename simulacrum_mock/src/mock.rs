@@ -1,20 +1,24 @@
 //! Mock object internals. You can use this API to construct mock objects manually.
 
+use fragile::Sticky;
+
 use std::thread;
 
 use super::method::Method;
 use super::store::ExpectationStore;
 
+const CANNOT_BE_USED_ACROSS_THREAD_MSG: &'static str = "Simulacrum mock objects can mock Send types, but can't be sent across threads themselves.";
+
 #[derive(Default)]
 pub struct Expectations {
-    store: ExpectationStore
+    store: Sticky<ExpectationStore>
 }
 
 impl Expectations {
     /// Create a new `Expectations` instance. Call this when your mock object is created.
     pub fn new() -> Self {
         Expectations {
-            store: ExpectationStore::new()
+            store: Sticky::new(ExpectationStore::new())
         }
     }
 
@@ -24,7 +28,7 @@ impl Expectations {
         I: 'static,
         O: 'static
     {
-        Method::new(&mut self.store, name)
+        Method::new(self.get_mut_store_on_original_thread(), name)
     }
 
     /// Begin a new Era. Expectations in one Era must be met before expectations 
@@ -36,7 +40,7 @@ impl Expectations {
     /// This menas that, for the purposes of telling if an Era should be advanced or
     /// not, `called_any()` and `called_once()` are the same.
     pub fn then(&mut self) -> &mut Self {
-        self.store.new_era();
+        self.get_mut_store_on_original_thread().new_era();
         self
     }
 
@@ -48,7 +52,7 @@ impl Expectations {
         I: 'static,
         O: 'static
     {
-        self.store
+        self.get_store_on_original_thread()
             .matcher_for::<I, O>(name)
             .was_called(params);
     }
@@ -58,13 +62,25 @@ impl Expectations {
         I: 'static,
         O: 'static
     {
-        self.store
+        self.get_store_on_original_thread()
             .matcher_for::<I, O>(name)
             .was_called_returning(params)
     }
 
+    /// Panics if called from a thread other than the one this Mock was originally
+    /// created on.
+    fn get_store_on_original_thread(&self) -> &ExpectationStore {
+        self.store.try_get().expect(CANNOT_BE_USED_ACROSS_THREAD_MSG)
+    }
+
+    /// Panics if called from a thread other than the one this Mock was originally
+    /// created on.
+    fn get_mut_store_on_original_thread(&mut self) -> &mut ExpectationStore {
+        self.store.try_get_mut().expect(CANNOT_BE_USED_ACROSS_THREAD_MSG)
+    }
+
     fn verify(&self) {
-        if let Err(e) = self.store.verify() {
+        if let Err(e) = self.get_store_on_original_thread().verify() {
             panic!("{}", e);
         }
     }
@@ -386,21 +402,54 @@ mod tests {
 
     // If this test compiles, it means that the `Expectations` type can be sent between threads
     #[test]
-    fn test_can_mock_send() {
+    fn test_can_mock_send_types() {
+        trait SendTrait : Send {
+            fn stuff(&mut self);
+        }
+
+        struct MockObject(Expectations);
+
+        impl SendTrait for MockObject {
+            fn stuff(&mut self) { unimplemented!() }
+        }
+
+        let _ = MockObject(Expectations::new());
+    }
+
+    #[test]
+    fn test_cannot_be_used_across_threads() {
         use std::thread;
 
         let mut e = Expectations::new();
-        e.expect::<(), ()>("ok").called_once();
+        e.expect::<(), ()>("ok").called_never();
 
-        thread::spawn(move || {
+        let other_thread = thread::spawn(move || {
+            // Panic - Mock objects can't be used across threads,
+            // despite being able to mock Send traits
             e.was_called::<(), ()>("ok", ());
         });        
+
+        assert!(other_thread.join().is_err(), "Mock objects should panic when used on a different thread from the one they were created on")
+    }
+
+    #[test]
+    #[ignore]
+    fn test_can_drop_across_threads() {
+        use std::thread;
+
+        let option_e = Some(Expectations::new());
+
+        let other_thread = thread::spawn(move || {
+            assert!(option_e.is_some());
+        });        
+
+        assert!(other_thread.join().is_ok(), "Mock objects should not panic when dropped on a different thread")
     }
 
     // If this test compiles, it means that the `Expectations` type can still mock methods that
     // take non-send types.
     //
-    // This test was added along with test_can_mock_send(), since we want to make sure
+    // This test was added along with test_can_mock_send_types(), since we want to make sure
     // that we don't accidentally regress on this.
     #[test]
     fn test_can_accept_non_send() {

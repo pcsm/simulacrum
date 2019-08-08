@@ -15,6 +15,7 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 debugit = "0.1.0"
+fragile = "0.3.0"
 handlebox = "0.3.0"
 simulacrum_shared = "0.1.0"
 

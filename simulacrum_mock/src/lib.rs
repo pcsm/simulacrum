@@ -1,6 +1,7 @@
 //! Core functionality for creating mock objects with Simulacrum.
 
 extern crate debugit;
+extern crate fragile;
 extern crate handlebox;
 extern crate simulacrum_shared;
 
