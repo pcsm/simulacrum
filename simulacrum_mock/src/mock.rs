@@ -421,7 +421,7 @@ mod tests {
         use std::thread;
 
         let mut e = Expectations::new();
-        e.expect::<(), ()>("ok").called_never();
+        e.expect::<(), ()>("ok").called_once();
 
         let other_thread = thread::spawn(move || {
             // Panic - Mock objects can't be used across threads,
@@ -429,21 +429,24 @@ mod tests {
             e.was_called::<(), ()>("ok", ());
         });        
 
-        assert!(other_thread.join().is_err(), "Mock objects should panic when used on a different thread from the one they were created on")
+        assert!(other_thread.join().is_err(), "Mock objects should panic when used on a different thread than the one they were created on")
     }
 
     #[test]
-    #[ignore]
-    fn test_can_drop_across_threads() {
+    fn test_cannot_drop_across_threads() {
         use std::thread;
 
-        let option_e = Some(Expectations::new());
+        let mut e = Expectations::new();
+        e.expect::<(), ()>("ok").called_never();
+        let option_e = Some(e);
 
         let other_thread = thread::spawn(move || {
+            // Panic - Mock objects can't be dropped across threads,
+            // despite being able to mock Send traits
             assert!(option_e.is_some());
         });        
 
-        assert!(other_thread.join().is_ok(), "Mock objects should not panic when dropped on a different thread")
+        assert!(other_thread.join().is_err(), "Mock objects should panic when dropped on a different thread")
     }
 
     // If this test compiles, it means that the `Expectations` type can still mock methods that
