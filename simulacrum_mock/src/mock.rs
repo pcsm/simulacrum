@@ -416,6 +416,22 @@ mod tests {
         let _ = MockObject(Expectations::new());
     }
 
+    // If this test compiles, it means that the `Expectations` type can be used to mock Sync traits
+    #[test]
+    fn test_can_mock_sync_types() {
+        trait SyncTrait : Sync {
+            fn stuff(&mut self);
+        }
+
+        struct MockObject(Expectations);
+
+        impl SyncTrait for MockObject {
+            fn stuff(&mut self) { unimplemented!() }
+        }
+
+        let _ = MockObject(Expectations::new());
+    }
+
     #[test]
     fn test_cannot_be_used_across_threads() {
         use std::thread;
