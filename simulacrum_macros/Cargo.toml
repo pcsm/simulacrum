@@ -13,5 +13,6 @@ license = "MIT"
 [badges]
 maintenance = { status = "actively-developed" }
 
-[dependencies]
-simulacrum_mock = "0.1.0"
+[dependencies.simulacrum_mock]
+path = "../simulacrum_mock"
+version = "0.2.0"

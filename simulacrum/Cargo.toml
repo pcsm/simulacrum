@@ -1,6 +1,6 @@
 [package]
 name = "simulacrum"
-version = "0.3.1"
+version = "0.4.0"
 authors = ["Jason Grlicky <jason@paracosm.us>"]
 description = "Minimal library for creating mock objects by hand using stable Rust."
 keywords = ["mock", "mocking", "test", "testing", "TDD"]
@@ -13,7 +13,14 @@ license = "MIT"
 [badges]
 maintenance = { status = "actively-developed" }
 
-[dependencies]
-simulacrum_macros = "0.3.1"
-simulacrum_mock = "0.1.0"
-simulacrum_user = "0.1.0"
+[dependencies.simulacrum_macros]
+path = "../simulacrum_macros"
+version = "0.3.1"
+
+[dependencies.simulacrum_mock]
+path = "../simulacrum_mock"
+version = "0.2.0"
+
+[dependencies.simulacrum_user]
+path = "../simulacrum_user"
+version = "0.1.0"

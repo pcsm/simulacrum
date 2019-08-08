@@ -1,6 +1,6 @@
 [package]
 name = "simulacrum_mock"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Jason Grlicky <jason@paracosm.us>"]
 description = "Core functionality for creating mock objects with Simulacrum."
 keywords = ["mock", "mocking", "test", "testing", "TDD"]
@@ -19,5 +19,6 @@ fragile = "0.3.0"
 handlebox = "0.3.0"
 simulacrum_shared = "0.1.0"
 
-[dev-dependencies]
-simulacrum_user = "0.1.0"
+[dev-dependencies.simulacrum_user]
+path = "../simulacrum_user"
+version = "0.1.0"
