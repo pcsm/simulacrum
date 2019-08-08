@@ -439,13 +439,17 @@ mod tests {
         let mut e = Expectations::new();
         e.expect::<(), ()>("ok").called_once();
 
-        let other_thread = thread::spawn(move || {
+        // Set no panic hook in order to suppress debug output
+        // Note that this is a global setting across all threads & tests
+        panic::set_hook(Box::new(|_info| { }));
+
+        let result = thread::spawn(move || {
             // Panic - Mock objects can't be used across threads,
             // despite being able to mock Send traits
             e.was_called::<(), ()>("ok", ());
-        });        
+        }).join();        
 
-        assert!(other_thread.join().is_err(), "Mock objects should panic when used on a different thread than the one they were created on")
+        assert!(result.is_err(), "Mock objects should panic when used on a different thread than the one they were created on")
     }
 
     #[test]
@@ -456,13 +460,18 @@ mod tests {
         e.expect::<(), ()>("ok").called_never();
         let option_e = Some(e);
 
-        let other_thread = thread::spawn(move || {
+        // Set no panic hook in order to suppress debug output
+        // Note that this is a global setting across all threads & tests
+        panic::set_hook(Box::new(|_info| { }));
+
+        let result = thread::spawn(move || {
+            assert!(option_e.is_some());
+
             // Panic - Mock objects can't be dropped across threads,
             // despite being able to mock Send traits
-            assert!(option_e.is_some());
-        });        
+        }).join();        
 
-        assert!(other_thread.join().is_err(), "Mock objects should panic when dropped on a different thread")
+        assert!(result.is_err(), "Mock objects should panic when dropped on a different thread")
     }
 
     // If this test compiles, it means that the `Expectations` type can still mock methods that
